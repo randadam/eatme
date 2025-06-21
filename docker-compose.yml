@@ -1,0 +1,48 @@
+services:
+  api:
+    build: ./api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ml-gateway
+    environment:
+      - ML_GATEWAY_URL=http://ml-gateway:8000
+      - TURSO_URL=your-turso-url
+    networks:
+      - appnet
+
+  ml-gateway:
+    build: ./ml-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_PROVIDER=ollama
+      - OLLAMA_URL=http://host.docker.internal:11434
+    networks:
+      - appnet
+
+  chroma:
+    image: chromadb/chroma
+    ports:
+      - "8002:8000"
+    volumes:
+      - chroma-data:/chroma/.chroma
+    networks:
+      - appnet
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"
+    networks:
+      - appnet
+
+volumes:
+  chroma-data:
+
+networks:
+  appnet:
+    driver: bridge

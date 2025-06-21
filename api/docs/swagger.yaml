@@ -1,0 +1,235 @@
+basePath: /
+definitions:
+  models.Allergy:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      severity:
+        $ref: '#/definitions/models.AllergySeverity'
+    type: object
+  models.AllergySeverity:
+    enum:
+    - mild
+    - moderate
+    - severe
+    - anaphylactic
+    type: string
+    x-enum-varnames:
+    - SeverityMild
+    - SeverityModerate
+    - SeveritySevere
+    - SeverityAnaphylactic
+  models.DietRestriction:
+    enum:
+    - omnivore
+    - vegetarian
+    - vegan
+    - pescatarian
+    - keto
+    - paleo
+    - low_fodmap
+    - other
+    type: string
+    x-enum-varnames:
+    - DietOmnivore
+    - DietVegetarian
+    - DietVegan
+    - DietPescatarian
+    - DietKeto
+    - DietPaleo
+    - DietLowFODMAP
+    - DietOther
+  models.Goals:
+    properties:
+      limit_calories:
+        type: integer
+      macros_target:
+        $ref: '#/definitions/models.Macros'
+      notes:
+        type: string
+    type: object
+  models.Macros:
+    properties:
+      carbs_grams:
+        type: integer
+      fat_grams:
+        type: integer
+      protein_grams:
+        type: integer
+    type: object
+  models.Preferences:
+    properties:
+      allergies:
+        items:
+          $ref: '#/definitions/models.Allergy'
+        type: array
+      diet_restrictions:
+        items:
+          $ref: '#/definitions/models.DietRestriction'
+        type: array
+      goals:
+        $ref: '#/definitions/models.Goals'
+      user_id:
+        type: string
+    type: object
+  models.SignupRequest:
+    description: User signup request
+    properties:
+      email:
+        description: User's email address
+        example: john.doe@example.com
+        type: string
+      name:
+        description: User's full name
+        example: John Doe
+        type: string
+    type: object
+  models.SignupResponse:
+    description: User signup response containing the new user's ID
+    properties:
+      user_id:
+        description: Unique identifier for the created user
+        example: usr_123456789
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API for the EatMe recipe generation service
+  title: EatMe API
+  version: "1.0"
+paths:
+  /generate:
+    get:
+      description: Generate a new recipe (not yet implemented)
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Recipe generation message
+          schema:
+            type: string
+      summary: Generate a recipe
+      tags:
+      - recipes
+  /preferences:
+    get:
+      description: Retrieve preferences for a user
+      parameters:
+      - description: User ID
+        example: usr_123456789
+        in: header
+        name: X-User-ID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Preferences'
+        "401":
+          description: Missing user ID
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Get user preferences
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update or create preferences for a user
+      parameters:
+      - description: User ID
+        example: usr_123456789
+        in: header
+        name: X-User-ID
+        required: true
+        type: string
+      - description: User preferences
+        in: body
+        name: preferences
+        required: true
+        schema:
+          $ref: '#/definitions/models.Preferences'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Preferences'
+        "400":
+          description: Invalid input
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Missing user ID
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Set user preferences
+      tags:
+      - users
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with name and email
+      parameters:
+      - description: User signup information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SignupResponse'
+        "400":
+          description: Invalid input
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Create a new user account
+      tags:
+      - users
+swagger: "2.0"
