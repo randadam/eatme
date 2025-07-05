@@ -25,12 +25,17 @@ const skills: SkillLevelProps[] = [
     name: "Advanced",
     description: "You cook from scratch often and feel confident experimenting with techniques and flavors.",
   },
+  {
+    value: "master",
+    name: "Master",
+    description: "You're a serious home cook or even work in food — nothing in the kitchen intimidates you.",
+  },
 ];
 
 
 const formSchema = z.object({
     name: z.string().nonempty("Please enter a name."),
-    skillLevel: z.enum(["beginner", "intermediate", "advanced"]),
+    skillLevel: z.enum(["beginner", "intermediate", "advanced", "master"]),
 })
 
 export default function ProfileStep() {

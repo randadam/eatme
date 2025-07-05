@@ -5,6 +5,7 @@ export const STEPS = [
   "/signup/account",
   "/signup/profile",
   "/signup/preferences",
+  "/signup/equipment",
 ] as const
 
 export default function SignupLayout() {
