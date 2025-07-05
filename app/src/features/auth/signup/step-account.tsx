@@ -2,20 +2,15 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import StepInstructions from "./step-instructions";
-
-const formSchema = z.object({
-    email: z.string().email("Invalid email address"),
-    password: z.string(), // TODO(adam): Add password validation
-    confirmPassword: z.string(), // TODO(adam): Add password confirmation validation
-});
+import { accountForm } from "./schemas/forms";
+import type { z } from "zod";
 
 export default function AccountStep() {
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof accountForm>>({
+        resolver: zodResolver(accountForm),
         defaultValues: {
             email: "",
             password: "",
@@ -23,7 +18,7 @@ export default function AccountStep() {
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    function onSubmit(values: z.infer<typeof accountForm>) {
         console.log(values);
     }
 

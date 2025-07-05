@@ -4,8 +4,11 @@ import WizardNav from "./wizard-nav"
 export const STEPS = [
   "/signup/account",
   "/signup/profile",
-  "/signup/preferences",
+  "/signup/skill",
+  "/signup/cuisines",
+  "/signup/diet",
   "/signup/equipment",
+  "/signup/allergies",
 ] as const
 
 export default function SignupLayout() {

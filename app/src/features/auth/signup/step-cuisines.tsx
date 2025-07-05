@@ -1,9 +1,10 @@
-import z from "zod";
 import StepInstructions from "./step-instructions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cuisinesForm } from "./schemas/forms";
+import type { z } from "zod";
 
 const cuisines = [
     { name: "American", value: "american" },
@@ -20,38 +21,21 @@ const cuisines = [
     { name: "Vietnamese", value: "vietnamese" },
 ]
 
-const allergies = [
-    { name: "Dairy", value: "dairy" },
-    { name: "Eggs", value: "eggs" },
-    { name: "Fish", value: "fish" },
-    { name: "Gluten", value: "gluten" },
-    { name: "Peanuts", value: "peanuts" },
-    { name: "Soy", value: "soy" },
-    { name: "Tree Nuts", value: "tree_nuts" },
-    { name: "Wheat", value: "wheat" },
-]
-
-const formSchema = z.object({
-  cuisines: z.array(z.string()).min(1, "Please select at least one cuisine."),
-  allergies: z.array(z.string()),
-})
-
-export default function PreferencesStep() {
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+export default function CuisinesStep() {
+    const form = useForm<z.infer<typeof cuisinesForm>>({
+        resolver: zodResolver(cuisinesForm),
         defaultValues: {
             cuisines: [],
-            allergies: [],
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    function onSubmit(values: z.infer<typeof cuisinesForm>) {
         console.log(values)
     }
 
     return (
         <>
-            <StepInstructions>Preferences</StepInstructions>
+            <StepInstructions>What cuisines do you like?</StepInstructions>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <FormField
@@ -78,36 +62,6 @@ export default function PreferencesStep() {
                                             />
                                         </FormControl>
                                         <FormLabel>{cuisine.name}</FormLabel>
-                                    </FormItem>
-                                ))}
-                                <FormMessage/>
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="allergies"
-                        render={({field}) => (
-                            <FormItem>
-                                <FormLabel>Allergies</FormLabel>
-                                <FormDescription className="text-left">
-                                    Select any allergies you have.
-                                </FormDescription>
-                                {allergies.map((allergy) => (
-                                    <FormItem key={allergy.value} className="flex">
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value.includes(allergy.value)}
-                                                onCheckedChange={(checked) => (
-                                                    field.onChange(
-                                                        checked
-                                                            ? [...field.value, allergy.value]
-                                                            : field.value.filter((value) => value !== allergy.value)
-                                                    )   
-                                                )}
-                                            />
-                                        </FormControl>
-                                        <FormLabel>{allergy.name}</FormLabel>
                                     </FormItem>
                                 ))}
                                 <FormMessage/>

@@ -3,9 +3,12 @@ import { createBrowserRouter } from "react-router-dom"
 import RootLayout from "@/layouts/root-layout"
 import AccountStep from "./features/auth/signup/step-account"
 import ProfileStep from "./features/auth/signup/step-profile"
-import PreferencesStep from "./features/auth/signup/step-preferences"
+import PreferencesStep from "./features/auth/signup/step-cuisines"
 import SignupSuccess from "./features/auth/signup/step-success"
 import EquipmentStep from "./features/auth/signup/step-equipment"
+import AllergiesStep from "./features/auth/signup/step-allergies"
+import SkillStep from "./features/auth/signup/step-skill"
+import DietStep from "./features/auth/signup/step-diet"
 
 const Signup = lazy(() => import("@/features/auth/signup/routes"))
 
@@ -19,9 +22,12 @@ export const router = createBrowserRouter([
                 children: [
                     { path: "account", element: <AccountStep/> },
                     { path: "profile", element: <ProfileStep/> },
-                    { path: "preferences", element: <PreferencesStep/> },
-                    { path: "success", element: <SignupSuccess/> },
+                    { path: "skill", element: <SkillStep/> },
+                    { path: "cuisines", element: <PreferencesStep/> },
+                    { path: "diet", element: <DietStep/> },
                     { path: "equipment", element: <EquipmentStep/> },
+                    { path: "allergies", element: <AllergiesStep/> },
+                    { path: "success", element: <SignupSuccess/> },
                 ],
             }
         ]

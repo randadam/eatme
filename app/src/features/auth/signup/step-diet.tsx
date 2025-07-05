@@ -1,0 +1,69 @@
+import StepInstructions from "./step-instructions";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
+import { dietForm } from "./schemas/forms";
+import type { z } from "zod";
+
+const diets = [
+    { name: "Vegetarian", value: "vegetarian" },
+    { name: "Vegan", value: "vegan" },
+    { name: "Keto", value: "keto" },
+    { name: "Paleo", value: "paleo" },
+    { name: "Low Carb", value: "low_carb" },
+    { name: "High Protein", value: "high_protein" },
+]
+
+export default function DietStep() {
+    const form = useForm<z.infer<typeof dietForm>>({
+        resolver: zodResolver(dietForm),
+        defaultValues: {
+            diet: [],
+        },
+    })
+
+    function onSubmit(values: z.infer<typeof dietForm>) {
+        console.log(values)
+    }
+
+    return (
+        <>
+            <StepInstructions>Do you have any dietary restrictions?</StepInstructions>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <FormField
+                        control={form.control}
+                        name="diet"
+                        render={({field}) => (
+                            <FormItem>
+                                <FormLabel>Diet</FormLabel>
+                                <FormDescription className="text-left">
+                                    Select any diets you follow.
+                                </FormDescription>
+                                {diets.map((diet) => (
+                                    <FormItem key={diet.value} className="flex">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value.includes(diet.value)}
+                                                onCheckedChange={(checked) => (
+                                                    field.onChange(
+                                                        checked
+                                                            ? [...field.value, diet.value]
+                                                            : field.value.filter((value) => value !== diet.value)
+                                                    )   
+                                                )}
+                                            />
+                                        </FormControl>
+                                        <FormLabel>{diet.name}</FormLabel>
+                                    </FormItem>
+                                ))}
+                                <FormMessage/>
+                            </FormItem>
+                        )}
+                    />
+                </form>
+            </Form>
+        </>
+    )
+}

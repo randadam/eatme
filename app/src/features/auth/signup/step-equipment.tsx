@@ -1,9 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import z from "zod";
 import StepInstructions from "./step-instructions";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { equipmentForm } from "./schemas/forms";
+import type { z } from "zod";
 
 const equipmentList = [
     { name: "Stove", value: "stove" },
@@ -17,19 +18,15 @@ const equipmentList = [
     { name: "Sous Vide", value: "sous_vide" },
 ]
 
-const formSchema = z.object({
-    equipment: z.array(z.string()).min(1, "Please select at least one piece of equipment."),
-})
-
 export default function EquipmentStep() {
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof equipmentForm>>({
+        resolver: zodResolver(equipmentForm),
         defaultValues: {
             equipment: [],
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    function onSubmit(values: z.infer<typeof equipmentForm>) {
         console.log(values)
     }
 
