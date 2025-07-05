@@ -39,15 +39,20 @@ case "$1" in
     esac
     ;;
   app)
-    case "$2" in
+    shift # Remove 'app' from the arguments
+    case "$1" in
       start)
         "$SCRIPT_DIR/app-start.sh"
         ;;
       test)
         "$SCRIPT_DIR/app-test.sh"
         ;;
+      add)
+        shift # Remove 'add' from the arguments
+        "$SCRIPT_DIR/app-add.sh" "$@"
+        ;;
       *)
-        echo "Usage: $0 app [start|test]"
+        echo "Usage: $0 app [start|test|add]"
         exit 1
         ;;
     esac
@@ -74,6 +79,8 @@ case "$1" in
     echo "  app <command>       - App development commands"
     echo "    start             - Start app"
     echo "    test              - Run app tests"
+    echo "    add dep <pkg>     - Add a new dependency"
+    echo "    add comp <pkg>    - Add a new component"
     echo "  cleanup             - Clean up resources"
     exit 1
     ;;

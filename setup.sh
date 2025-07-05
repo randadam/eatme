@@ -83,23 +83,6 @@ else
   echo "✅ uv is already installed."
 fi
 
-# Install Ollama if missing
-if ! command -v ollama &> /dev/null; then
-  echo "📦 Ollama not found. Installing..."
-  curl -fsSL https://ollama.com/install.sh | sh
-else
-  echo "✅ Ollama is already installed."
-fi
-
-# Pull the default Ollama model
-MODEL_NAME="mistral"
-if ! ollama list | grep -q "$MODEL_NAME"; then
-  echo "⬇️ Pulling default Ollama model: $MODEL_NAME..."
-  ollama pull $MODEL_NAME
-else
-  echo "✅ Default Ollama model '$MODEL_NAME' is already installed."
-fi
-
 # Install Go if missing
 echo "🔍 Checking for Go installation..."
 if ! command -v go &> /dev/null; then
