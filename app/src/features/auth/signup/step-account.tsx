@@ -29,7 +29,7 @@ export default function AccountStep() {
 
     return (
         <>
-            <StepInstructions>Create Your Account</StepInstructions>
+            <StepInstructions>Create your account</StepInstructions>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <FormField
