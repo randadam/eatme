@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ajohnston1219/eatme/api/db"
 	_ "github.com/ajohnston1219/eatme/api/docs"
-	"github.com/ajohnston1219/eatme/api/handlers"
-	"github.com/ajohnston1219/eatme/api/services"
+	"github.com/ajohnston1219/eatme/api/internal/db"
+	"github.com/ajohnston1219/eatme/api/internal/handlers"
+	"github.com/ajohnston1219/eatme/api/internal/services/user"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -22,6 +22,15 @@ import (
 func main() {
 	r := chi.NewRouter()
 
+	dsn, ok := os.LookupEnv("DB_DSN")
+	if !ok {
+		dsn = "file:./.data/dev.db"
+	}
+	store, err := db.NewSQLiteStore(dsn)
+	if err != nil {
+		panic(err)
+	}
+
 	corsHandler := cors.AllowAll().Handler(r)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -34,12 +43,14 @@ func main() {
 	))
 
 	// User
-	store := db.NewMemoryStore()
-	service := services.NewUserService(store)
+	service := user.NewUserService(store)
 	handler := handlers.NewUserHandler(service)
 	r.Post("/signup", handler.Signup)
-	r.Post("/preferences", handler.SetPreferences)
-	r.Get("/preferences", handler.GetPreferences)
+	r.Route("/profile", func(r chi.Router) {
+		r.Use(handlers.AuthMiddleware(store))
+		r.Put("/", handler.SaveProfile)
+		r.Get("/", handler.GetProfile)
+	})
 
 	// LLM
 	r.Post("/generate", handlers.GenerateRecipeHandler)

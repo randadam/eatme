@@ -1,9 +1,10 @@
 import z from "zod"
-import { signupApi, type SignupApiPayload } from "./api"
 import * as a from "./atoms"
 
 // STEP 1 – account credentials
-export const accountForm = signupApi.extend({
+export const accountForm = z.object({
+  email: a.email,
+  password: a.password,
   confirmPassword: a.password,
 }).refine(
   d => d.password === d.confirmPassword,
@@ -11,9 +12,6 @@ export const accountForm = signupApi.extend({
 )
 
 export type AccountFormValues = z.infer<typeof accountForm>
-export function toSignupApi(v: AccountFormValues): SignupApiPayload {
-  return { email: v.email, password: v.password }
-}
 
 // STEP 2 – profile
 export const profileForm = z.object({

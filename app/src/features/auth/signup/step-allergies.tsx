@@ -5,6 +5,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Checkbox } from "@/components/ui/checkbox";
 import { allergiesForm } from "./schemas/forms";
 import type { z } from "zod";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useSaveProfile, useUser } from "./hooks";
+import type { ModelsAllergy } from "@/api/client";
+import WizardButtons from "./wizard-buttons";
 
 const allergies = [
     { name: "Dairy", value: "dairy" },
@@ -18,15 +22,29 @@ const allergies = [
 ]
 
 export default function AllergiesStep() {
+    const nav = useNavigate()
+    const { isAuthenticated, profile } = useUser()
+    if (!isAuthenticated || !profile) {
+        return <Navigate to="/" replace />
+    }
+
+    const { mutate: saveProfile, isPending, error } = useSaveProfile()
+
     const form = useForm<z.infer<typeof allergiesForm>>({
         resolver: zodResolver(allergiesForm),
         defaultValues: {
-            allergies: [],
+            allergies: profile?.allergies ?? [],
         },
     })
 
     function onSubmit(values: z.infer<typeof allergiesForm>) {
-        console.log(values)
+        const req = {
+            setup_step: "equipment" as const,
+            allergies: values.allergies.map((allergy) => allergy) as ModelsAllergy[],
+        }
+        saveProfile(req, {
+            onSuccess: () => nav("/signup/equipment"),
+        })
     }
 
     return (
@@ -53,7 +71,7 @@ export default function AllergiesStep() {
                                                         checked
                                                             ? [...field.value, allergy.value]
                                                             : field.value.filter((value) => value !== allergy.value)
-                                                    )   
+                                                        )
                                                 )}
                                             />
                                         </FormControl>
@@ -64,8 +82,10 @@ export default function AllergiesStep() {
                             </FormItem>
                         )}
                     />
+                    <WizardButtons loading={isPending}/>
                 </form>
             </Form>
+            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     )
 }

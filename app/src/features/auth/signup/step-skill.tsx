@@ -8,6 +8,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { skillForm } from "./schemas/forms";
 import type { z } from "zod";
+import WizardButtons from "./wizard-buttons";
+import { useSaveProfile, useUser } from "./hooks";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const skills: SkillLevelProps[] = [
   {
@@ -34,15 +37,25 @@ const skills: SkillLevelProps[] = [
 
 
 export default function SkillStep() {
+    const nav = useNavigate()
+    const { isAuthenticated, profile } = useUser()
+    if (!isAuthenticated || !profile) {
+        return <Navigate to="/" replace />
+    }
+
+    const { mutate: saveProfile, isPending, error } = useSaveProfile()
+
     const form = useForm<z.infer<typeof skillForm>>({
         resolver: zodResolver(skillForm),
         defaultValues: {
-            skill: "beginner",
+            skill: (profile?.skill ?? "beginner") as z.infer<typeof skillForm>['skill'],
         },
     })
 
     function onSubmit(values: z.infer<typeof skillForm>) {
-        console.log(values)
+        saveProfile({ ...values, setup_step: "cuisines" }, {
+            onSuccess: () => nav("/signup/cuisines"),
+        })
     }
 
     return (
@@ -78,8 +91,10 @@ export default function SkillStep() {
                             </FormItem>
                         )}
                     />
+                    <WizardButtons loading={isPending}/>
                 </form>
             </Form>
+            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     )
 }

@@ -51,8 +51,12 @@ case "$1" in
         shift # Remove 'add' from the arguments
         "$SCRIPT_DIR/app-add.sh" "$@"
         ;;
+      gen)
+        shift # Remove 'gen' from the arguments
+        "$SCRIPT_DIR/app-gen.sh" "$@"
+        ;;
       *)
-        echo "Usage: $0 app [start|test|add]"
+        echo "Usage: $0 app [start|test|add|gen]"
         exit 1
         ;;
     esac
@@ -81,6 +85,7 @@ case "$1" in
     echo "    test              - Run app tests"
     echo "    add dep <pkg>     - Add a new dependency"
     echo "    add comp <pkg>    - Add a new component"
+    echo "    gen <module>      - Generate module"
     echo "  cleanup             - Clean up resources"
     exit 1
     ;;

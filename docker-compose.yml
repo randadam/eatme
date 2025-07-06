@@ -6,8 +6,12 @@ services:
     depends_on:
       - ml-gateway
     environment:
+      - DB_DSN=file:/data/dev.db
       - ML_GATEWAY_URL=http://ml-gateway:8000
       - TURSO_URL=your-turso-url
+    volumes:
+      - ./api:/app
+      - ./api/.data:/data
     networks:
       - appnet
 
@@ -37,6 +41,17 @@ services:
       - ./otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
       - "4317:4317"
+    networks:
+      - appnet
+
+  sqlite-web:
+    image: coleifer/sqlite-web
+    entrypoint: sqlite_web
+    command: ["-H", "0.0.0.0", "/data/dev.db"]
+    volumes:
+      - ./api/.data:/data
+    ports:
+      - "8081:8080"
     networks:
       - appnet
 

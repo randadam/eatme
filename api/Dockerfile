@@ -3,6 +3,9 @@ FROM golang:1.24
 
 WORKDIR /app
 
+# Create DB directory
+RUN mkdir -p /data
+
 # Install air for live reloading
 RUN go install github.com/air-verse/air@latest
 

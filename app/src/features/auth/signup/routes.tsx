@@ -1,26 +1,43 @@
-import { Outlet, Navigate, useLocation } from "react-router-dom"
-import WizardNav from "./wizard-nav"
+import { Outlet, Navigate, useLocation, useNavigate } from "react-router-dom"
+import { useUser } from "./hooks"
+import { useEffect, useRef } from "react"
 
-export const STEPS = [
-  "/signup/account",
-  "/signup/profile",
-  "/signup/skill",
-  "/signup/cuisines",
-  "/signup/diet",
-  "/signup/equipment",
-  "/signup/allergies",
-] as const
+export const STEPS = {
+  account: "/signup/account",
+  profile: "/signup/profile",
+  skill: "/signup/skill",
+  cuisines: "/signup/cuisines",
+  diet: "/signup/diet",
+  equipment: "/signup/equipment",
+  allergies: "/signup/allergies",
+}
 
 export default function SignupLayout() {
   const { pathname } = useLocation()
+  const nav = useNavigate()
+  const { isAuthenticated, profile } = useUser()
 
-  // Redirect bare /signup → first step
+  const hasRedirected = useRef(false)
+
+  useEffect(() => {
+    if (!isAuthenticated || !profile || hasRedirected.current) {
+      return
+    }
+    if (profile.setup_step === "done") {
+      nav("/", { replace: true })
+    }
+    const target = STEPS[profile.setup_step as keyof typeof STEPS]
+    if (target && target !== pathname) {
+      hasRedirected.current = true
+      nav(target, { replace: true })
+    }
+  }, [isAuthenticated, profile, pathname, nav])
+
   if (pathname === "/signup") return <Navigate to="account" replace />
 
   return (
     <div className="min-h-screen flex flex-col p-4 space-y-2">
       <Outlet />
-      <WizardNav />
     </div>
   )
 }

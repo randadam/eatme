@@ -5,6 +5,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Checkbox } from "@/components/ui/checkbox";
 import { dietForm } from "./schemas/forms";
 import type { z } from "zod";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useSaveProfile, useUser } from "./hooks";
+import WizardButtons from "./wizard-buttons";
+import type { ModelsDiet } from "@/api/client";
 
 const diets = [
     { name: "Vegetarian", value: "vegetarian" },
@@ -16,15 +20,29 @@ const diets = [
 ]
 
 export default function DietStep() {
+    const nav = useNavigate()
+    const { isAuthenticated, profile } = useUser()
+    if (!isAuthenticated || !profile) {
+        return <Navigate to="/" replace />
+    }
+
+    const { mutate: saveProfile, isPending, error } = useSaveProfile()
+
     const form = useForm<z.infer<typeof dietForm>>({
         resolver: zodResolver(dietForm),
         defaultValues: {
-            diet: [],
+            diet: profile?.diet ?? [],
         },
     })
 
     function onSubmit(values: z.infer<typeof dietForm>) {
-        console.log(values)
+        const req = {
+            setup_step: "equipment" as const,
+            diet: values.diet.map((diet) => diet) as ModelsDiet[],
+        }
+        saveProfile(req, {
+            onSuccess: () => nav("/signup/equipment"),
+        })
     }
 
     return (
@@ -62,8 +80,10 @@ export default function DietStep() {
                             </FormItem>
                         )}
                     />
+                    <WizardButtons loading={isPending}/>
                 </form>
             </Form>
+            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     )
 }

@@ -5,6 +5,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Checkbox } from "@/components/ui/checkbox";
 import { cuisinesForm } from "./schemas/forms";
 import type { z } from "zod";
+import WizardButtons from "./wizard-buttons";
+import { useSaveProfile, useUser } from "./hooks";
+import { Navigate, useNavigate } from "react-router-dom";
+import type { ModelsCuisine } from "@/api/client";
 
 const cuisines = [
     { name: "American", value: "american" },
@@ -22,15 +26,29 @@ const cuisines = [
 ]
 
 export default function CuisinesStep() {
+    const nav = useNavigate()
+    const { isAuthenticated, profile } = useUser()
+    if (!isAuthenticated || !profile) {
+        return <Navigate to="/" replace />
+    }
+
+    const { mutate: saveProfile, isPending, error } = useSaveProfile()
+
     const form = useForm<z.infer<typeof cuisinesForm>>({
         resolver: zodResolver(cuisinesForm),
         defaultValues: {
-            cuisines: [],
+            cuisines: profile?.cuisines ?? [],
         },
     })
 
     function onSubmit(values: z.infer<typeof cuisinesForm>) {
-        console.log(values)
+        const req = {
+            setup_step: "diet" as const,
+            cuisines: values.cuisines.map((cuisine) => cuisine) as ModelsCuisine[],
+        }
+        saveProfile(req, {
+            onSuccess: () => nav("/signup/diet"),
+        })
     }
 
     return (
@@ -68,8 +86,10 @@ export default function CuisinesStep() {
                             </FormItem>
                         )}
                     />
+                    <WizardButtons loading={isPending}/>
                 </form>
             </Form>
+            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     )
 }

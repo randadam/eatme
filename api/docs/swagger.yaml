@@ -1,79 +1,166 @@
 basePath: /
 definitions:
   models.Allergy:
-    properties:
-      description:
-        type: string
-      name:
-        type: string
-      severity:
-        $ref: '#/definitions/models.AllergySeverity'
-    type: object
-  models.AllergySeverity:
     enum:
-    - mild
-    - moderate
-    - severe
-    - anaphylactic
+    - dairy
+    - eggs
+    - fish
+    - gluten
+    - peanuts
+    - soy
+    - tree_nuts
+    - wheat
     type: string
     x-enum-varnames:
-    - SeverityMild
-    - SeverityModerate
-    - SeveritySevere
-    - SeverityAnaphylactic
-  models.DietRestriction:
+    - AllergyDairy
+    - AllergyEggs
+    - AllergyFish
+    - AllergyGluten
+    - AllergyPeanuts
+    - AllergySoy
+    - AllergyTreeNuts
+    - AllergyWheat
+  models.BadRequestResponse:
+    description: Bad request error response
+    properties:
+      error:
+        description: Error message
+        example: Invalid input
+        type: string
+    required:
+    - error
+    type: object
+  models.Cuisine:
     enum:
-    - omnivore
+    - american
+    - british
+    - chinese
+    - french
+    - german
+    - indian
+    - italian
+    - japanese
+    - mexican
+    - spanish
+    - thai
+    - vietnamese
+    type: string
+    x-enum-varnames:
+    - CuisineAmerican
+    - CuisineBritish
+    - CuisineChinese
+    - CuisineFrench
+    - CuisineGerman
+    - CuisineIndian
+    - CuisineItalian
+    - CuisineJapanese
+    - CuisineMexican
+    - CuisineSpanish
+    - CuisineThai
+    - CuisineVietnamese
+  models.Diet:
+    enum:
     - vegetarian
     - vegan
-    - pescatarian
     - keto
     - paleo
-    - low_fodmap
-    - other
+    - low_carb
+    - high_protein
     type: string
     x-enum-varnames:
-    - DietOmnivore
     - DietVegetarian
     - DietVegan
-    - DietPescatarian
     - DietKeto
     - DietPaleo
-    - DietLowFODMAP
-    - DietOther
-  models.Goals:
+    - DietLowCarb
+    - DietHighProtein
+  models.Equipment:
+    enum:
+    - stove
+    - oven
+    - microwave
+    - toaster
+    - grill
+    - smoker
+    - slow_cooker
+    - pressure_cooker
+    - sous_vide
+    type: string
+    x-enum-varnames:
+    - EquipmentStove
+    - EquipmentOven
+    - EquipmentMicrowave
+    - EquipmentToaster
+    - EquipmentGrill
+    - EquipmentSmoker
+    - EquipmentSlowCooker
+    - EquipmentPressureCooker
+    - EquipmentSousVide
+  models.InternalServerErrorResponse:
+    description: Internal server error response
     properties:
-      limit_calories:
-        type: integer
-      macros_target:
-        $ref: '#/definitions/models.Macros'
-      notes:
+      error:
+        description: Error message
+        example: Internal server error
         type: string
+    required:
+    - error
     type: object
-  models.Macros:
-    properties:
-      carbs_grams:
-        type: integer
-      fat_grams:
-        type: integer
-      protein_grams:
-        type: integer
-    type: object
-  models.Preferences:
+  models.Profile:
+    description: User profile information
     properties:
       allergies:
+        description: User's allergies
         items:
           $ref: '#/definitions/models.Allergy'
         type: array
-      diet_restrictions:
+      cuisines:
+        description: User's cuisines
         items:
-          $ref: '#/definitions/models.DietRestriction'
+          $ref: '#/definitions/models.Cuisine'
         type: array
-      goals:
-        $ref: '#/definitions/models.Goals'
-      user_id:
+      diet:
+        description: User's diet restrictions
+        items:
+          $ref: '#/definitions/models.Diet'
+        type: array
+      equipment:
+        description: User's equipment
+        items:
+          $ref: '#/definitions/models.Equipment'
+        type: array
+      name:
+        description: User's name
         type: string
+      setup_step:
+        allOf:
+        - $ref: '#/definitions/models.SetupStep'
+        description: Setup Step
+      skill:
+        allOf:
+        - $ref: '#/definitions/models.Skill'
+        description: User's skill level
+    required:
+    - setup_step
     type: object
+  models.SetupStep:
+    enum:
+    - profile
+    - skill
+    - cuisines
+    - diet
+    - equipment
+    - allergies
+    - done
+    type: string
+    x-enum-varnames:
+    - SetupStepProfile
+    - SetupStepSkill
+    - SetupStepCuisines
+    - SetupStepDiet
+    - SetupStepEquipment
+    - SetupStepAllergies
+    - SetupStepDone
   models.SignupRequest:
     description: User signup request
     properties:
@@ -81,18 +168,45 @@ definitions:
         description: User's email address
         example: john.doe@example.com
         type: string
-      name:
-        description: User's full name
-        example: John Doe
+      password:
+        description: User's password
+        example: Password123!
         type: string
+    required:
+    - email
+    - password
     type: object
   models.SignupResponse:
     description: User signup response containing the new user's ID
     properties:
-      user_id:
-        description: Unique identifier for the created user
-        example: usr_123456789
+      token:
+        description: Access token for user
+        example: <JWT_TOKEN>
         type: string
+    required:
+    - token
+    type: object
+  models.Skill:
+    enum:
+    - beginner
+    - intermediate
+    - advanced
+    - chef
+    type: string
+    x-enum-varnames:
+    - SkillBeginner
+    - SkillIntermediate
+    - SkillAdvanced
+    - SkillChef
+  models.UnauthorizedResponse:
+    description: Unauthorized error response
+    properties:
+      error:
+        description: Error message
+        example: Unauthorized
+        type: string
+    required:
+    - error
     type: object
 host: localhost:8080
 info:
@@ -114,93 +228,68 @@ paths:
       summary: Generate a recipe
       tags:
       - recipes
-  /preferences:
+  /profile:
     get:
-      description: Retrieve preferences for a user
-      parameters:
-      - description: User ID
-        example: usr_123456789
-        in: header
-        name: X-User-ID
-        required: true
-        type: string
+      description: Gets the profile for a user
+      operationId: getProfile
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Preferences'
+            $ref: '#/definitions/models.Profile'
         "401":
-          description: Missing user ID
+          description: Unauthorized
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            $ref: '#/definitions/models.UnauthorizedResponse'
         "500":
           description: Internal server error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
-      summary: Get user preferences
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Get user profile
       tags:
       - users
     put:
       consumes:
       - application/json
-      description: Update or create preferences for a user
+      description: Save a user's profile
+      operationId: saveProfile
       parameters:
-      - description: User ID
-        example: usr_123456789
-        in: header
-        name: X-User-ID
-        required: true
-        type: string
-      - description: User preferences
+      - description: User profile
         in: body
-        name: preferences
+        name: profile
         required: true
         schema:
-          $ref: '#/definitions/models.Preferences'
+          $ref: '#/definitions/models.Profile'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Preferences'
+            $ref: '#/definitions/models.Profile'
         "400":
           description: Invalid input
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            $ref: '#/definitions/models.BadRequestResponse'
         "401":
-          description: Missing user ID
+          description: Unauthorized
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            $ref: '#/definitions/models.UnauthorizedResponse'
         "500":
           description: Internal server error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
-      summary: Set user preferences
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Save user profile
       tags:
       - users
   /signup:
     post:
       consumes:
       - application/json
-      description: Register a new user with name and email
+      description: Register a new user account
+      operationId: signup
       parameters:
       - description: User signup information
         in: body
@@ -218,17 +307,11 @@ paths:
         "400":
           description: Invalid input
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            $ref: '#/definitions/models.BadRequestResponse'
         "500":
           description: Internal server error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            $ref: '#/definitions/models.InternalServerErrorResponse'
       summary: Create a new user account
       tags:
       - users

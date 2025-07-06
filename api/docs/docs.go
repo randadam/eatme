@@ -35,59 +35,40 @@ const docTemplate = `{
                 }
             }
         },
-        "/preferences": {
+        "/profile": {
             "get": {
-                "description": "Retrieve preferences for a user",
+                "description": "Gets the profile for a user",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "users"
                 ],
-                "summary": "Get user preferences",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "example": "usr_123456789",
-                        "description": "User ID",
-                        "name": "X-User-ID",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
+                "summary": "Get user profile",
+                "operationId": "getProfile",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Preferences"
+                            "$ref": "#/definitions/models.Profile"
                         }
                     },
                     "401": {
-                        "description": "Missing user ID",
+                        "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "error": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/models.UnauthorizedResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "error": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
                         }
                     }
                 }
             },
             "put": {
-                "description": "Update or create preferences for a user",
+                "description": "Save a user's profile",
                 "consumes": [
                     "application/json"
                 ],
@@ -97,23 +78,16 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Set user preferences",
+                "summary": "Save user profile",
+                "operationId": "saveProfile",
                 "parameters": [
                     {
-                        "type": "string",
-                        "example": "usr_123456789",
-                        "description": "User ID",
-                        "name": "X-User-ID",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "User preferences",
-                        "name": "preferences",
+                        "description": "User profile",
+                        "name": "profile",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Preferences"
+                            "$ref": "#/definitions/models.Profile"
                         }
                     }
                 ],
@@ -121,40 +95,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Preferences"
+                            "$ref": "#/definitions/models.Profile"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "error": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/models.BadRequestResponse"
                         }
                     },
                     "401": {
-                        "description": "Missing user ID",
+                        "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "error": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/models.UnauthorizedResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "error": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
                         }
                     }
                 }
@@ -162,7 +121,7 @@ const docTemplate = `{
         },
         "/signup": {
             "post": {
-                "description": "Register a new user with name and email",
+                "description": "Register a new user account",
                 "consumes": [
                     "application/json"
                 ],
@@ -173,6 +132,7 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Create a new user account",
+                "operationId": "signup",
                 "parameters": [
                     {
                         "description": "User signup information",
@@ -194,23 +154,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "error": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/models.BadRequestResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "error": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
                         }
                     }
                 }
@@ -219,132 +169,269 @@ const docTemplate = `{
     },
     "definitions": {
         "models.Allergy": {
+            "type": "string",
+            "enum": [
+                "dairy",
+                "eggs",
+                "fish",
+                "gluten",
+                "peanuts",
+                "soy",
+                "tree_nuts",
+                "wheat"
+            ],
+            "x-enum-varnames": [
+                "AllergyDairy",
+                "AllergyEggs",
+                "AllergyFish",
+                "AllergyGluten",
+                "AllergyPeanuts",
+                "AllergySoy",
+                "AllergyTreeNuts",
+                "AllergyWheat"
+            ]
+        },
+        "models.BadRequestResponse": {
+            "description": "Bad request error response",
             "type": "object",
+            "required": [
+                "error"
+            ],
             "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "severity": {
-                    "$ref": "#/definitions/models.AllergySeverity"
+                "error": {
+                    "description": "Error message",
+                    "type": "string",
+                    "example": "Invalid input"
                 }
             }
         },
-        "models.AllergySeverity": {
+        "models.Cuisine": {
             "type": "string",
             "enum": [
-                "mild",
-                "moderate",
-                "severe",
-                "anaphylactic"
+                "american",
+                "british",
+                "chinese",
+                "french",
+                "german",
+                "indian",
+                "italian",
+                "japanese",
+                "mexican",
+                "spanish",
+                "thai",
+                "vietnamese"
             ],
             "x-enum-varnames": [
-                "SeverityMild",
-                "SeverityModerate",
-                "SeveritySevere",
-                "SeverityAnaphylactic"
+                "CuisineAmerican",
+                "CuisineBritish",
+                "CuisineChinese",
+                "CuisineFrench",
+                "CuisineGerman",
+                "CuisineIndian",
+                "CuisineItalian",
+                "CuisineJapanese",
+                "CuisineMexican",
+                "CuisineSpanish",
+                "CuisineThai",
+                "CuisineVietnamese"
             ]
         },
-        "models.DietRestriction": {
+        "models.Diet": {
             "type": "string",
             "enum": [
-                "omnivore",
                 "vegetarian",
                 "vegan",
-                "pescatarian",
                 "keto",
                 "paleo",
-                "low_fodmap",
-                "other"
+                "low_carb",
+                "high_protein"
             ],
             "x-enum-varnames": [
-                "DietOmnivore",
                 "DietVegetarian",
                 "DietVegan",
-                "DietPescatarian",
                 "DietKeto",
                 "DietPaleo",
-                "DietLowFODMAP",
-                "DietOther"
+                "DietLowCarb",
+                "DietHighProtein"
             ]
         },
-        "models.Goals": {
+        "models.Equipment": {
+            "type": "string",
+            "enum": [
+                "stove",
+                "oven",
+                "microwave",
+                "toaster",
+                "grill",
+                "smoker",
+                "slow_cooker",
+                "pressure_cooker",
+                "sous_vide"
+            ],
+            "x-enum-varnames": [
+                "EquipmentStove",
+                "EquipmentOven",
+                "EquipmentMicrowave",
+                "EquipmentToaster",
+                "EquipmentGrill",
+                "EquipmentSmoker",
+                "EquipmentSlowCooker",
+                "EquipmentPressureCooker",
+                "EquipmentSousVide"
+            ]
+        },
+        "models.InternalServerErrorResponse": {
+            "description": "Internal server error response",
             "type": "object",
+            "required": [
+                "error"
+            ],
             "properties": {
-                "limit_calories": {
-                    "type": "integer"
-                },
-                "macros_target": {
-                    "$ref": "#/definitions/models.Macros"
-                },
-                "notes": {
-                    "type": "string"
+                "error": {
+                    "description": "Error message",
+                    "type": "string",
+                    "example": "Internal server error"
                 }
             }
         },
-        "models.Macros": {
+        "models.Profile": {
+            "description": "User profile information",
             "type": "object",
-            "properties": {
-                "carbs_grams": {
-                    "type": "integer"
-                },
-                "fat_grams": {
-                    "type": "integer"
-                },
-                "protein_grams": {
-                    "type": "integer"
-                }
-            }
-        },
-        "models.Preferences": {
-            "type": "object",
+            "required": [
+                "setup_step"
+            ],
             "properties": {
                 "allergies": {
+                    "description": "User's allergies",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Allergy"
                     }
                 },
-                "diet_restrictions": {
+                "cuisines": {
+                    "description": "User's cuisines",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.DietRestriction"
+                        "$ref": "#/definitions/models.Cuisine"
                     }
                 },
-                "goals": {
-                    "$ref": "#/definitions/models.Goals"
+                "diet": {
+                    "description": "User's diet restrictions",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Diet"
+                    }
                 },
-                "user_id": {
+                "equipment": {
+                    "description": "User's equipment",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Equipment"
+                    }
+                },
+                "name": {
+                    "description": "User's name",
                     "type": "string"
+                },
+                "setup_step": {
+                    "description": "Setup Step",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.SetupStep"
+                        }
+                    ]
+                },
+                "skill": {
+                    "description": "User's skill level",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Skill"
+                        }
+                    ]
                 }
             }
+        },
+        "models.SetupStep": {
+            "type": "string",
+            "enum": [
+                "profile",
+                "skill",
+                "cuisines",
+                "diet",
+                "equipment",
+                "allergies",
+                "done"
+            ],
+            "x-enum-varnames": [
+                "SetupStepProfile",
+                "SetupStepSkill",
+                "SetupStepCuisines",
+                "SetupStepDiet",
+                "SetupStepEquipment",
+                "SetupStepAllergies",
+                "SetupStepDone"
+            ]
         },
         "models.SignupRequest": {
             "description": "User signup request",
             "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
             "properties": {
                 "email": {
                     "description": "User's email address",
                     "type": "string",
                     "example": "john.doe@example.com"
                 },
-                "name": {
-                    "description": "User's full name",
+                "password": {
+                    "description": "User's password",
                     "type": "string",
-                    "example": "John Doe"
+                    "example": "Password123!"
                 }
             }
         },
         "models.SignupResponse": {
             "description": "User signup response containing the new user's ID",
             "type": "object",
+            "required": [
+                "token"
+            ],
             "properties": {
-                "user_id": {
-                    "description": "Unique identifier for the created user",
+                "token": {
+                    "description": "Access token for user",
                     "type": "string",
-                    "example": "usr_123456789"
+                    "example": "\u003cJWT_TOKEN\u003e"
+                }
+            }
+        },
+        "models.Skill": {
+            "type": "string",
+            "enum": [
+                "beginner",
+                "intermediate",
+                "advanced",
+                "chef"
+            ],
+            "x-enum-varnames": [
+                "SkillBeginner",
+                "SkillIntermediate",
+                "SkillAdvanced",
+                "SkillChef"
+            ]
+        },
+        "models.UnauthorizedResponse": {
+            "description": "Unauthorized error response",
+            "type": "object",
+            "required": [
+                "error"
+            ],
+            "properties": {
+                "error": {
+                    "description": "Error message",
+                    "type": "string",
+                    "example": "Unauthorized"
                 }
             }
         }

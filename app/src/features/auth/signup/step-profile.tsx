@@ -7,17 +7,30 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { profileForm } from "./schemas/forms";
 import type { z } from "zod";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useSaveProfile, useUser } from "./hooks";
+import WizardButtons from "./wizard-buttons";
 
 export default function ProfileStep() {
+    const nav = useNavigate()
+    const user = useUser()
+    if (!user.isAuthenticated) {
+        return <Navigate to="/" replace />
+    }
+
     const form = useForm<z.infer<typeof profileForm>>({
         resolver: zodResolver(profileForm),
         defaultValues: {
-            name: "",
+            name: user.profile?.name ?? "",
         },
     })
 
+    const { mutate: saveProfile, isPending, error } = useSaveProfile()
+
     function onSubmit(values: z.infer<typeof profileForm>) {
-        console.log(values)
+        saveProfile({ ...values, setup_step: "skill" }, {
+            onSuccess: () => nav("/signup/skill"),
+        })
     }
 
     return (
@@ -42,8 +55,10 @@ export default function ProfileStep() {
                             </FormItem>
                         )}
                     />
+                    <WizardButtons loading={isPending}/>
                 </form>
             </Form>
+            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     )
 }

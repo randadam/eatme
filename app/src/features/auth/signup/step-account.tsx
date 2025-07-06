@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import StepInstructions from "./step-instructions";
 import { accountForm } from "./schemas/forms";
 import type { z } from "zod";
+import { useSignup } from "./hooks";
+import { useNavigate } from "react-router-dom";
+import WizardButtons from "./wizard-buttons";
 
 export default function AccountStep() {
     const form = useForm<z.infer<typeof accountForm>>({
@@ -18,8 +21,13 @@ export default function AccountStep() {
         },
     });
 
+    const nav = useNavigate()
+    const { mutate: signup, isPending, error } = useSignup()
+
     function onSubmit(values: z.infer<typeof accountForm>) {
-        console.log(values);
+        signup(values, {
+            onSuccess: () => nav("/signup/profile"),
+        })
     }
 
     return (
@@ -66,8 +74,10 @@ export default function AccountStep() {
                             </FormItem>
                         )}
                     />
+                    <WizardButtons loading={isPending}/>
                 </form>
             </Form>
+            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     );
 }

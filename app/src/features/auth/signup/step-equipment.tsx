@@ -5,6 +5,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { equipmentForm } from "./schemas/forms";
 import type { z } from "zod";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useSaveProfile, useUser } from "./hooks";
+import type { ModelsEquipment } from "@/api/client";
+import WizardButtons from "./wizard-buttons";
 
 const equipmentList = [
     { name: "Stove", value: "stove" },
@@ -19,15 +23,29 @@ const equipmentList = [
 ]
 
 export default function EquipmentStep() {
+    const nav = useNavigate()
+    const { isAuthenticated, profile } = useUser()
+    if (!isAuthenticated || !profile) {
+        return <Navigate to="/" replace />
+    }
+
+    const { mutate: saveProfile, isPending, error } = useSaveProfile()
+
     const form = useForm<z.infer<typeof equipmentForm>>({
         resolver: zodResolver(equipmentForm),
         defaultValues: {
-            equipment: [],
+            equipment: profile?.equipment ?? [],
         },
     })
 
     function onSubmit(values: z.infer<typeof equipmentForm>) {
-        console.log(values)
+        const req = {
+            setup_step: "done" as const,
+            equipment: values.equipment.map((equipment) => equipment) as ModelsEquipment[],
+        }
+        saveProfile(req, {
+            onSuccess: () => nav("/signup/done"),
+        })
     }
 
     return (
@@ -50,7 +68,7 @@ export default function EquipmentStep() {
                                                         checked
                                                             ? [...field.value, equipment.value]
                                                             : field.value.filter((value) => value !== equipment.value)
-                                                    )   
+                                                        )
                                                 )}
                                             />
                                         </FormControl>
@@ -61,8 +79,10 @@ export default function EquipmentStep() {
                             </FormItem>
                         )}
                     />
+                    <WizardButtons loading={isPending}/>
                 </form>
             </Form>
+            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     )
 }
