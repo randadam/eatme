@@ -215,19 +215,6 @@ info:
   title: EatMe API
   version: "1.0"
 paths:
-  /generate:
-    get:
-      description: Generate a new recipe (not yet implemented)
-      produces:
-      - text/plain
-      responses:
-        "200":
-          description: Recipe generation message
-          schema:
-            type: string
-      summary: Generate a recipe
-      tags:
-      - recipes
   /profile:
     get:
       description: Gets the profile for a user

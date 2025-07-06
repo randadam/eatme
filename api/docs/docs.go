@@ -15,26 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/generate": {
-            "get": {
-                "description": "Generate a new recipe (not yet implemented)",
-                "produces": [
-                    "text/plain"
-                ],
-                "tags": [
-                    "recipes"
-                ],
-                "summary": "Generate a recipe",
-                "responses": {
-                    "200": {
-                        "description": "Recipe generation message",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/profile": {
             "get": {
                 "description": "Gets the profile for a user",

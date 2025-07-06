@@ -6,8 +6,10 @@ import (
 	"os"
 
 	_ "github.com/ajohnston1219/eatme/api/docs"
+	"github.com/ajohnston1219/eatme/api/internal/clients"
 	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/handlers"
+	"github.com/ajohnston1219/eatme/api/internal/services/recipe"
 	"github.com/ajohnston1219/eatme/api/internal/services/user"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/cors"
@@ -43,17 +45,33 @@ func main() {
 	))
 
 	// User
-	service := user.NewUserService(store)
-	handler := handlers.NewUserHandler(service)
-	r.Post("/signup", handler.Signup)
+	userService := user.NewUserService(store)
+	userHandler := handlers.NewUserHandler(userService)
+	r.Post("/signup", userHandler.Signup)
 	r.Route("/profile", func(r chi.Router) {
 		r.Use(handlers.AuthMiddleware(store))
-		r.Put("/", handler.SaveProfile)
-		r.Get("/", handler.GetProfile)
+		r.Put("/", userHandler.SaveProfile)
+		r.Get("/", userHandler.GetProfile)
 	})
 
-	// LLM
-	r.Post("/generate", handlers.GenerateRecipeHandler)
+	// Recipe
+	recipeService := recipe.NewRecipeService(store)
+	recipeHandler := handlers.NewRecipeHandler(recipeService)
+	r.Route("/recipe", func(r chi.Router) {
+		r.Use(handlers.AuthMiddleware(store))
+		r.Get("/meal_plan/{meal_plan_id}", recipeHandler.GetMealPlan)
+	})
+
+	// Chat
+	mlHost, ok := os.LookupEnv("ML_HOST")
+	if !ok {
+		mlHost = "http://ml-gateway:8000"
+	}
+	chatHandler := handlers.NewChatHandler(clients.NewMLClient(mlHost), userService, recipeService)
+	r.Route("/chat", func(r chi.Router) {
+		r.Use(handlers.AuthMiddleware(store))
+		r.Post("/", chatHandler.Handle)
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {

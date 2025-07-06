@@ -20,8 +20,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - LLM_PROVIDER=ollama
-      - OLLAMA_URL=http://host.docker.internal:11434
+      - ANTHROPIC_API_KEY
+    volumes:
+      - ./ml-gateway/app:/app
     networks:
       - appnet
 
