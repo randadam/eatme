@@ -1,5 +1,5 @@
 import { Outlet, Navigate, useLocation, useNavigate } from "react-router-dom"
-import { useUser } from "./hooks"
+import { useUser } from "../hooks"
 import { useEffect, useRef } from "react"
 
 export const STEPS = {
@@ -24,6 +24,7 @@ export default function SignupLayout() {
       return
     }
     if (profile.setup_step === "done") {
+      hasRedirected.current = true
       nav("/", { replace: true })
     }
     const target = STEPS[profile.setup_step as keyof typeof STEPS]
@@ -36,7 +37,7 @@ export default function SignupLayout() {
   if (pathname === "/signup") return <Navigate to="account" replace />
 
   return (
-    <div className="min-h-screen flex flex-col p-4 space-y-2">
+    <div className="min-h-screen flex flex-col items-center p-4 space-y-2">
       <Outlet />
     </div>
   )

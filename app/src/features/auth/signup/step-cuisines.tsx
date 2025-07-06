@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cuisinesForm } from "./schemas/forms";
 import type { z } from "zod";
 import WizardButtons from "./wizard-buttons";
-import { useSaveProfile, useUser } from "./hooks";
+import { useSaveProfile, useUser } from "../hooks";
 import { Navigate, useNavigate } from "react-router-dom";
 import type { ModelsCuisine } from "@/api/client";
 

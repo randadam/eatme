@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { skillForm } from "./schemas/forms";
 import type { z } from "zod";
 import WizardButtons from "./wizard-buttons";
-import { useSaveProfile, useUser } from "./hooks";
+import { useSaveProfile, useUser } from "../hooks";
 import { Navigate, useNavigate } from "react-router-dom";
 
 const skills: SkillLevelProps[] = [

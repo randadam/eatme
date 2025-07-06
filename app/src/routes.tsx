@@ -10,12 +10,17 @@ import AllergiesStep from "./features/auth/signup/step-allergies"
 import SkillStep from "./features/auth/signup/step-skill"
 import DietStep from "./features/auth/signup/step-diet"
 
-const Signup = lazy(() => import("@/features/auth/signup/routes"))
+const Home = lazy(() => import("@/features/home/layout"))
+const Signup = lazy(() => import("@/features/auth/signup/layout"))
 
 export const router = createBrowserRouter([
     {
         element: <RootLayout/>,
         children: [
+            {
+                path: "/",
+                element: <Home/>,
+            },
             {
                 path: "/signup",
                 element: <Signup/>,
@@ -27,7 +32,7 @@ export const router = createBrowserRouter([
                     { path: "diet", element: <DietStep/> },
                     { path: "equipment", element: <EquipmentStep/> },
                     { path: "allergies", element: <AllergiesStep/> },
-                    { path: "success", element: <SignupSuccess/> },
+                    { path: "done", element: <SignupSuccess/> },
                 ],
             }
         ]

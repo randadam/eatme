@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import StepInstructions from "./step-instructions";
 import { accountForm } from "./schemas/forms";
 import type { z } from "zod";
-import { useSignup } from "./hooks";
+import { useSignup } from "../hooks";
 import { useNavigate } from "react-router-dom";
 import WizardButtons from "./wizard-buttons";
 

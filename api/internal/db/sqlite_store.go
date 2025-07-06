@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 
@@ -24,13 +25,13 @@ func NewSQLiteStore(dsn string) (*SQLiteStore, error) {
 	}
 	db, err := sql.Open(driver, dsn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 	if _, err := db.Exec(`PRAGMA foreign_keys = ON;`); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
 	}
 	if err := migrate(db); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
 	return &SQLiteStore{db}, nil
 }
@@ -46,18 +47,30 @@ func (s *SQLiteStore) CreateUser(email, password string) (models.User, error) {
 		if isUniqueViolation(err, "users.email") {
 			return models.User{}, ErrEmailExists
 		}
-		return models.User{}, err
+		return models.User{}, fmt.Errorf("failed to create user: %w", err)
 	}
 	return models.User{ID: id, Email: email}, nil
 }
 
 func (s *SQLiteStore) SaveProfile(userID string, p models.Profile) error {
-	cuisines, _ := json.Marshal(p.Cuisines)
-	diet, _ := json.Marshal(p.Diet)
-	equipment, _ := json.Marshal(p.Equipment)
-	allergies, _ := json.Marshal(p.Allergies)
+	cuisines, err := json.Marshal(p.Cuisines)
+	if err != nil {
+		return fmt.Errorf("failed to marshal cuisines: %w", err)
+	}
+	diet, err := json.Marshal(p.Diet)
+	if err != nil {
+		return fmt.Errorf("failed to marshal diet: %w", err)
+	}
+	equipment, err := json.Marshal(p.Equipment)
+	if err != nil {
+		return fmt.Errorf("failed to marshal equipment: %w", err)
+	}
+	allergies, err := json.Marshal(p.Allergies)
+	if err != nil {
+		return fmt.Errorf("failed to marshal allergies: %w", err)
+	}
 
-	_, err := s.Exec(`
+	_, err = s.Exec(`
 		INSERT INTO profiles (
 		  user_id, setup_step, name, skill,
 		  cuisines, diet, equipment, allergies
@@ -71,7 +84,10 @@ func (s *SQLiteStore) SaveProfile(userID string, p models.Profile) error {
 		  equipment  = excluded.equipment,
 		  allergies  = excluded.allergies;
 	`, userID, p.SetupStep, p.Name, p.Skill, cuisines, diet, equipment, allergies)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to save profile: %w", err)
+	}
+	return nil
 }
 
 func (s *SQLiteStore) GetProfile(userID string) (models.Profile, error) {
@@ -89,13 +105,21 @@ func (s *SQLiteStore) GetProfile(userID string) (models.Profile, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return p, ErrNotFound
 		}
-		return p, err
+		return p, fmt.Errorf("failed to get profile: %w", err)
 	}
 
-	_ = json.Unmarshal(cuisines, &p.Cuisines)
-	_ = json.Unmarshal(diet, &p.Diet)
-	_ = json.Unmarshal(equipment, &p.Equipment)
-	_ = json.Unmarshal(allergies, &p.Allergies)
+	if err := json.Unmarshal(cuisines, &p.Cuisines); err != nil {
+		return p, fmt.Errorf("failed to unmarshal cuisines: %w", err)
+	}
+	if err := json.Unmarshal(diet, &p.Diet); err != nil {
+		return p, fmt.Errorf("failed to unmarshal diet: %w", err)
+	}
+	if err := json.Unmarshal(equipment, &p.Equipment); err != nil {
+		return p, fmt.Errorf("failed to unmarshal equipment: %w", err)
+	}
+	if err := json.Unmarshal(allergies, &p.Allergies); err != nil {
+		return p, fmt.Errorf("failed to unmarshal allergies: %w", err)
+	}
 	return p, nil
 }
 
@@ -120,10 +144,10 @@ func migrate(db *sql.DB) error {
 	);`
 
 	if _, err := db.Exec(users); err != nil {
-		return err
+		return fmt.Errorf("failed to create users table: %w", err)
 	}
 	if _, err := db.Exec(profiles); err != nil {
-		return err
+		return fmt.Errorf("failed to create profiles table: %w", err)
 	}
 	return nil
 }

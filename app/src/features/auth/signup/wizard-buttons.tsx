@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { STEPS } from "./routes"
+import { STEPS } from "./layout"
 import { Loader2 } from "lucide-react"
 
 interface Props {
