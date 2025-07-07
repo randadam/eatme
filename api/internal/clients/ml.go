@@ -22,11 +22,16 @@ func NewMLClient(host string) *MLClient {
 	}
 }
 
-func (c *MLClient) Chat(ctx context.Context, req *models.ChatRequest) (*models.ChatResponse, error) {
-	body, _ := json.Marshal(req)
+func (c *MLClient) Chat(ctx context.Context, req *models.InternalChatRequest) (*models.ChatResponse, error) {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("marshal req: %w", err)
+	}
 
-	httpReq, _ := http.NewRequestWithContext(ctx,
-		http.MethodPost, c.host+"/chat", bytes.NewReader(body))
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.host+"/chat", bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("new req: %w", err)
+	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(httpReq)

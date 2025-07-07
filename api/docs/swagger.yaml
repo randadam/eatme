@@ -30,6 +30,32 @@ definitions:
     required:
     - error
     type: object
+  models.ChatRequest:
+    description: A chat request
+    properties:
+      meal_plan_id:
+        type: string
+      message:
+        type: string
+    required:
+    - meal_plan_id
+    - message
+    type: object
+  models.ChatResponse:
+    description: A chat response
+    properties:
+      intent:
+        type: string
+      needs_clarification:
+        type: boolean
+      new_meal_plan:
+        $ref: '#/definitions/models.MealPlan'
+      response_text:
+        type: string
+    required:
+    - intent
+    - response_text
+    type: object
   models.Cuisine:
     enum:
     - american
@@ -96,6 +122,23 @@ definitions:
     - EquipmentSlowCooker
     - EquipmentPressureCooker
     - EquipmentSousVide
+  models.Ingredient:
+    properties:
+      name:
+        example: Flour
+        type: string
+      quantity:
+        example: 1
+        type: number
+      unit:
+        allOf:
+        - $ref: '#/definitions/models.MeasurementUnit'
+        example: cup
+    required:
+    - name
+    - quantity
+    - unit
+    type: object
   models.InternalServerErrorResponse:
     description: Internal server error response
     properties:
@@ -106,6 +149,38 @@ definitions:
     required:
     - error
     type: object
+  models.MealPlan:
+    description: A meal plan
+    properties:
+      id:
+        example: 12345678-1234-1234-1234-123456789012
+        type: string
+      recipes:
+        items:
+          $ref: '#/definitions/models.Recipe'
+        type: array
+    required:
+    - id
+    - recipes
+    type: object
+  models.MeasurementUnit:
+    enum:
+    - g
+    - ml
+    - tsp
+    - tbsp
+    - cup
+    - oz
+    - lb
+    type: string
+    x-enum-varnames:
+    - MeasurementUnitGram
+    - MeasurementUnitMilliliter
+    - MeasurementUnitTeaspoon
+    - MeasurementUnitTablespoon
+    - MeasurementUnitCup
+    - MeasurementUnitOunce
+    - MeasurementUnitPound
   models.Profile:
     description: User profile information
     properties:
@@ -141,7 +216,85 @@ definitions:
         - $ref: '#/definitions/models.Skill'
         description: User's skill level
     required:
+    - allergies
+    - cuisines
+    - diet
+    - equipment
+    - name
     - setup_step
+    - skill
+    type: object
+  models.ProfileUpdateRequest:
+    description: User profile update request
+    properties:
+      allergies:
+        description: User's allergies
+        items:
+          $ref: '#/definitions/models.Allergy'
+        type: array
+      cuisines:
+        description: User's cuisines
+        items:
+          $ref: '#/definitions/models.Cuisine'
+        type: array
+      diet:
+        description: User's diet restrictions
+        items:
+          $ref: '#/definitions/models.Diet'
+        type: array
+      equipment:
+        description: User's equipment
+        items:
+          $ref: '#/definitions/models.Equipment'
+        type: array
+      name:
+        description: User's name
+        type: string
+      setup_step:
+        allOf:
+        - $ref: '#/definitions/models.SetupStep'
+        description: Setup Step
+      skill:
+        allOf:
+        - $ref: '#/definitions/models.Skill'
+        description: User's skill level
+    required:
+    - setup_step
+    type: object
+  models.Recipe:
+    description: A recipe
+    properties:
+      description:
+        example: A classic Italian dish
+        type: string
+      id:
+        example: 12345678-1234-1234-1234-123456789012
+        type: string
+      ingredients:
+        items:
+          $ref: '#/definitions/models.Ingredient'
+        type: array
+      servings:
+        example: 4
+        type: integer
+      steps:
+        items:
+          type: string
+        type: array
+      title:
+        example: Veal Bolognese
+        type: string
+      total_time_minutes:
+        example: 120
+        type: integer
+    required:
+    - description
+    - id
+    - ingredients
+    - servings
+    - steps
+    - title
+    - total_time_minutes
     type: object
   models.SetupStep:
     enum:
@@ -215,6 +368,37 @@ info:
   title: EatMe API
   version: "1.0"
 paths:
+  /chat:
+    post:
+      consumes:
+      - application/json
+      description: Handle chat request
+      operationId: chat
+      parameters:
+      - description: Chat request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Handle chat request
+      tags:
+      - Chat
   /profile:
     get:
       description: Gets the profile for a user
@@ -248,7 +432,7 @@ paths:
         name: profile
         required: true
         schema:
-          $ref: '#/definitions/models.Profile'
+          $ref: '#/definitions/models.ProfileUpdateRequest'
       produces:
       - application/json
       responses:

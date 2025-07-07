@@ -107,6 +107,25 @@ type Profile struct {
 	// Setup Step
 	SetupStep SetupStep `json:"setup_step" binding:"required"`
 	// User's name
+	Name string `json:"name" binding:"required"`
+	// User's skill level
+	Skill Skill `json:"skill" binding:"required"`
+	// User's cuisines
+	Cuisines []Cuisine `json:"cuisines" binding:"required"`
+	// User's diet restrictions
+	Diet []Diet `json:"diet" binding:"required"`
+	// User's equipment
+	Equipment []Equipment `json:"equipment" binding:"required"`
+	// User's allergies
+	Allergies []Allergy `json:"allergies" binding:"required"`
+}
+
+// Profile update request
+// @Description User profile update request
+type ProfileUpdateRequest struct {
+	// Setup Step
+	SetupStep SetupStep `json:"setup_step" binding:"required"`
+	// User's name
 	Name string `json:"name,omitempty"`
 	// User's skill level
 	Skill Skill `json:"skill,omitempty"`

@@ -9,6 +9,8 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/db"
 )
 
+type userIDKey struct{}
+
 func AuthMiddleware(store db.Store) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +20,7 @@ func AuthMiddleware(store db.Store) func(next http.Handler) http.Handler {
 				return
 			}
 			userID := strings.TrimPrefix(token, "Bearer ")
-			ctx := context.WithValue(r.Context(), "userID", userID)
+			ctx := context.WithValue(r.Context(), userIDKey{}, userID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

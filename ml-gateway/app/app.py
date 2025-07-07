@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from models import ChatRequest, ChatResponse
-from engines import classify_intent, recipe, groceries, qa
+from engines import classify_intent, recipe, qa
 
 app = FastAPI()
 
@@ -23,11 +23,9 @@ async def chat(req: ChatRequest):
                             new_meal_plan=updated)
 
     if intent == "grocery_list":
-        glist = groceries.build(req.meal_plan, req.profile)
         text  = "Here’s your merged grocery list 🛒"
         return ChatResponse(intent=intent,
-                            response_text=text,
-                            grocery_list=glist)
+                            response_text=text)
 
     if intent == "general_question":
         answer = await qa.answer(req.message)

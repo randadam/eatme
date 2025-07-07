@@ -50,31 +50,32 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param profile body models.Profile true "User profile"
+// @Param profile body models.ProfileUpdateRequest true "User profile"
 // @Success 200 {object} models.Profile
 // @Failure 400 {object} models.BadRequestResponse "Invalid input"
 // @Failure 401 {object} models.UnauthorizedResponse "Unauthorized"
 // @Failure 500 {object} models.InternalServerErrorResponse "Internal server error"
 // @Router /profile [put]
 func (h *UserHandler) SaveProfile(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID").(string)
+	userID := getUserID(r)
 	if userID == "" {
 		errorJSON(w, errors.New("missing user ID"), http.StatusUnauthorized)
 		return
 	}
 
-	var profile models.Profile
+	var profile models.ProfileUpdateRequest
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
 		errorJSON(w, err, http.StatusBadRequest)
 		return
 	}
 
-	if err := h.service.SaveProfile(userID, profile); err != nil {
+	result, err := h.service.SaveProfile(userID, profile)
+	if err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, profile)
+	writeJSON(w, http.StatusOK, result)
 }
 
 // @Summary Get user profile
@@ -87,7 +88,7 @@ func (h *UserHandler) SaveProfile(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} models.InternalServerErrorResponse "Internal server error"
 // @Router /profile [get]
 func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID").(string)
+	userID := getUserID(r)
 	if userID == "" {
 		errorJSON(w, errors.New("missing user ID"), http.StatusUnauthorized)
 		return

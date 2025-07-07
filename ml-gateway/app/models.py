@@ -9,7 +9,7 @@ class Recipe(BaseModel):
     id: str
     title: str
     description: str
-    total_time_minutes: float
+    total_time_minutes: int
     servings: int
     ingredients: list[Ingredient]
     steps: list[str]
@@ -30,5 +30,4 @@ class ChatResponse(BaseModel):
     intent: str
     response_text: str
     new_meal_plan: MealPlan | None = None
-    grocery_list: list[dict] | None = None
     needs_clarification: bool = False

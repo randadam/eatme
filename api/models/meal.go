@@ -34,5 +34,6 @@ type Recipe struct {
 // MealPlan represents a meal plan
 // @Description A meal plan
 type MealPlan struct {
+	ID      string   `json:"id" example:"12345678-1234-1234-1234-123456789012" binding:"required"`
 	Recipes []Recipe `json:"recipes" binding:"required"`
 }

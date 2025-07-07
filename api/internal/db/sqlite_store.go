@@ -82,7 +82,7 @@ func (s *SQLiteStore) SaveProfile(userID string, p models.Profile) error {
 		  cuisines   = excluded.cuisines,
 		  diet       = excluded.diet,
 		  equipment  = excluded.equipment,
-		  allergies  = excluded.allergies;
+		  allergies  = excluded.allergies
 	`, userID, p.SetupStep, p.Name, p.Skill, cuisines, diet, equipment, allergies)
 	if err != nil {
 		return fmt.Errorf("failed to save profile: %w", err)
@@ -95,7 +95,11 @@ func (s *SQLiteStore) GetProfile(userID string) (models.Profile, error) {
 	var cuisines, diet, equipment, allergies []byte
 
 	err := s.QueryRow(`
-		SELECT setup_step, name, skill, cuisines, diet, equipment, allergies
+		SELECT setup_step, name, skill,
+			COALESCE(cuisines, '[]'),
+			COALESCE(diet, '[]'),
+			COALESCE(equipment, '[]'),
+			COALESCE(allergies, '[]')
 		FROM profiles WHERE user_id = ?;
 	`, userID).Scan(
 		&p.SetupStep, &p.Name, &p.Skill,
@@ -120,7 +124,44 @@ func (s *SQLiteStore) GetProfile(userID string) (models.Profile, error) {
 	if err := json.Unmarshal(allergies, &p.Allergies); err != nil {
 		return p, fmt.Errorf("failed to unmarshal allergies: %w", err)
 	}
+
 	return p, nil
+}
+
+func (s *SQLiteStore) SaveMealPlan(userID string, mealPlan models.MealPlan) error {
+	recipes, err := json.Marshal(mealPlan.Recipes)
+	if err != nil {
+		return fmt.Errorf("failed to marshal recipes: %w", err)
+	}
+
+	_, err = s.Exec(`
+		INSERT INTO meal_plans (id, user_id, recipes) VALUES (?, ?, ?)
+		ON CONFLICT(id) DO UPDATE SET recipes = excluded.recipes;
+	`, mealPlan.ID, userID, recipes)
+	if err != nil {
+		return fmt.Errorf("failed to save meal plan: %w", err)
+	}
+	return nil
+}
+
+func (s *SQLiteStore) GetMealPlan(userID string, mealPlanID string) (models.MealPlan, error) {
+	var mealPlan models.MealPlan
+	var recipes []byte
+
+	err := s.QueryRow(`
+		SELECT recipes FROM meal_plans WHERE id = ? AND user_id = ?;
+	`, mealPlanID, userID).Scan(&recipes)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return mealPlan, ErrNotFound
+		}
+		return mealPlan, fmt.Errorf("failed to get meal plan: %w", err)
+	}
+
+	if err := json.Unmarshal(recipes, &mealPlan.Recipes); err != nil {
+		return mealPlan, fmt.Errorf("failed to unmarshal recipes: %w", err)
+	}
+	return mealPlan, nil
 }
 
 func migrate(db *sql.DB) error {
@@ -143,11 +184,21 @@ func migrate(db *sql.DB) error {
 		allergies  JSON NOT NULL DEFAULT '[]'
 	);`
 
+	const meal_plans = `
+	CREATE TABLE IF NOT EXISTS meal_plans (
+		id         TEXT PRIMARY KEY,
+		user_id    TEXT REFERENCES users(id) ON DELETE CASCADE,
+		recipes    JSON NOT NULL DEFAULT '[]'
+	);`
+
 	if _, err := db.Exec(users); err != nil {
 		return fmt.Errorf("failed to create users table: %w", err)
 	}
 	if _, err := db.Exec(profiles); err != nil {
 		return fmt.Errorf("failed to create profiles table: %w", err)
+	}
+	if _, err := db.Exec(meal_plans); err != nil {
+		return fmt.Errorf("failed to create meal_plans table: %w", err)
 	}
 	return nil
 }

@@ -7,22 +7,23 @@ import (
 	"net/http"
 
 	"github.com/ajohnston1219/eatme/api/internal/clients"
-	"github.com/ajohnston1219/eatme/api/internal/services/recipe"
+	"github.com/ajohnston1219/eatme/api/internal/db"
+	"github.com/ajohnston1219/eatme/api/internal/services/meal"
 	"github.com/ajohnston1219/eatme/api/internal/services/user"
 	"github.com/ajohnston1219/eatme/api/models"
 )
 
 type ChatHandler struct {
-	mlClient      *clients.MLClient
-	userService   *user.UserService
-	recipeService *recipe.RecipeService
+	mlClient    *clients.MLClient
+	userService *user.UserService
+	mealService *meal.MealService
 }
 
-func NewChatHandler(mlClient *clients.MLClient, userService *user.UserService, recipeService *recipe.RecipeService) *ChatHandler {
+func NewChatHandler(mlClient *clients.MLClient, userService *user.UserService, mealService *meal.MealService) *ChatHandler {
 	return &ChatHandler{
-		mlClient:      mlClient,
-		userService:   userService,
-		recipeService: recipeService,
+		mlClient:    mlClient,
+		userService: userService,
+		mealService: mealService,
 	}
 }
 
@@ -32,52 +33,62 @@ func NewChatHandler(mlClient *clients.MLClient, userService *user.UserService, r
 // @Tags Chat
 // @Accept json
 // @Produce json
-// @Param meal_plan_id query string true "Meal plan ID"
-// @Param message query string true "Message"
+// @Param request body models.ChatRequest true "Chat request"
 // @Success 200 {object} models.ChatResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 500 {object} models.ErrorResponse
+// @Failure 400 {object} models.BadRequestResponse
+// @Failure 500 {object} models.InternalServerErrorResponse
 // @Router /chat [post]
 func (h *ChatHandler) Handle(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID").(string)
+	userID := getUserID(r)
 	if userID == "" {
 		errorJSON(w, errors.New("missing user ID"), http.StatusUnauthorized)
 		return
 	}
 
-	mealPlanId := r.URL.Query().Get("meal_plan_id")
-	if mealPlanId == "" {
-		errorJSON(w, errors.New("missing meal plan ID"), http.StatusBadRequest)
+	requestBody := models.ChatRequest{}
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		errorJSON(w, err, http.StatusBadRequest)
 		return
 	}
 
 	profile, err := h.userService.GetProfile(userID)
+
 	if err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	mealPlan, err := h.recipeService.GetMealPlan(userID, mealPlanId)
+	mealPlan, err := h.mealService.GetMealPlan(userID, requestBody.MealPlanID)
 	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			errorJSON(w, errors.New("meal plan not found"), http.StatusNotFound)
+			return
+		}
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	ctx := context.Background()
-	req := &models.ChatRequest{
+	req := &models.InternalChatRequest{
 		UserID:   userID,
-		Message:  r.URL.Query().Get("message"),
+		Message:  requestBody.Message,
 		MealPlan: mealPlan,
 		Profile:  profile,
 	}
-	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
 	resp, err := h.mlClient.Chat(ctx, req)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(resp)
+
+	if resp.NewMealPlan != nil {
+		resp.NewMealPlan.ID = requestBody.MealPlanID
+		err = h.mealService.SaveMealPlan(userID, *resp.NewMealPlan)
+		if err != nil {
+			errorJSON(w, err, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	writeJSON(w, http.StatusOK, resp)
 }

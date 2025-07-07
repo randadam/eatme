@@ -15,6 +15,53 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/chat": {
+            "post": {
+                "description": "Handle chat request",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "Handle chat request",
+                "operationId": "chat",
+                "parameters": [
+                    {
+                        "description": "Chat request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profile": {
             "get": {
                 "description": "Gets the profile for a user",
@@ -67,7 +114,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Profile"
+                            "$ref": "#/definitions/models.ProfileUpdateRequest"
                         }
                     }
                 ],
@@ -185,6 +232,44 @@ const docTemplate = `{
                 }
             }
         },
+        "models.ChatRequest": {
+            "description": "A chat request",
+            "type": "object",
+            "required": [
+                "meal_plan_id",
+                "message"
+            ],
+            "properties": {
+                "meal_plan_id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ChatResponse": {
+            "description": "A chat response",
+            "type": "object",
+            "required": [
+                "intent",
+                "response_text"
+            ],
+            "properties": {
+                "intent": {
+                    "type": "string"
+                },
+                "needs_clarification": {
+                    "type": "boolean"
+                },
+                "new_meal_plan": {
+                    "$ref": "#/definitions/models.MealPlan"
+                },
+                "response_text": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Cuisine": {
             "type": "string",
             "enum": [
@@ -260,6 +345,32 @@ const docTemplate = `{
                 "EquipmentSousVide"
             ]
         },
+        "models.Ingredient": {
+            "type": "object",
+            "required": [
+                "name",
+                "quantity",
+                "unit"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "Flour"
+                },
+                "quantity": {
+                    "type": "number",
+                    "example": 1
+                },
+                "unit": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.MeasurementUnit"
+                        }
+                    ],
+                    "example": "cup"
+                }
+            }
+        },
         "models.InternalServerErrorResponse": {
             "description": "Internal server error response",
             "type": "object",
@@ -274,8 +385,112 @@ const docTemplate = `{
                 }
             }
         },
+        "models.MealPlan": {
+            "description": "A meal plan",
+            "type": "object",
+            "required": [
+                "id",
+                "recipes"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "12345678-1234-1234-1234-123456789012"
+                },
+                "recipes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Recipe"
+                    }
+                }
+            }
+        },
+        "models.MeasurementUnit": {
+            "type": "string",
+            "enum": [
+                "g",
+                "ml",
+                "tsp",
+                "tbsp",
+                "cup",
+                "oz",
+                "lb"
+            ],
+            "x-enum-varnames": [
+                "MeasurementUnitGram",
+                "MeasurementUnitMilliliter",
+                "MeasurementUnitTeaspoon",
+                "MeasurementUnitTablespoon",
+                "MeasurementUnitCup",
+                "MeasurementUnitOunce",
+                "MeasurementUnitPound"
+            ]
+        },
         "models.Profile": {
             "description": "User profile information",
+            "type": "object",
+            "required": [
+                "allergies",
+                "cuisines",
+                "diet",
+                "equipment",
+                "name",
+                "setup_step",
+                "skill"
+            ],
+            "properties": {
+                "allergies": {
+                    "description": "User's allergies",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Allergy"
+                    }
+                },
+                "cuisines": {
+                    "description": "User's cuisines",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Cuisine"
+                    }
+                },
+                "diet": {
+                    "description": "User's diet restrictions",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Diet"
+                    }
+                },
+                "equipment": {
+                    "description": "User's equipment",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Equipment"
+                    }
+                },
+                "name": {
+                    "description": "User's name",
+                    "type": "string"
+                },
+                "setup_step": {
+                    "description": "Setup Step",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.SetupStep"
+                        }
+                    ]
+                },
+                "skill": {
+                    "description": "User's skill level",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Skill"
+                        }
+                    ]
+                }
+            }
+        },
+        "models.ProfileUpdateRequest": {
+            "description": "User profile update request",
             "type": "object",
             "required": [
                 "setup_step"
@@ -328,6 +543,53 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.Skill"
                         }
                     ]
+                }
+            }
+        },
+        "models.Recipe": {
+            "description": "A recipe",
+            "type": "object",
+            "required": [
+                "description",
+                "id",
+                "ingredients",
+                "servings",
+                "steps",
+                "title",
+                "total_time_minutes"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "A classic Italian dish"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "12345678-1234-1234-1234-123456789012"
+                },
+                "ingredients": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Ingredient"
+                    }
+                },
+                "servings": {
+                    "type": "integer",
+                    "example": 4
+                },
+                "steps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Veal Bolognese"
+                },
+                "total_time_minutes": {
+                    "type": "integer",
+                    "example": 120
                 }
             }
         },

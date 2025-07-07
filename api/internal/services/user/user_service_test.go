@@ -33,7 +33,7 @@ func TestUserLifecycle(t *testing.T) {
 	}
 
 	// 2) Save profile
-	in := models.Profile{
+	in := models.ProfileUpdateRequest{
 		SetupStep: models.SetupStepDiet,
 		Name:      "Alice",
 		Skill:     models.SkillIntermediate,
@@ -42,7 +42,7 @@ func TestUserLifecycle(t *testing.T) {
 		Equipment: []models.Equipment{models.EquipmentOven, models.EquipmentGrill},
 		Allergies: []models.Allergy{models.AllergyPeanuts},
 	}
-	if err := svc.SaveProfile(u.ID, in); err != nil {
+	if _, err := svc.SaveProfile(u.ID, in); err != nil {
 		t.Fatalf("SaveProfile: %v", err)
 	}
 
@@ -83,7 +83,7 @@ func TestSaveProfileMissingUserID(t *testing.T) {
 	store := testutil.NewTestSQLiteStore(t)
 	svc := user.NewUserService(store)
 
-	err := svc.SaveProfile("", models.Profile{})
+	_, err := svc.SaveProfile("", models.ProfileUpdateRequest{})
 	if err == nil {
 		t.Fatalf("expected error for empty userID, got nil")
 	}

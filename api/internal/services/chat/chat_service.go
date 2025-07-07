@@ -17,6 +17,6 @@ func NewChatService(mlClient *clients.MLClient) *ChatService {
 	}
 }
 
-func (s *ChatService) Chat(ctx context.Context, req *models.ChatRequest) (*models.ChatResponse, error) {
+func (s *ChatService) Chat(ctx context.Context, req *models.InternalChatRequest) (*models.ChatResponse, error) {
 	return s.mlClient.Chat(ctx, req)
 }
