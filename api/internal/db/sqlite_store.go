@@ -128,6 +128,213 @@ func (s *SQLiteStore) GetProfile(userID string) (models.Profile, error) {
 	return p, nil
 }
 
+func (s *SQLiteStore) GetGlobalRecipe(id string) (models.GlobalRecipe, error) {
+	var recipe models.GlobalRecipe
+
+	err := s.QueryRow(`
+		SELECT id, title, description, total_time_minutes, servings,
+			COALESCE(ingredients, '[]'),
+			COALESCE(steps, '[]'),
+			source_type,
+			created_at,
+			updated_at
+		FROM global_recipes WHERE id = ?;
+	`, id).Scan(
+		&recipe.ID, &recipe.RecipeBody.Title, &recipe.RecipeBody.Description,
+		&recipe.RecipeBody.TotalTimeMinutes, &recipe.RecipeBody.Servings,
+		&recipe.RecipeBody.Ingredients, &recipe.RecipeBody.Steps,
+		&recipe.SourceType, &recipe.CreatedAt, &recipe.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return recipe, ErrNotFound
+		}
+		return recipe, fmt.Errorf("failed to get global recipe: %w", err)
+	}
+
+	return recipe, nil
+}
+
+func (s *SQLiteStore) SaveGlobalRecipe(recipe models.GlobalRecipe) error {
+	ingredients, err := json.Marshal(recipe.RecipeBody.Ingredients)
+	if err != nil {
+		return fmt.Errorf("failed to marshal ingredients: %w", err)
+	}
+	steps, err := json.Marshal(recipe.RecipeBody.Steps)
+	if err != nil {
+		return fmt.Errorf("failed to marshal steps: %w", err)
+	}
+
+	_, err = s.Exec(`
+		INSERT INTO global_recipes (id, title, description, total_time_minutes, servings, ingredients, steps, source_type)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT(id) DO UPDATE SET
+			title              = excluded.title,
+			description        = excluded.description,
+			total_time_minutes = excluded.total_time_minutes,
+			servings           = excluded.servings,
+			ingredients        = excluded.ingredients,
+			steps              = excluded.steps,
+			source_type        = excluded.source_type,
+			updated_at         = NOW();
+	`, recipe.ID, recipe.RecipeBody.Title, recipe.RecipeBody.Description,
+		recipe.RecipeBody.TotalTimeMinutes, recipe.RecipeBody.Servings, ingredients, steps, recipe.SourceType)
+	if err != nil {
+		return fmt.Errorf("failed to save global recipe: %w", err)
+	}
+	return nil
+}
+
+func (s *SQLiteStore) GetUserRecipe(userID string, recipeID string) (models.UserRecipe, error) {
+	var recipe models.UserRecipe
+	err := s.QueryRow(`
+		SELECT 
+			ur.id, ur.user_id, ur.global_recipe_id,
+			ur.title, ur.description, ur.is_favorite,
+			ur.latest_version_id, ur.created_at, ur.updated_at,
+			rv.total_time_minutes, rv.servings,
+			COALESCE(rv.ingredients, '[]'),
+			COALESCE(rv.steps, '[]')
+		FROM user_recipes ur
+		JOIN recipe_versions rv ON ur.latest_version_id = rv.id
+		WHERE ur.id = ? AND ur.user_id = ?;
+	`, recipeID, userID).Scan(
+		&recipe.ID, &recipe.UserID, &recipe.GlobalRecipeID, &recipe.Title, &recipe.Description, &recipe.IsFavorite,
+		&recipe.LatestVersionID, &recipe.CreatedAt, &recipe.UpdatedAt,
+		&recipe.RecipeBody.TotalTimeMinutes, &recipe.RecipeBody.Servings, &recipe.RecipeBody.Ingredients, &recipe.RecipeBody.Steps,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return recipe, ErrNotFound
+		}
+		return recipe, fmt.Errorf("failed to get user recipe: %w", err)
+	}
+
+	return recipe, nil
+}
+
+func (s *SQLiteStore) GetAllUserRecipes(userID string) ([]models.UserRecipe, error) {
+	var recipes []models.UserRecipe
+	rows, err := s.Query(`
+		SELECT 
+			ur.id, ur.user_id, ur.global_recipe_id,
+			ur.title, ur.description, ur.is_favorite,
+			ur.latest_version_id, ur.created_at, ur.updated_at,
+			rv.total_time_minutes, rv.servings,
+			COALESCE(rv.ingredients, '[]'),
+			COALESCE(rv.steps, '[]')
+		FROM user_recipes ur
+		JOIN recipe_versions rv ON ur.latest_version_id = rv.id
+		WHERE ur.user_id = ?;
+	`, userID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return recipes, ErrNotFound
+		}
+		return recipes, fmt.Errorf("failed to get user recipes: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var recipe models.UserRecipe
+		err := rows.Scan(
+			&recipe.ID, &recipe.UserID, &recipe.GlobalRecipeID, &recipe.Title, &recipe.Description, &recipe.IsFavorite,
+			&recipe.LatestVersionID, &recipe.CreatedAt, &recipe.UpdatedAt,
+			&recipe.RecipeBody.TotalTimeMinutes, &recipe.RecipeBody.Servings, &recipe.RecipeBody.Ingredients, &recipe.RecipeBody.Steps,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan user recipe: %w", err)
+		}
+		recipes = append(recipes, recipe)
+	}
+	return recipes, nil
+}
+
+func (s *SQLiteStore) SaveUserRecipe(recipe models.UserRecipe) error {
+	_, err := s.Exec(`
+		INSERT INTO user_recipes (id, user_id, global_recipe_id, title, description, is_favorite, latest_version_id)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT(id) DO UPDATE SET
+			user_id           = excluded.user_id,
+			global_recipe_id  = excluded.global_recipe_id,
+			title             = excluded.title,
+			description       = excluded.description,
+			is_favorite       = excluded.is_favorite,
+			latest_version_id = excluded.latest_version_id,
+			updated_at        = NOW();
+	`, recipe.ID, recipe.UserID, recipe.GlobalRecipeID, recipe.Title, recipe.Description, recipe.IsFavorite,
+		recipe.LatestVersionID)
+	if err != nil {
+		return fmt.Errorf("failed to save user recipe: %w", err)
+	}
+	return nil
+}
+
+func (s *SQLiteStore) UpdateUserRecipeVersion(userID string, recipeID string, versionID string) error {
+	_, err := s.Exec(`
+		UPDATE user_recipes SET latest_version_id = ? WHERE id = ? AND user_id = ?;
+	`, versionID, recipeID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to update user recipe version: %w", err)
+	}
+	return nil
+}
+
+func (s *SQLiteStore) GetRecipeVersion(recipeVersionID string) (models.RecipeVersion, error) {
+	var recipeVersion models.RecipeVersion
+
+	err := s.QueryRow(`
+		SELECT 
+			id, user_recipe_id, parent_id,
+			total_time_minutes, servings,
+			COALESCE(ingredients, '[]'),
+			COALESCE(steps, '[]'),
+			notes, created_at
+		FROM recipe_versions WHERE id = ?;
+	`, recipeVersionID).Scan(
+		&recipeVersion.ID, &recipeVersion.UserRecipeID, &recipeVersion.ParentID,
+		&recipeVersion.TotalTimeMinutes, &recipeVersion.Servings, &recipeVersion.Ingredients, &recipeVersion.Steps,
+		&recipeVersion.Notes, &recipeVersion.CreatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return recipeVersion, ErrNotFound
+		}
+		return recipeVersion, fmt.Errorf("failed to get recipe version: %w", err)
+	}
+
+	return recipeVersion, nil
+}
+
+func (s *SQLiteStore) AddRecipeVersion(recipeVersion models.RecipeVersion) error {
+	ingredients, err := json.Marshal(recipeVersion.Ingredients)
+	if err != nil {
+		return fmt.Errorf("failed to marshal ingredients: %w", err)
+	}
+	steps, err := json.Marshal(recipeVersion.Steps)
+	if err != nil {
+		return fmt.Errorf("failed to marshal steps: %w", err)
+	}
+
+	_, err = s.Exec(`
+		INSERT INTO recipe_versions (id, user_recipe_id, parent_id, total_time_minutes, servings, ingredients, steps, notes, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT(id) DO UPDATE SET
+			user_recipe_id     = excluded.user_recipe_id,
+			parent_id          = excluded.parent_id,
+			total_time_minutes = excluded.total_time_minutes,
+			servings           = excluded.servings,
+			ingredients        = excluded.ingredients,
+			steps              = excluded.steps,
+			notes              = excluded.notes;
+	`, recipeVersion.ID, recipeVersion.UserRecipeID, recipeVersion.ParentID,
+		recipeVersion.TotalTimeMinutes, recipeVersion.Servings, ingredients, steps, recipeVersion.Notes, recipeVersion.CreatedAt)
+	if err != nil {
+		return fmt.Errorf("failed to save recipe version: %w", err)
+	}
+	return nil
+}
+
 func (s *SQLiteStore) SaveMealPlan(userID string, mealPlan models.MealPlan) error {
 	recipes, err := json.Marshal(mealPlan.Recipes)
 	if err != nil {
@@ -209,9 +416,50 @@ func migrate(db *sql.DB) error {
 		allergies  JSON NOT NULL DEFAULT '[]'
 	);`
 
-	const meal_plans = `
+	const globalRecipes = `
+	CREATE TABLE IF NOT EXISTS global_recipes (
+		id                 TEXT PRIMARY KEY,
+		title              TEXT NOT NULL,
+		description        TEXT NOT NULL,
+		total_time_minutes INTEGER NOT NULL,
+		servings           INTEGER NOT NULL,
+		ingredients        JSON NOT NULL DEFAULT '[]',
+		steps              JSON NOT NULL DEFAULT '[]'
+		source_type        TEXT NOT NULL DEFAULT 'generated',
+		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);`
+
+	const userRecipes = `
+	CREATE TABLE IF NOT EXISTS user_recipes (
+		id                TEXT PRIMARY KEY,
+		user_id           TEXT REFERENCES users(id) ON DELETE CASCADE,
+		global_recipe_id  TEXT NULL REFERENCES global_recipes(id) ON DELETE SET NULL,
+		title             TEXT NOT NULL,
+		description       TEXT NOT NULL,
+		is_favorite       BOOLEAN DEFAULT FALSE,
+		latest_version_id TEXT NULL REFERENCES recipe_versions(id) ON DELETE SET NULL,
+		created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);`
+
+	const recipeVersions = `
+	CREATE TABLE IF NOT EXISTS recipe_versions (
+		id                 TEXT PRIMARY KEY,
+		user_recipe_id     TEXT,
+		parent_id          TEXT,
+		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		total_time_minutes INTEGER NOT NULL,
+		servings           INTEGER NOT NULL,
+		ingredients        JSON NOT NULL DEFAULT '[]',
+		steps              JSON NOT NULL DEFAULT '[]',
+		notes              TEXT NULL
+	);`
+
+	const mealPlans = `
 	CREATE TABLE IF NOT EXISTS meal_plans (
 		id         TEXT PRIMARY KEY,
+		name       TEXT NOT NULL,
 		user_id    TEXT REFERENCES users(id) ON DELETE CASCADE,
 		recipes    JSON NOT NULL DEFAULT '[]'
 	);`
@@ -222,7 +470,16 @@ func migrate(db *sql.DB) error {
 	if _, err := db.Exec(profiles); err != nil {
 		return fmt.Errorf("failed to create profiles table: %w", err)
 	}
-	if _, err := db.Exec(meal_plans); err != nil {
+	if _, err := db.Exec(globalRecipes); err != nil {
+		return fmt.Errorf("failed to create global_recipes table: %w", err)
+	}
+	if _, err := db.Exec(userRecipes); err != nil {
+		return fmt.Errorf("failed to create user_recipes table: %w", err)
+	}
+	if _, err := db.Exec(recipeVersions); err != nil {
+		return fmt.Errorf("failed to create recipe_versions table: %w", err)
+	}
+	if _, err := db.Exec(mealPlans); err != nil {
 		return fmt.Errorf("failed to create meal_plans table: %w", err)
 	}
 	return nil
@@ -230,4 +487,24 @@ func migrate(db *sql.DB) error {
 
 func isUniqueViolation(err error, field string) bool {
 	return err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed: "+field)
+}
+
+type Ingredients []models.Ingredient
+
+func (i *Ingredients) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan ingredients: expected []byte, got %T", value)
+	}
+	return json.Unmarshal(b, i)
+}
+
+type Steps []string
+
+func (s *Steps) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan steps: expected []byte, got %T", value)
+	}
+	return json.Unmarshal(b, s)
 }

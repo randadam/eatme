@@ -1,5 +1,5 @@
 import { Outlet, Navigate, useLocation } from "react-router-dom"
-import { useUser } from "../hooks"
+import { useUser } from "@/features/auth/hooks"
 
 export const STEPS = {
   account: "/signup/account",
@@ -11,7 +11,7 @@ export const STEPS = {
   allergies: "/signup/allergies",
 }
 
-export default function SignupLayout() {
+export default function SignupPage() {
   const { pathname } = useLocation()
   const { isAuthenticated, profile, isLoading } = useUser()
 

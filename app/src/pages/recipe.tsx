@@ -3,23 +3,22 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
-import { useModifyChat, useSuggestChat } from "../chat/hooks";
-import { ChatDrawer } from "../chat/chat-drawer";
+import { useModifyChat, useSuggestChat } from "../features/chat/hooks";
+import { ChatDrawer } from "../features/chat/chat-drawer";
 import { useParams } from "react-router-dom";
-import { useMealPlan } from "./hooks";
+import { useRecipe } from "../features/recipe/hooks";
 
-export default function MealPlanLayout() {
-    const mealPlanId = useParams().id
-    if (!mealPlanId) {
-        return <h1>Missing meal plan ID</h1>
+export default function RecipePage() {
+    const recipeId = useParams().id
+    if (!recipeId) {
+        return <h1>Missing recipe plan ID</h1>
     }
-    const { data: mealPlan, isLoading, error } = useMealPlan(mealPlanId)
-    console.log('mealPlan', mealPlan)
+    const { recipe, isLoading, error } = useRecipe(recipeId)
     return (
         <>
-            {isLoading && <p>Loading meal plan...</p>}
-            {error && <p>Error loading meal plan: {error.message}</p>}
-            {mealPlan && <MealPlan plan={mealPlan}/>}
+            {isLoading && <p>Loading recipe...</p>}
+            {error && <p>Error loading recipe: {error.message}</p>}
+            {recipe && <Recipe recipe={recipe.data as api.ModelsUserRecipe}/>}
         </>
     )
 }
@@ -27,14 +26,14 @@ export default function MealPlanLayout() {
 interface DrawerState {
     open: boolean;
     mode: "question" | "modify" | "suggest";
-    recipe?: api.ModelsRecipe;
+    recipe?: api.ModelsUserRecipe;
 }
 
 interface Props {
-    plan: api.ModelsMealPlan
+    recipe: api.ModelsUserRecipe
 }
 
-export function MealPlan({ plan }: Props) {
+export function Recipe({ recipe }: Props) {
     const [drawerState, setDrawerState] = useState<DrawerState>({
         open: false,
         mode: "suggest",
@@ -49,7 +48,7 @@ export function MealPlan({ plan }: Props) {
         })
     }
 
-    const openModify = (recipe: api.ModelsRecipe) => {
+    const openModify = (recipe: api.ModelsUserRecipe) => {
         setDrawerState({
             open: true,
             mode: "modify",
@@ -66,15 +65,15 @@ export function MealPlan({ plan }: Props) {
     }
 
     const {
-        mutate: suggestRecipe,
+        suggestRecipe,
         isPending: suggestRecipePending,
         error: suggestRecipeError
-    } = useSuggestChat(plan.id)
+    } = useSuggestChat()
     const {
-        mutate: modifyRecipe,
+        modifyRecipe,
         isPending: modifyRecipePending,
         error: modifyRecipeError
-    } = useModifyChat(plan.id, drawerState.recipe?.id ?? "")
+    } = useModifyChat(recipe.id)
 
     const handleSend = (message: string) => {
         switch (drawerState.mode) {
@@ -94,13 +93,11 @@ export function MealPlan({ plan }: Props) {
     return (
         <div>
             <div>
-                <h1>Meal Plan</h1>
-                {plan.recipes.map(r => (
-                    <div className="border rounded p-2 mt-2" key={r.id}>
-                        <RecipeAccordion recipe={r} />
-                        <Button onClick={() => openModify(r)}>Modify</Button>
-                    </div>
-                ))}
+                <h1>{recipe.title}</h1>
+                <div className="border rounded p-2 mt-2">
+                    <RecipeAccordion recipe={recipe} />
+                    <Button onClick={() => openModify(recipe)}>Modify</Button>
+                </div>
             </div>
             <div className="mt-2">
                 <Button onClick={openSuggest}>Add Recipe</Button>
@@ -108,7 +105,6 @@ export function MealPlan({ plan }: Props) {
             <ChatDrawer
                 open={drawerState.open}
                 onOpenChange={(open) => setDrawerState({ ...drawerState, open })}
-                mealPlanId={plan.id}
                 mode={drawerState.mode}
                 recipe={drawerState.recipe}
                 onSend={handleSend}
@@ -126,11 +122,10 @@ export function MealPlan({ plan }: Props) {
 }
 
 interface RecipeProps {
-    recipe: api.ModelsRecipe
+    recipe: api.ModelsUserRecipe
 }
 
 function RecipeAccordion({ recipe }: RecipeProps) {
-    console.log('recipe', recipe)
     return (
         <Accordion type="single" collapsible>
             <AccordionItem value={recipe.id}>

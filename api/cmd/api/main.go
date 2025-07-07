@@ -9,7 +9,8 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/clients"
 	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/handlers"
-	"github.com/ajohnston1219/eatme/api/internal/services/meal"
+	"github.com/ajohnston1219/eatme/api/internal/services/chat"
+	"github.com/ajohnston1219/eatme/api/internal/services/recipe"
 	"github.com/ajohnston1219/eatme/api/internal/services/user"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/cors"
@@ -54,14 +55,13 @@ func main() {
 		r.Get("/", userHandler.GetProfile)
 	})
 
-	// Meal
-	mealService := meal.NewMealService(store)
-	mealHandler := handlers.NewMealHandler(mealService)
-	r.Route("/meal", func(r chi.Router) {
+	// Recipe
+	recipeService := recipe.NewRecipeService(store)
+	recipeHandler := handlers.NewRecipeHandler(recipeService)
+	r.Route("/recipes", func(r chi.Router) {
 		r.Use(handlers.AuthMiddleware(store))
-		r.Get("/plans", mealHandler.GetAllMealPlans)
-		r.Post("/plan", mealHandler.CreateMealPlan)
-		r.Get("/plan/{meal_plan_id}", mealHandler.GetMealPlan)
+		r.Get("/{recipe_id}", recipeHandler.GetRecipe)
+		r.Get("/", recipeHandler.GetAllRecipes)
 	})
 
 	// Chat
@@ -69,12 +69,13 @@ func main() {
 	if !ok {
 		mlHost = "http://ml-gateway:8000"
 	}
-	chatHandler := handlers.NewChatHandler(clients.NewMLClient(mlHost), userService, mealService)
+	chatService := chat.NewChatService(clients.NewMLClient(mlHost), userService, recipeService)
+	chatHandler := handlers.NewChatHandler(chatService)
 	r.Route("/chat", func(r chi.Router) {
 		r.Use(handlers.AuthMiddleware(store))
-		r.Post("/plan/{mealPlanId}/recipe", chatHandler.SuggestChat)
-		r.Put("/plan/{mealPlanId}/recipe/{recipeId}", chatHandler.ModifyChat)
-		r.Post("/plan/{mealPlanId}/question", chatHandler.GeneralChat)
+		r.Post("/recipes", chatHandler.SuggestChat)
+		r.Put("/recipes/{recipeId}", chatHandler.ModifyChat)
+		r.Post("/recipes/{recipeId}/question", chatHandler.GeneralChat)
 	})
 
 	port := os.Getenv("PORT")

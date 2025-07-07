@@ -10,10 +10,10 @@ import AllergiesStep from "./features/auth/signup/step-allergies"
 import SkillStep from "./features/auth/signup/step-skill"
 import DietStep from "./features/auth/signup/step-diet"
 
-const Home = lazy(() => import("@/features/home/layout"))
-const Signup = lazy(() => import("@/features/auth/signup/layout"))
-const MealPlan = lazy(() => import("@/features/plan/meal-plan"))
-const AllPlans = lazy(() => import("@/features/plan/all-plans"))
+const Home = lazy(() => import("@/pages/home"))
+const Signup = lazy(() => import("@/pages/signup"))
+const Recipe = lazy(() => import("@/pages/recipe"))
+const AllRecipes = lazy(() => import("@/pages/all-recipes"))
 
 export const router = createBrowserRouter([
     {
@@ -24,12 +24,12 @@ export const router = createBrowserRouter([
                 element: <Home/>,
             },
             {
-                path: "/plans",
-                element: <AllPlans/>,
+                path: "/recipes",
+                element: <AllRecipes/>,
             },
             {
-                path: "/plan/:id",
-                element: <MealPlan/>,
+                path: "/recipes/:id",
+                element: <Recipe/>,
             },
             {
                 path: "/signup",

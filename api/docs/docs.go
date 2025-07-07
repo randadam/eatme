@@ -15,61 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/chat/plan/{mealPlanId}": {
-            "post": {
-                "description": "Handle general chat request",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Chat"
-                ],
-                "summary": "Handle general chat request",
-                "operationId": "generalChat",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Meal plan ID",
-                        "name": "mealPlanId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "General chat request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.GeneralChatRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.GeneralChatResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/chat/plan/{mealPlanId}/recipe": {
+        "/chat/recipes": {
             "post": {
                 "description": "Handle recipe suggestion chat request",
                 "consumes": [
@@ -84,13 +30,6 @@ const docTemplate = `{
                 "summary": "Handle recipe suggestion chat request",
                 "operationId": "suggestRecipe",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Meal plan ID",
-                        "name": "mealPlanId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Suggest chat request",
                         "name": "request",
@@ -123,7 +62,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/chat/plan/{mealPlanId}/recipe/{recipeId}": {
+        "/chat/recipes/{recipeId}": {
             "put": {
                 "description": "Handle recipe modification chat request",
                 "consumes": [
@@ -138,13 +77,6 @@ const docTemplate = `{
                 "summary": "Handle recipe modification chat request",
                 "operationId": "modifyRecipe",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Meal plan ID",
-                        "name": "mealPlanId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Recipe ID",
@@ -184,9 +116,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/meal/plan": {
+        "/chat/recipes/{recipeId}/question": {
             "post": {
-                "description": "Create new meal plan",
+                "description": "Handle general chat request",
                 "consumes": [
                     "application/json"
                 ],
@@ -194,99 +126,33 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Meal"
+                    "Chat"
                 ],
-                "summary": "Create new meal plan",
-                "operationId": "createMealPlan",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.MealPlan"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/meal/plan/{meal_plan_id}": {
-            "get": {
-                "description": "Get meal plan by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Meal"
-                ],
-                "summary": "Get meal plan by ID",
-                "operationId": "getMealPlan",
+                "summary": "Handle general chat request",
+                "operationId": "generalChat",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Meal plan ID",
-                        "name": "meal_plan_id",
+                        "description": "Recipe ID",
+                        "name": "recipeId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "General chat request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.GeneralChatRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.MealPlan"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/meal/plans": {
-            "get": {
-                "description": "Get all meal plans for user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Meal"
-                ],
-                "summary": "Get all meal plans for user",
-                "operationId": "getAllMealPlans",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.MealPlan"
-                            }
+                            "$ref": "#/definitions/models.GeneralChatResponse"
                         }
                     },
                     "400": {
@@ -381,6 +247,90 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/recipes": {
+            "get": {
+                "description": "Get all recipes for user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Recipe"
+                ],
+                "summary": "Get all recipes for user",
+                "operationId": "getAllRecipes",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.UserRecipe"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/recipes/{recipe_id}": {
+            "get": {
+                "description": "Get recipe by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Recipe"
+                ],
+                "summary": "Get recipe by ID",
+                "operationId": "getRecipe",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Recipe ID",
+                        "name": "recipe_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserRecipe"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/models.InternalServerErrorResponse"
                         }
@@ -613,31 +563,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.MealPlan": {
-            "description": "A meal plan",
-            "type": "object",
-            "required": [
-                "id",
-                "recipes",
-                "user_id"
-            ],
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "example": "12345678-1234-1234-1234-123456789012"
-                },
-                "recipes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Recipe"
-                    }
-                },
-                "user_id": {
-                    "type": "string",
-                    "example": "12345678-1234-1234-1234-123456789012"
-                }
-            }
-        },
         "models.MeasurementUnit": {
             "type": "string",
             "enum": [
@@ -675,6 +600,8 @@ const docTemplate = `{
             "description": "A chat response to the ML backend to modify a recipe",
             "type": "object",
             "required": [
+                "needs_clarification",
+                "new_recipe",
                 "response_text"
             ],
             "properties": {
@@ -682,7 +609,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "new_recipe": {
-                    "$ref": "#/definitions/models.Recipe"
+                    "$ref": "#/definitions/models.RecipeBody"
                 },
                 "response_text": {
                     "type": "string"
@@ -809,12 +736,11 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Recipe": {
-            "description": "A recipe",
+        "models.RecipeBody": {
+            "description": "Contents of a recipe",
             "type": "object",
             "required": [
                 "description",
-                "id",
                 "ingredients",
                 "servings",
                 "steps",
@@ -825,10 +751,6 @@ const docTemplate = `{
                 "description": {
                     "type": "string",
                     "example": "A classic Italian dish"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "12345678-1234-1234-1234-123456789012"
                 },
                 "ingredients": {
                     "type": "array",
@@ -942,11 +864,16 @@ const docTemplate = `{
             "description": "A chat response to the ML backend to suggest a recipe",
             "type": "object",
             "required": [
+                "new_recipe",
+                "recipe_id",
                 "response_text"
             ],
             "properties": {
                 "new_recipe": {
-                    "$ref": "#/definitions/models.Recipe"
+                    "$ref": "#/definitions/models.RecipeBody"
+                },
+                "recipe_id": {
+                    "type": "string"
                 },
                 "response_text": {
                     "type": "string"
@@ -964,6 +891,75 @@ const docTemplate = `{
                     "description": "Error message",
                     "type": "string",
                     "example": "Unauthorized"
+                }
+            }
+        },
+        "models.UserRecipe": {
+            "description": "The user's personal copy (favorites, edits).",
+            "type": "object",
+            "required": [
+                "created_at",
+                "description",
+                "id",
+                "ingredients",
+                "is_favorite",
+                "latest_version_id",
+                "servings",
+                "steps",
+                "title",
+                "total_time_minutes",
+                "updated_at",
+                "user_id"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "A classic Italian dish"
+                },
+                "global_recipe_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ingredients": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Ingredient"
+                    }
+                },
+                "is_favorite": {
+                    "type": "boolean"
+                },
+                "latest_version_id": {
+                    "type": "string"
+                },
+                "servings": {
+                    "type": "integer",
+                    "example": 4
+                },
+                "steps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Veal Bolognese"
+                },
+                "total_time_minutes": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
                 }
             }
         }

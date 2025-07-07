@@ -6,7 +6,7 @@ const keys = {
 }
 
 export function useSignup() {
-    return useMutation({
+    const { mutate: signup, isPending, error } = useMutation({
         mutationFn: async (data: api.ModelsSignupRequest) => {
             const res = await api.signup(data)
             if (res.status > 299) {
@@ -19,6 +19,8 @@ export function useSignup() {
             setToken(body.token)
         }
     })
+
+    return { signup, isPending, error }
 }
 
 export function useUser() {
@@ -58,7 +60,7 @@ export function useUser() {
 
 export function useSaveProfile() {
     const queryClient = useQueryClient()
-    return useMutation({
+    const { mutate: saveProfile, isPending, error } = useMutation({
         mutationFn: (data: api.ModelsProfileUpdateRequest) =>
             api.saveProfile(data),
         onSuccess: () => {
@@ -67,6 +69,8 @@ export function useSaveProfile() {
             })
         },
     })
+
+    return { saveProfile, isPending, error }
 }
 
 const TOKEN_KEY = "token";

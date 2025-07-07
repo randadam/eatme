@@ -14,10 +14,10 @@ interface ChatDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mode: "suggest" | "modify" | "question";
-  recipe?: api.ModelsRecipe;
-  mealPlanId: string;
+  recipe?: api.ModelsUserRecipe;
   onSend: (message: string) => void;
   loading: boolean;
+  error?: string;
 }
 
 export function ChatDrawer({
@@ -27,6 +27,7 @@ export function ChatDrawer({
   recipe,
   onSend,
   loading,
+  error,
 }: ChatDrawerProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -43,6 +44,7 @@ export function ChatDrawer({
           onSend={onSend}
           loading={loading}
         />
+        {error && <p>{error}</p>}
       </SheetContent>
     </Sheet>
   );

@@ -1,14 +1,12 @@
 import api from "@/api"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { mealPlanKeys } from "../plan/hooks"
+import { recipeKeys } from "../recipe/hooks"
 
 
-export function useSuggestChat(mealPlanId: string) {
-    const queryClient = useQueryClient()
-
-    return useMutation({
+export function useSuggestChat() {
+    const { mutate: suggestRecipe, isPending, error } = useMutation({
         mutationFn: async (message: string) => {
-            const res = await api.suggestRecipe(mealPlanId, {
+            const res = await api.suggestRecipe({
                 message,
             })
             if (res.status > 299) {
@@ -16,20 +14,17 @@ export function useSuggestChat(mealPlanId: string) {
             }
             return res.data as api.ModelsSuggestChatResponse
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: mealPlanKeys.byId(mealPlanId),
-            })
-        },
     })
+
+    return { suggestRecipe, isPending, error }
 }
 
-export function useModifyChat(mealPlanId: string, recipeId: string) {
+export function useModifyChat(recipeId: string) {
     const queryClient = useQueryClient()
 
-    return useMutation({
+    const { mutate: modifyRecipe, isPending, error } = useMutation({
         mutationFn: async (message: string) => {
-            const res = await api.modifyRecipe(mealPlanId, recipeId, {
+            const res = await api.modifyRecipe(recipeId, {
                 message,
             })
             if (res.status > 299) {
@@ -38,16 +33,18 @@ export function useModifyChat(mealPlanId: string, recipeId: string) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: mealPlanKeys.byId(mealPlanId),
+                queryKey: recipeKeys.byId(recipeId),
             })
         },
     })
+
+    return { modifyRecipe, isPending, error }
 }
 
-export function useGeneralChat(mealPlanId: string) {
-    return useMutation({
+export function useGeneralChat(recipeId: string) {
+    const { mutate: generalChat, isPending, error } = useMutation({
         mutationFn: async (message: string) => {
-            const res = await api.generalChat(mealPlanId, {
+            const res = await api.generalChat(recipeId, {
                 message,
             })
             if (res.status > 299) {
@@ -56,5 +53,7 @@ export function useGeneralChat(mealPlanId: string) {
             return res.data as api.ModelsGeneralChatResponse
         },
     })
+
+    return { generalChat, isPending, error }
 }
     
