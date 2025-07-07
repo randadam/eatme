@@ -35,5 +35,6 @@ type Recipe struct {
 // @Description A meal plan
 type MealPlan struct {
 	ID      string   `json:"id" example:"12345678-1234-1234-1234-123456789012" binding:"required"`
+	UserID  string   `json:"user_id" example:"12345678-1234-1234-1234-123456789012" binding:"required"`
 	Recipes []Recipe `json:"recipes" binding:"required"`
 }

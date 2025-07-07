@@ -159,9 +159,13 @@ definitions:
         items:
           $ref: '#/definitions/models.Recipe'
         type: array
+      user_id:
+        example: 12345678-1234-1234-1234-123456789012
+        type: string
     required:
     - id
     - recipes
+    - user_id
     type: object
   models.MeasurementUnit:
     enum:
@@ -399,6 +403,60 @@ paths:
       summary: Handle chat request
       tags:
       - Chat
+  /meal/plan:
+    post:
+      consumes:
+      - application/json
+      description: Create new meal plan
+      operationId: createMealPlan
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MealPlan'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Create new meal plan
+      tags:
+      - Meal
+  /meal/plan/{meal_plan_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get meal plan by ID
+      operationId: getMealPlan
+      parameters:
+      - description: Meal plan ID
+        in: path
+        name: meal_plan_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MealPlan'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Get meal plan by ID
+      tags:
+      - Meal
   /profile:
     get:
       description: Gets the profile for a user

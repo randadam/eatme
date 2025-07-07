@@ -12,6 +12,7 @@ import DietStep from "./features/auth/signup/step-diet"
 
 const Home = lazy(() => import("@/features/home/layout"))
 const Signup = lazy(() => import("@/features/auth/signup/layout"))
+const MealPlan = lazy(() => import("@/features/plan/layout"))
 
 export const router = createBrowserRouter([
     {
@@ -20,6 +21,10 @@ export const router = createBrowserRouter([
             {
                 path: "/",
                 element: <Home/>,
+            },
+            {
+                path: "/plan/:id",
+                element: <MealPlan/>,
             },
             {
                 path: "/signup",

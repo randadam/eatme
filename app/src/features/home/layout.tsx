@@ -1,10 +1,20 @@
 import { useUser } from "@/features/auth/hooks";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import RequireFinishedSignup from "../auth/require-finished-signup";
+import { useNewMealPlan } from "../plan/hooks";
+import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function HomeLayout() {
+    const nav = useNavigate()
     const { profile } = useUser();
+    const { mutate: newMealPlan, isPending, error } = useNewMealPlan();
+
+    function handleCreateMealPlan() {
+        newMealPlan(void 0, {
+            onSuccess: (resp) => nav(`/plan/${resp.id}`),
+        })
+    }
 
     return (
         <RequireFinishedSignup>
@@ -16,14 +26,14 @@ export default function HomeLayout() {
                     Ready to cook something amazing today?
                 </p>
 
-                <div className="flex justify-center gap-4">
-                    <Button asChild>
-                        <Link to="/recipes">Explore Recipes</Link>
-                    </Button>
-                    <Button variant="secondary" asChild>
-                        <Link to="/profile">Edit Preferences</Link>
-                    </Button>
-                </div>
+                <Button 
+                    onClick={handleCreateMealPlan}
+                    disabled={isPending}
+                >
+                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Create Meal Plan
+                </Button>
+                {error && <p>Error creating meal plan: {error.message}</p>}
             </main>
         </RequireFinishedSignup>
     );

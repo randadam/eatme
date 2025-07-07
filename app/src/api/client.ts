@@ -14,6 +14,43 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "//localhost:8080"
 };
+export type ModelsChatRequest = {
+    meal_plan_id: string;
+    message: string;
+};
+export type ModelsMeasurementUnit = "g" | "ml" | "tsp" | "tbsp" | "cup" | "oz" | "lb";
+export type ModelsIngredient = {
+    name: string;
+    quantity: number;
+    unit: ModelsMeasurementUnit;
+};
+export type ModelsRecipe = {
+    description: string;
+    id: string;
+    ingredients: ModelsIngredient[];
+    servings: number;
+    steps: string[];
+    title: string;
+    total_time_minutes: number;
+};
+export type ModelsMealPlan = {
+    id: string;
+    recipes: ModelsRecipe[];
+};
+export type ModelsChatResponse = {
+    intent: string;
+    needs_clarification?: boolean;
+    new_meal_plan?: ModelsMealPlan;
+    response_text: string;
+};
+export type ModelsBadRequestResponse = {
+    /** Error message */
+    error: string;
+};
+export type ModelsInternalServerErrorResponse = {
+    /** Error message */
+    error: string;
+};
 export type ModelsAllergy = "dairy" | "eggs" | "fish" | "gluten" | "peanuts" | "soy" | "tree_nuts" | "wheat";
 export type ModelsCuisine = "american" | "british" | "chinese" | "french" | "german" | "indian" | "italian" | "japanese" | "mexican" | "spanish" | "thai" | "vietnamese";
 export type ModelsDiet = "vegetarian" | "vegan" | "keto" | "paleo" | "low_carb" | "high_protein";
@@ -21,6 +58,26 @@ export type ModelsEquipment = "stove" | "oven" | "microwave" | "toaster" | "gril
 export type ModelsSetupStep = "profile" | "skill" | "cuisines" | "diet" | "equipment" | "allergies" | "done";
 export type ModelsSkill = "beginner" | "intermediate" | "advanced" | "chef";
 export type ModelsProfile = {
+    /** User's allergies */
+    allergies: ModelsAllergy[];
+    /** User's cuisines */
+    cuisines: ModelsCuisine[];
+    /** User's diet restrictions */
+    diet: ModelsDiet[];
+    /** User's equipment */
+    equipment: ModelsEquipment[];
+    /** User's name */
+    name: string;
+    /** Setup Step */
+    setup_step: ModelsSetupStep;
+    /** User's skill level */
+    skill: ModelsSkill;
+};
+export type ModelsUnauthorizedResponse = {
+    /** Error message */
+    error: string;
+};
+export type ModelsProfileUpdateRequest = {
     /** User's allergies */
     allergies?: ModelsAllergy[];
     /** User's cuisines */
@@ -36,18 +93,6 @@ export type ModelsProfile = {
     /** User's skill level */
     skill?: ModelsSkill;
 };
-export type ModelsUnauthorizedResponse = {
-    /** Error message */
-    error: string;
-};
-export type ModelsInternalServerErrorResponse = {
-    /** Error message */
-    error: string;
-};
-export type ModelsBadRequestResponse = {
-    /** Error message */
-    error: string;
-};
 export type ModelsSignupRequest = {
     /** User's email address */
     email: string;
@@ -59,10 +104,56 @@ export type ModelsSignupResponse = {
     token: string;
 };
 /**
- * Generate a recipe
+ * Handle chat request
  */
-export function getGenerate(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.fetchText("/generate", {
+export function chat(modelsChatRequest: ModelsChatRequest, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsChatResponse;
+    } | {
+        status: 400;
+        data: ModelsBadRequestResponse;
+    } | {
+        status: 500;
+        data: ModelsInternalServerErrorResponse;
+    }>("/chat", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: modelsChatRequest
+    }));
+}
+/**
+ * Create new meal plan
+ */
+export function createMealPlan(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsMealPlan;
+    } | {
+        status: 400;
+        data: ModelsBadRequestResponse;
+    } | {
+        status: 500;
+        data: ModelsInternalServerErrorResponse;
+    }>("/meal/plan", {
+        ...opts,
+        method: "POST"
+    });
+}
+/**
+ * Get meal plan by ID
+ */
+export function getMealPlan(mealPlanId: string, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsMealPlan;
+    } | {
+        status: 400;
+        data: ModelsBadRequestResponse;
+    } | {
+        status: 500;
+        data: ModelsInternalServerErrorResponse;
+    }>(`/meal/plan/${encodeURIComponent(mealPlanId)}`, {
         ...opts
     });
 }
@@ -86,7 +177,7 @@ export function getProfile(opts?: Oazapfts.RequestOpts) {
 /**
  * Save user profile
  */
-export function saveProfile(modelsProfile: ModelsProfile, opts?: Oazapfts.RequestOpts) {
+export function saveProfile(modelsProfileUpdateRequest: ModelsProfileUpdateRequest, opts?: Oazapfts.RequestOpts) {
     return oazapfts.fetchJson<{
         status: 200;
         data: ModelsProfile;
@@ -102,7 +193,7 @@ export function saveProfile(modelsProfile: ModelsProfile, opts?: Oazapfts.Reques
     }>("/profile", oazapfts.json({
         ...opts,
         method: "PUT",
-        body: modelsProfile
+        body: modelsProfileUpdateRequest
     }));
 }
 /**

@@ -62,6 +62,87 @@ const docTemplate = `{
                 }
             }
         },
+        "/meal/plan": {
+            "post": {
+                "description": "Create new meal plan",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Meal"
+                ],
+                "summary": "Create new meal plan",
+                "operationId": "createMealPlan",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MealPlan"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/meal/plan/{meal_plan_id}": {
+            "get": {
+                "description": "Get meal plan by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Meal"
+                ],
+                "summary": "Get meal plan by ID",
+                "operationId": "getMealPlan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Meal plan ID",
+                        "name": "meal_plan_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MealPlan"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profile": {
             "get": {
                 "description": "Gets the profile for a user",
@@ -390,7 +471,8 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "id",
-                "recipes"
+                "recipes",
+                "user_id"
             ],
             "properties": {
                 "id": {
@@ -402,6 +484,10 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.Recipe"
                     }
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "12345678-1234-1234-1234-123456789012"
                 }
             }
         },

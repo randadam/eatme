@@ -149,8 +149,8 @@ func (s *SQLiteStore) GetMealPlan(userID string, mealPlanID string) (models.Meal
 	var recipes []byte
 
 	err := s.QueryRow(`
-		SELECT recipes FROM meal_plans WHERE id = ? AND user_id = ?;
-	`, mealPlanID, userID).Scan(&recipes)
+		SELECT id, user_id, recipes FROM meal_plans WHERE id = ? AND user_id = ?;
+	`, mealPlanID, userID).Scan(&mealPlan.ID, &mealPlan.UserID, &recipes)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return mealPlan, ErrNotFound

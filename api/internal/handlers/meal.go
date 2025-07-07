@@ -27,6 +27,7 @@ func NewMealHandler(mealService *meal.MealService) *MealHandler {
 // @Success 200 {object} models.MealPlan
 // @Failure 400 {object} models.BadRequestResponse
 // @Failure 500 {object} models.InternalServerErrorResponse
+// @Router /meal/plan [post]
 func (h *MealHandler) CreateMealPlan(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	if userID == "" {
@@ -52,6 +53,7 @@ func (h *MealHandler) CreateMealPlan(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} models.MealPlan
 // @Failure 400 {object} models.BadRequestResponse
 // @Failure 500 {object} models.InternalServerErrorResponse
+// @Router /meal/plan/{meal_plan_id} [get]
 func (h *MealHandler) GetMealPlan(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	if userID == "" {
