@@ -42,12 +42,10 @@ type ModifyChatResponse struct {
 // GeneralChatRequest represents a chat request to the ML backend to answer a question
 // @Description A chat request to the ML backend to answer a question
 type GeneralChatRequest struct {
-	UserID  string `json:"user_id" binding:"required"`
 	Message string `json:"message" binding:"required"`
 }
 
 type InternalGeneralChatRequest struct {
-	UserID   string   `json:"user_id" binding:"required"`
 	Message  string   `json:"message" binding:"required"`
 	MealPlan MealPlan `json:"meal_plan" binding:"required"`
 	Profile  Profile  `json:"profile" binding:"required"`

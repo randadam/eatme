@@ -6,7 +6,6 @@ class Ingredient(BaseModel):
     unit: str
 
 class Recipe(BaseModel):
-    id: str
     title: str
     description: str
     total_time_minutes: int
@@ -15,7 +14,6 @@ class Recipe(BaseModel):
     steps: list[str]
 
 class MealPlan(BaseModel):
-    id: str
     recipes: list[Recipe]
 
 class Profile(BaseModel):

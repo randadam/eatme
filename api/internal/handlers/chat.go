@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/ajohnston1219/eatme/api/internal/clients"
@@ -12,6 +13,7 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/services/user"
 	"github.com/ajohnston1219/eatme/api/models"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 type ChatHandler struct {
@@ -34,11 +36,12 @@ func NewChatHandler(mlClient *clients.MLClient, userService *user.UserService, m
 // @Tags Chat
 // @Accept json
 // @Produce json
+// @Param mealPlanId path string true "Meal plan ID"
 // @Param request body models.SuggestChatRequest true "Suggest chat request"
 // @Success 200 {object} models.SuggestChatResponse
 // @Failure 400 {object} models.BadRequestResponse
 // @Failure 500 {object} models.InternalServerErrorResponse
-// @Router /chat/plan/:planId/recipe [post]
+// @Router /chat/plan/{mealPlanId}/recipe [post]
 func (h *ChatHandler) SuggestChat(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	if userID == "" {
@@ -85,7 +88,9 @@ func (h *ChatHandler) SuggestChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mealPlan.Recipes = append(mealPlan.Recipes, *resp.NewRecipe)
+	resp.NewRecipe.ID = uuid.New().String()
+
+	mealPlan.Recipes = append(mealPlan.Recipes, resp.NewRecipe)
 	if err := h.mealService.SaveMealPlan(userID, mealPlan); err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
@@ -100,11 +105,13 @@ func (h *ChatHandler) SuggestChat(w http.ResponseWriter, r *http.Request) {
 // @Tags Chat
 // @Accept json
 // @Produce json
+// @Param mealPlanId path string true "Meal plan ID"
+// @Param recipeId path string true "Recipe ID"
 // @Param request body models.ModifyChatRequest true "Modify chat request"
 // @Success 200 {object} models.ModifyChatResponse
 // @Failure 400 {object} models.BadRequestResponse
 // @Failure 500 {object} models.InternalServerErrorResponse
-// @Router /chat/plan/:planId/recipe/:recipeId [post]
+// @Router /chat/plan/{mealPlanId}/recipe/{recipeId} [put]
 func (h *ChatHandler) ModifyChat(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	if userID == "" {
@@ -150,7 +157,7 @@ func (h *ChatHandler) ModifyChat(w http.ResponseWriter, r *http.Request) {
 	found := false
 	for _, recipe := range mealPlan.Recipes {
 		if recipe.ID == recipeId {
-			currentRecipe = &recipe
+			currentRecipe = recipe
 			found = true
 			break
 		}
@@ -159,6 +166,8 @@ func (h *ChatHandler) ModifyChat(w http.ResponseWriter, r *http.Request) {
 		errorJSON(w, errors.New("recipe not found"), http.StatusNotFound)
 		return
 	}
+
+	log.Printf("Current recipe: %+v", *currentRecipe)
 
 	ctx := context.Background()
 	req := &models.InternalModifyChatRequest{
@@ -171,8 +180,11 @@ func (h *ChatHandler) ModifyChat(w http.ResponseWriter, r *http.Request) {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
+	log.Printf("New recipe: %+v", *resp.NewRecipe)
 
+	resp.NewRecipe.ID = recipeId
 	*currentRecipe = *resp.NewRecipe
+	log.Printf("Updated meal plan: %+v", mealPlan)
 	if err := h.mealService.SaveMealPlan(userID, mealPlan); err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
@@ -187,11 +199,12 @@ func (h *ChatHandler) ModifyChat(w http.ResponseWriter, r *http.Request) {
 // @Tags Chat
 // @Accept json
 // @Produce json
+// @Param mealPlanId path string true "Meal plan ID"
 // @Param request body models.GeneralChatRequest true "General chat request"
 // @Success 200 {object} models.GeneralChatResponse
 // @Failure 400 {object} models.BadRequestResponse
 // @Failure 500 {object} models.InternalServerErrorResponse
-// @Router /chat/plan/:planId [post]
+// @Router /chat/plan/{mealPlanId} [post]
 func (h *ChatHandler) GeneralChat(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	if userID == "" {

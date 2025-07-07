@@ -71,9 +71,9 @@ func main() {
 	chatHandler := handlers.NewChatHandler(clients.NewMLClient(mlHost), userService, mealService)
 	r.Route("/chat", func(r chi.Router) {
 		r.Use(handlers.AuthMiddleware(store))
-		r.Post("/plan/:mealPlanId/recipe", chatHandler.SuggestChat)
-		r.Put("/plan/:mealPlanId/recipe/:recipeId", chatHandler.ModifyChat)
-		r.Post("/plan/:mealPlanId/question", chatHandler.GeneralChat)
+		r.Post("/plan/{mealPlanId}/recipe", chatHandler.SuggestChat)
+		r.Put("/plan/{mealPlanId}/recipe/{recipeId}", chatHandler.ModifyChat)
+		r.Post("/plan/{mealPlanId}/question", chatHandler.GeneralChat)
 	})
 
 	port := os.Getenv("PORT")

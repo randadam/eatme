@@ -18,7 +18,7 @@ func (s *MealService) NewMealPlan(userID string) (models.MealPlan, error) {
 	id := uuid.New().String()
 	plan := models.MealPlan{
 		ID:      id,
-		Recipes: []models.Recipe{},
+		Recipes: []*models.Recipe{},
 	}
 	err := s.store.SaveMealPlan(userID, plan)
 	if err != nil {

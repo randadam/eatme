@@ -8,6 +8,7 @@ export default function MealPlanLayout() {
         return <h1>Missing meal plan ID</h1>
     }
     const { data: mealPlan, isLoading, error } = useMealPlan(mealPlanId)
+    console.log('mealPlan', mealPlan)
     return (
         <>
             {isLoading && <p>Loading meal plan...</p>}

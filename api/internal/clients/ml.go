@@ -28,7 +28,7 @@ func (c *MLClient) SuggestChat(ctx context.Context, req *models.InternalSuggestC
 		return nil, fmt.Errorf("marshal req: %w", err)
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.host+"/chat", bytes.NewReader(body))
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.host+"/chat/suggest", bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("new req: %w", err)
 	}

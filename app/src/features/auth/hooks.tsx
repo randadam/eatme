@@ -59,7 +59,7 @@ export function useUser() {
 export function useSaveProfile() {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: (data: api.ModelsProfile) =>
+        mutationFn: (data: api.ModelsProfileUpdateRequest) =>
             api.saveProfile(data),
         onSuccess: () => {
             queryClient.invalidateQueries({

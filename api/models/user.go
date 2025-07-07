@@ -1,6 +1,7 @@
 package models
 
 // User represents a user in the system
+// @Name User
 // @Description User information
 type User struct {
 	// User's unique identifier
@@ -86,6 +87,7 @@ const (
 )
 
 // SignupRequest represents the user signup request payload
+// @Name SignupRequest
 // @Description User signup request
 type SignupRequest struct {
 	// User's email address
@@ -95,6 +97,7 @@ type SignupRequest struct {
 }
 
 // SignupResponse represents the user signup response
+// @Name SignupResponse
 // @Description User signup response containing the new user's ID
 type SignupResponse struct {
 	// Access token for user
@@ -102,6 +105,7 @@ type SignupResponse struct {
 }
 
 // Profile represents a user's profile information
+// @Name Profile
 // @Description User profile information
 type Profile struct {
 	// Setup Step
@@ -120,7 +124,8 @@ type Profile struct {
 	Allergies []Allergy `json:"allergies" binding:"required"`
 }
 
-// Profile update request
+// ProfileUpdateRequest represents a user's profile update request payload
+// @Name ProfileUpdateRequest
 // @Description User profile update request
 type ProfileUpdateRequest struct {
 	// Setup Step

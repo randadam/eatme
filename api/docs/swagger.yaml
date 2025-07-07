@@ -101,11 +101,8 @@ definitions:
     properties:
       message:
         type: string
-      user_id:
-        type: string
     required:
     - message
-    - user_id
     type: object
   models.GeneralChatResponse:
     description: A chat response to the ML backend to answer a question
@@ -403,13 +400,18 @@ info:
   title: EatMe API
   version: "1.0"
 paths:
-  /chat/plan/:planId:
+  /chat/plan/{mealPlanId}:
     post:
       consumes:
       - application/json
       description: Handle general chat request
       operationId: generalChat
       parameters:
+      - description: Meal plan ID
+        in: path
+        name: mealPlanId
+        required: true
+        type: string
       - description: General chat request
         in: body
         name: request
@@ -434,13 +436,18 @@ paths:
       summary: Handle general chat request
       tags:
       - Chat
-  /chat/plan/:planId/recipe:
+  /chat/plan/{mealPlanId}/recipe:
     post:
       consumes:
       - application/json
       description: Handle recipe suggestion chat request
       operationId: suggestRecipe
       parameters:
+      - description: Meal plan ID
+        in: path
+        name: mealPlanId
+        required: true
+        type: string
       - description: Suggest chat request
         in: body
         name: request
@@ -465,13 +472,23 @@ paths:
       summary: Handle recipe suggestion chat request
       tags:
       - Chat
-  /chat/plan/:planId/recipe/:recipeId:
-    post:
+  /chat/plan/{mealPlanId}/recipe/{recipeId}:
+    put:
       consumes:
       - application/json
       description: Handle recipe modification chat request
       operationId: modifyRecipe
       parameters:
+      - description: Meal plan ID
+        in: path
+        name: mealPlanId
+        required: true
+        type: string
+      - description: Recipe ID
+        in: path
+        name: recipeId
+        required: true
+        type: string
       - description: Modify chat request
         in: body
         name: request

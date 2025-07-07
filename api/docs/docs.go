@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/chat/plan/:planId": {
+        "/chat/plan/{mealPlanId}": {
             "post": {
                 "description": "Handle general chat request",
                 "consumes": [
@@ -30,6 +30,13 @@ const docTemplate = `{
                 "summary": "Handle general chat request",
                 "operationId": "generalChat",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Meal plan ID",
+                        "name": "mealPlanId",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "General chat request",
                         "name": "request",
@@ -62,7 +69,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/chat/plan/:planId/recipe": {
+        "/chat/plan/{mealPlanId}/recipe": {
             "post": {
                 "description": "Handle recipe suggestion chat request",
                 "consumes": [
@@ -77,6 +84,13 @@ const docTemplate = `{
                 "summary": "Handle recipe suggestion chat request",
                 "operationId": "suggestRecipe",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Meal plan ID",
+                        "name": "mealPlanId",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Suggest chat request",
                         "name": "request",
@@ -109,8 +123,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/chat/plan/:planId/recipe/:recipeId": {
-            "post": {
+        "/chat/plan/{mealPlanId}/recipe/{recipeId}": {
+            "put": {
                 "description": "Handle recipe modification chat request",
                 "consumes": [
                     "application/json"
@@ -124,6 +138,20 @@ const docTemplate = `{
                 "summary": "Handle recipe modification chat request",
                 "operationId": "modifyRecipe",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Meal plan ID",
+                        "name": "mealPlanId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Recipe ID",
+                        "name": "recipeId",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Modify chat request",
                         "name": "request",
@@ -486,14 +514,10 @@ const docTemplate = `{
             "description": "A chat request to the ML backend to answer a question",
             "type": "object",
             "required": [
-                "message",
-                "user_id"
+                "message"
             ],
             "properties": {
                 "message": {
-                    "type": "string"
-                },
-                "user_id": {
                     "type": "string"
                 }
             }

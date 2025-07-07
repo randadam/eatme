@@ -14,8 +14,21 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "//localhost:8080"
 };
-export type ModelsChatRequest = {
-    meal_plan_id: string;
+export type ModelsGeneralChatRequest = {
+    message: string;
+};
+export type ModelsGeneralChatResponse = {
+    response_text: string;
+};
+export type ModelsBadRequestResponse = {
+    /** Error message */
+    error: string;
+};
+export type ModelsInternalServerErrorResponse = {
+    /** Error message */
+    error: string;
+};
+export type ModelsSuggestChatRequest = {
     message: string;
 };
 export type ModelsMeasurementUnit = "g" | "ml" | "tsp" | "tbsp" | "cup" | "oz" | "lb";
@@ -33,23 +46,22 @@ export type ModelsRecipe = {
     title: string;
     total_time_minutes: number;
 };
+export type ModelsSuggestChatResponse = {
+    new_recipe?: ModelsRecipe;
+    response_text: string;
+};
+export type ModelsModifyChatRequest = {
+    message: string;
+};
+export type ModelsModifyChatResponse = {
+    needs_clarification?: boolean;
+    new_recipe?: ModelsRecipe;
+    response_text: string;
+};
 export type ModelsMealPlan = {
     id: string;
     recipes: ModelsRecipe[];
-};
-export type ModelsChatResponse = {
-    intent: string;
-    needs_clarification?: boolean;
-    new_meal_plan?: ModelsMealPlan;
-    response_text: string;
-};
-export type ModelsBadRequestResponse = {
-    /** Error message */
-    error: string;
-};
-export type ModelsInternalServerErrorResponse = {
-    /** Error message */
-    error: string;
+    user_id: string;
 };
 export type ModelsAllergy = "dairy" | "eggs" | "fish" | "gluten" | "peanuts" | "soy" | "tree_nuts" | "wheat";
 export type ModelsCuisine = "american" | "british" | "chinese" | "french" | "german" | "indian" | "italian" | "japanese" | "mexican" | "spanish" | "thai" | "vietnamese";
@@ -104,22 +116,60 @@ export type ModelsSignupResponse = {
     token: string;
 };
 /**
- * Handle chat request
+ * Handle general chat request
  */
-export function chat(modelsChatRequest: ModelsChatRequest, opts?: Oazapfts.RequestOpts) {
+export function generalChat(mealPlanId: string, modelsGeneralChatRequest: ModelsGeneralChatRequest, opts?: Oazapfts.RequestOpts) {
     return oazapfts.fetchJson<{
         status: 200;
-        data: ModelsChatResponse;
+        data: ModelsGeneralChatResponse;
     } | {
         status: 400;
         data: ModelsBadRequestResponse;
     } | {
         status: 500;
         data: ModelsInternalServerErrorResponse;
-    }>("/chat", oazapfts.json({
+    }>(`/chat/plan/${encodeURIComponent(mealPlanId)}`, oazapfts.json({
         ...opts,
         method: "POST",
-        body: modelsChatRequest
+        body: modelsGeneralChatRequest
+    }));
+}
+/**
+ * Handle recipe suggestion chat request
+ */
+export function suggestRecipe(mealPlanId: string, modelsSuggestChatRequest: ModelsSuggestChatRequest, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsSuggestChatResponse;
+    } | {
+        status: 400;
+        data: ModelsBadRequestResponse;
+    } | {
+        status: 500;
+        data: ModelsInternalServerErrorResponse;
+    }>(`/chat/plan/${encodeURIComponent(mealPlanId)}/recipe`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: modelsSuggestChatRequest
+    }));
+}
+/**
+ * Handle recipe modification chat request
+ */
+export function modifyRecipe(mealPlanId: string, recipeId: string, modelsModifyChatRequest: ModelsModifyChatRequest, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsModifyChatResponse;
+    } | {
+        status: 400;
+        data: ModelsBadRequestResponse;
+    } | {
+        status: 500;
+        data: ModelsInternalServerErrorResponse;
+    }>(`/chat/plan/${encodeURIComponent(mealPlanId)}/recipe/${encodeURIComponent(recipeId)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: modelsModifyChatRequest
     }));
 }
 /**
