@@ -1,6 +1,5 @@
-import { Outlet, Navigate, useLocation, useNavigate } from "react-router-dom"
+import { Outlet, Navigate, useLocation } from "react-router-dom"
 import { useUser } from "../hooks"
-import { useEffect, useRef } from "react"
 
 export const STEPS = {
   account: "/signup/account",
@@ -14,27 +13,24 @@ export const STEPS = {
 
 export default function SignupLayout() {
   const { pathname } = useLocation()
-  const nav = useNavigate()
-  const { isAuthenticated, profile } = useUser()
+  const { isAuthenticated, profile, isLoading } = useUser()
 
-  const hasRedirected = useRef(false)
+  if (isLoading) return null
 
-  useEffect(() => {
-    if (!isAuthenticated || !profile || hasRedirected.current) {
-      return
+  if (pathname === "/signup") {
+    if (!isAuthenticated || !profile) {
+      return <Navigate to={STEPS.account} replace />
     }
-    if (profile.setup_step === "done") {
-      hasRedirected.current = true
-      nav("/", { replace: true })
+    if (profile?.setup_step === "done") {
+      return <Navigate to="/" replace />
     }
-    const target = STEPS[profile.setup_step as keyof typeof STEPS]
-    if (target && target !== pathname) {
-      hasRedirected.current = true
-      nav(target, { replace: true })
+    const currentStep = STEPS[profile.setup_step]
+    if (!currentStep) {
+      console.warn(`Invalid setup step: ${profile.setup_step}`)
+      return <Navigate to={STEPS.account} replace />
     }
-  }, [isAuthenticated, profile, pathname, nav])
-
-  if (pathname === "/signup") return <Navigate to="account" replace />
+    return <Navigate to={currentStep} replace />
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center p-4 space-y-2">
