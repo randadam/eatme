@@ -45,6 +45,14 @@ func NewSQLiteStore(dsn string) (*SQLiteStore, error) {
 	return &SQLiteStore{db}, nil
 }
 
+func NewSQLiteStoreWithDB(db *sql.DB) (*SQLiteStore, error) {
+	store := &SQLiteStore{db}
+	if err := migrate(db); err != nil {
+		return nil, fmt.Errorf("failed to migrate database: %w", err)
+	}
+	return store, nil
+}
+
 func (s *SQLiteStore) CreateUser(ctx context.Context, email, password string) (models.User, error) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	id := uuid.NewString()
@@ -192,6 +200,108 @@ func (s *SQLiteStore) SaveGlobalRecipe(ctx context.Context, recipe models.Global
 		return fmt.Errorf("failed to save global recipe: %w", err)
 	}
 	return nil
+}
+
+func (s *SQLiteStore) CreateSuggestionThread(ctx context.Context, userID string, thread models.SuggestionThread) error {
+	_, err := s.run.ExecContext(ctx, `
+		INSERT INTO recipe_suggestion_threads (id, user_id, original_prompt)
+		VALUES (?, ?, ?)
+		ON CONFLICT(id) DO UPDATE SET
+			user_id            = excluded.user_id,
+			original_prompt    = excluded.original_prompt,
+			updated_at         = CURRENT_TIMESTAMP;
+	`, thread.ID, userID, thread.OriginalPrompt)
+	if err != nil {
+		return fmt.Errorf("failed to create suggestion thread: %w", err)
+	}
+	return nil
+}
+
+func (s *SQLiteStore) AppendToSuggestionThread(ctx context.Context, threadID string, suggestion models.RecipeSuggestion) error {
+	recipeJson, err := json.Marshal(suggestion.Suggestion)
+	if err != nil {
+		return fmt.Errorf("failed to marshal recipe: %w", err)
+	}
+	_, err = s.run.ExecContext(ctx, `
+		INSERT INTO recipe_suggestions (id, thread_id, recipe_json, response_text, accepted)
+		VALUES (?, ?, ?, ?, ?)
+		ON CONFLICT(id) DO UPDATE SET
+			thread_id          = excluded.thread_id,
+			recipe_json        = excluded.recipe_json,
+			response_text      = excluded.response_text,
+			accepted           = excluded.accepted,
+			updated_at         = CURRENT_TIMESTAMP;
+	`, suggestion.ID, threadID, recipeJson, suggestion.ResponseText, suggestion.Accepted)
+	if err != nil {
+		return fmt.Errorf("failed to append to suggestion thread: %w", err)
+	}
+	return nil
+}
+
+func (s *SQLiteStore) AcceptSuggestion(ctx context.Context, threadID string, suggestion models.RecipeSuggestion) error {
+	_, err := s.run.ExecContext(ctx, `
+		UPDATE recipe_suggestions
+		SET accepted = true
+		WHERE id = ?;
+	`, suggestion.ID)
+	if err != nil {
+		return fmt.Errorf("failed to accept suggestion: %w", err)
+	}
+	return nil
+}
+
+func (s *SQLiteStore) GetSuggestionThread(ctx context.Context, threadID string) (models.SuggestionThread, error) {
+	var thread models.SuggestionThread
+	err := s.run.QueryRowContext(ctx, `
+		SELECT 
+			id, original_prompt,
+			created_at, updated_at
+		FROM recipe_suggestion_threads WHERE id = ?;
+	`, threadID).Scan(
+		&thread.ID, &thread.OriginalPrompt,
+		&thread.CreatedAt, &thread.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return thread, ErrNotFound
+		}
+		return thread, fmt.Errorf("failed to get suggestion thread: %w", err)
+	}
+
+	var suggestions []models.RecipeSuggestion
+	rows, err := s.run.QueryContext(ctx, `
+		SELECT 
+			id, thread_id, recipe_json, response_text, accepted,
+			created_at, updated_at
+		FROM recipe_suggestions WHERE thread_id = ?;
+	`, threadID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return thread, ErrNotFound
+		}
+		return thread, fmt.Errorf("failed to get suggestion thread: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var suggestion models.RecipeSuggestion
+		var recipeJson []byte
+		err := rows.Scan(
+			&suggestion.ID, &suggestion.ThreadID, &recipeJson, &suggestion.ResponseText, &suggestion.Accepted,
+			&suggestion.CreatedAt, &suggestion.UpdatedAt,
+		)
+		if err != nil {
+			return thread, fmt.Errorf("failed to scan recipe suggestion: %w", err)
+		}
+		err = json.Unmarshal(recipeJson, &suggestion.Suggestion)
+		if err != nil {
+			return thread, fmt.Errorf("failed to unmarshal recipe suggestion: %w", err)
+		}
+		suggestions = append(suggestions, suggestion)
+	}
+	thread.Suggestions = suggestions
+
+	return thread, nil
 }
 
 func (s *SQLiteStore) GetUserRecipe(ctx context.Context, userID string, recipeID string) (models.UserRecipe, error) {
@@ -453,6 +563,26 @@ func migrate(db *sql.DB) error {
 		updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);`
 
+	const recipeSuggestionThreads = `
+	CREATE TABLE IF NOT EXISTS recipe_suggestion_threads (
+		id                 TEXT PRIMARY KEY,
+		user_id            TEXT REFERENCES users(id) ON DELETE CASCADE,
+		original_prompt    TEXT NOT NULL,
+		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);`
+
+	const recipeSuggestions = `
+	CREATE TABLE IF NOT EXISTS recipe_suggestions (
+		id                 TEXT PRIMARY KEY,
+		thread_id          TEXT REFERENCES recipe_suggestion_threads(id) ON DELETE CASCADE,
+		recipe_json        JSON NOT NULL DEFAULT '{}',
+		response_text      TEXT NOT NULL,
+		accepted           BOOLEAN NOT NULL DEFAULT FALSE,
+		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);`
+
 	const userRecipes = `
 	CREATE TABLE IF NOT EXISTS user_recipes (
 		id                TEXT PRIMARY KEY,
@@ -495,6 +625,12 @@ func migrate(db *sql.DB) error {
 	}
 	if _, err := db.Exec(globalRecipes); err != nil {
 		return fmt.Errorf("failed to create global_recipes table: %w", err)
+	}
+	if _, err := db.Exec(recipeSuggestionThreads); err != nil {
+		return fmt.Errorf("failed to create recipe_suggestion_threads table: %w", err)
+	}
+	if _, err := db.Exec(recipeSuggestions); err != nil {
+		return fmt.Errorf("failed to create recipe_suggestions table: %w", err)
 	}
 	if _, err := db.Exec(userRecipes); err != nil {
 		return fmt.Errorf("failed to create user_recipes table: %w", err)

@@ -10,19 +10,25 @@ import (
 	"github.com/ajohnston1219/eatme/api/models"
 )
 
-type MLClient struct {
+type MLClient interface {
+	SuggestChat(ctx context.Context, req *models.InternalSuggestChatRequest) (*models.SuggestChatResponse, error)
+	ModifyChat(ctx context.Context, req *models.InternalModifyChatRequest) (*models.ModifyChatResponse, error)
+	GeneralChat(ctx context.Context, req *models.InternalGeneralChatRequest) (*models.GeneralChatResponse, error)
+}
+
+type mlClient struct {
 	http *http.Client
 	host string
 }
 
-func NewMLClient(host string) *MLClient {
-	return &MLClient{
+func NewMLClient(host string) MLClient {
+	return mlClient{
 		http: &http.Client{},
 		host: host,
 	}
 }
 
-func (c *MLClient) SuggestChat(ctx context.Context, req *models.InternalSuggestChatRequest) (*models.SuggestChatResponse, error) {
+func (c mlClient) SuggestChat(ctx context.Context, req *models.InternalSuggestChatRequest) (*models.SuggestChatResponse, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("marshal req: %w", err)
@@ -51,7 +57,7 @@ func (c *MLClient) SuggestChat(ctx context.Context, req *models.InternalSuggestC
 	return &mlResp, nil
 }
 
-func (c *MLClient) ModifyChat(ctx context.Context, req *models.InternalModifyChatRequest) (*models.ModifyChatResponse, error) {
+func (c mlClient) ModifyChat(ctx context.Context, req *models.InternalModifyChatRequest) (*models.ModifyChatResponse, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("marshal req: %w", err)
@@ -80,7 +86,7 @@ func (c *MLClient) ModifyChat(ctx context.Context, req *models.InternalModifyCha
 	return &mlResp, nil
 }
 
-func (c *MLClient) GeneralChat(ctx context.Context, req *models.InternalGeneralChatRequest) (*models.GeneralChatResponse, error) {
+func (c mlClient) GeneralChat(ctx context.Context, req *models.InternalGeneralChatRequest) (*models.GeneralChatResponse, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("marshal req: %w", err)

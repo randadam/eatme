@@ -6,17 +6,23 @@ type SuggestChatRequest struct {
 	Message string `json:"message" binding:"required"`
 }
 
-type InternalSuggestChatRequest struct {
-	Message string  `json:"message" binding:"required"`
-	Profile Profile `json:"profile" binding:"required"`
+// NextSuggestionRequest represents a chat request to the ML backend to get the next recipe suggestion
+// @Description A chat request to the ML backend to get the next recipe suggestion
+type NextSuggestionRequest struct {
+	ThreadID string `json:"thread_id" binding:"required"`
 }
 
-//	SuggestChatResponse represents a chat response to the ML backend to suggest a recipe
-//
+type InternalSuggestChatRequest struct {
+	Message string   `json:"message" binding:"required"`
+	Profile Profile  `json:"profile" binding:"required"`
+	History []string `json:"history" binding:"required"`
+}
+
+// SuggestChatResponse represents a chat response to the ML backend to suggest a recipe
 // @Description A chat response to the ML backend to suggest a recipe
 type SuggestChatResponse struct {
+	ThreadID     string     `json:"thread_id" binding:"required"`
 	ResponseText string     `json:"response_text" binding:"required"`
-	RecipeID     string     `json:"recipe_id" binding:"required"`
 	NewRecipe    RecipeBody `json:"new_recipe" binding:"required"`
 }
 

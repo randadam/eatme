@@ -358,14 +358,14 @@ definitions:
     properties:
       new_recipe:
         $ref: '#/definitions/models.RecipeBody'
-      recipe_id:
-        type: string
       response_text:
+        type: string
+      thread_id:
         type: string
     required:
     - new_recipe
-    - recipe_id
     - response_text
+    - thread_id
     type: object
   models.UnauthorizedResponse:
     description: Unauthorized error response
@@ -435,42 +435,11 @@ info:
   title: EatMe API
   version: "1.0"
 paths:
-  /chat/recipes:
-    post:
-      consumes:
-      - application/json
-      description: Handle recipe suggestion chat request
-      operationId: suggestRecipe
-      parameters:
-      - description: Suggest chat request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/models.SuggestChatRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.SuggestChatResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.BadRequestResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
-      summary: Handle recipe suggestion chat request
-      tags:
-      - Chat
   /chat/recipes/{recipeId}:
     put:
       consumes:
       - application/json
-      description: Handle recipe modification chat request
+      description: Handle modifying a recipe
       operationId: modifyRecipe
       parameters:
       - description: Recipe ID
@@ -499,7 +468,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.InternalServerErrorResponse'
-      summary: Handle recipe modification chat request
+      summary: Handle modifying a recipe
       tags:
       - Chat
   /chat/recipes/{recipeId}/question:
@@ -536,6 +505,95 @@ paths:
           schema:
             $ref: '#/definitions/models.InternalServerErrorResponse'
       summary: Handle general chat request
+      tags:
+      - Chat
+  /chat/suggest:
+    post:
+      consumes:
+      - application/json
+      description: Handle starting a recipe suggestion chat
+      operationId: suggestRecipe
+      parameters:
+      - description: Suggest chat request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SuggestChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuggestChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Handle starting a recipe suggestion chat
+      tags:
+      - Chat
+  /chat/suggest/{threadId}/accept:
+    post:
+      description: Handle accepting a recipe suggestion
+      operationId: acceptRecipeSuggestion
+      parameters:
+      - description: Thread ID
+        in: path
+        name: threadId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserRecipe'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Handle accepting a recipe suggestion
+      tags:
+      - Chat
+  /chat/suggest/{threadId}/next:
+    get:
+      consumes:
+      - application/json
+      description: Handle getting next recipe suggestion
+      operationId: nextRecipeSuggestion
+      parameters:
+      - description: Thread ID
+        in: path
+        name: threadId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuggestChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Handle getting next recipe suggestion
       tags:
       - Chat
   /profile:

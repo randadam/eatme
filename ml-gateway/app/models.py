@@ -21,6 +21,7 @@ class Profile(BaseModel):
 
 class SuggestChatRequest(BaseModel):
     message: str
+    history: list[str]
     profile: Profile
 
 class SuggestChatResponse(BaseModel):

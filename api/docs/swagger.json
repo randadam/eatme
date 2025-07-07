@@ -9,56 +9,9 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
-        "/chat/recipes": {
-            "post": {
-                "description": "Handle recipe suggestion chat request",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Chat"
-                ],
-                "summary": "Handle recipe suggestion chat request",
-                "operationId": "suggestRecipe",
-                "parameters": [
-                    {
-                        "description": "Suggest chat request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.SuggestChatRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.SuggestChatResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/chat/recipes/{recipeId}": {
             "put": {
-                "description": "Handle recipe modification chat request",
+                "description": "Handle modifying a recipe",
                 "consumes": [
                     "application/json"
                 ],
@@ -68,7 +21,7 @@
                 "tags": [
                     "Chat"
                 ],
-                "summary": "Handle recipe modification chat request",
+                "summary": "Handle modifying a recipe",
                 "operationId": "modifyRecipe",
                 "parameters": [
                     {
@@ -147,6 +100,140 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.GeneralChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chat/suggest": {
+            "post": {
+                "description": "Handle starting a recipe suggestion chat",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "Handle starting a recipe suggestion chat",
+                "operationId": "suggestRecipe",
+                "parameters": [
+                    {
+                        "description": "Suggest chat request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SuggestChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuggestChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chat/suggest/{threadId}/accept": {
+            "post": {
+                "description": "Handle accepting a recipe suggestion",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "Handle accepting a recipe suggestion",
+                "operationId": "acceptRecipeSuggestion",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thread ID",
+                        "name": "threadId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserRecipe"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chat/suggest/{threadId}/next": {
+            "get": {
+                "description": "Handle getting next recipe suggestion",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "Handle getting next recipe suggestion",
+                "operationId": "nextRecipeSuggestion",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thread ID",
+                        "name": "threadId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuggestChatResponse"
                         }
                     },
                     "400": {
@@ -859,17 +946,17 @@
             "type": "object",
             "required": [
                 "new_recipe",
-                "recipe_id",
-                "response_text"
+                "response_text",
+                "thread_id"
             ],
             "properties": {
                 "new_recipe": {
                     "$ref": "#/definitions/models.RecipeBody"
                 },
-                "recipe_id": {
+                "response_text": {
                     "type": "string"
                 },
-                "response_text": {
+                "thread_id": {
                     "type": "string"
                 }
             }

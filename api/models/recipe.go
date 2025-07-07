@@ -70,7 +70,29 @@ type GlobalRecipe struct {
 	SourceType RecipeSource `json:"source_type" binding:"required"`
 	CreatedAt  time.Time    `json:"created_at" binding:"required"`
 	UpdatedAt  time.Time    `json:"updated_at" binding:"required"`
-	RecipeBody RecipeBody
+	RecipeBody
+}
+
+// RecipeSuggestion represents a suggestion for a recipe
+// @Description A suggestion for a recipe
+type RecipeSuggestion struct {
+	ID           string     `json:"id" binding:"required"`
+	ThreadID     string     `json:"thread_id" binding:"required"`
+	Suggestion   RecipeBody `json:"suggestion" binding:"required"`
+	ResponseText string     `json:"response_text" binding:"required"`
+	Accepted     bool       `json:"accepted" binding:"required"`
+	CreatedAt    time.Time  `json:"created_at" binding:"required"`
+	UpdatedAt    time.Time  `json:"updated_at" binding:"required"`
+}
+
+// SuggestionThread represents a thread of suggestions for a recipe
+// @Description A thread of suggestions for a recipe
+type SuggestionThread struct {
+	ID             string             `json:"id" binding:"required"`
+	OriginalPrompt string             `json:"original_prompt" binding:"required"`
+	Suggestions    []RecipeSuggestion `json:"suggestions" binding:"required"`
+	CreatedAt      time.Time          `json:"created_at" binding:"required"`
+	UpdatedAt      time.Time          `json:"updated_at" binding:"required"`
 }
 
 // UserRecipe is the user's personal copy (favorites, edits).

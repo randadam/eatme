@@ -20,8 +20,8 @@ func NewChatHandler(chatService *chat.ChatService) *ChatHandler {
 	}
 }
 
-// @Summary Handle recipe suggestion chat request
-// @Description Handle recipe suggestion chat request
+// @Summary Handle starting a recipe suggestion chat
+// @Description Handle starting a recipe suggestion chat
 // @ID suggestRecipe
 // @Tags Chat
 // @Accept json
@@ -30,8 +30,8 @@ func NewChatHandler(chatService *chat.ChatService) *ChatHandler {
 // @Success 200 {object} models.SuggestChatResponse
 // @Failure 400 {object} models.BadRequestResponse
 // @Failure 500 {object} models.InternalServerErrorResponse
-// @Router /chat/recipes [post]
-func (h *ChatHandler) SuggestChat(w http.ResponseWriter, r *http.Request) {
+// @Router /chat/suggest [post]
+func (h *ChatHandler) StartSuggestChat(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	if userID == "" {
 		errorJSON(w, errors.New("missing user ID"), http.StatusUnauthorized)
@@ -44,7 +44,7 @@ func (h *ChatHandler) SuggestChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.chatService.SuggestChat(r.Context(), userID, &requestBody)
+	resp, err := h.chatService.StartSuggestChat(r.Context(), userID, &requestBody)
 	if err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
@@ -53,8 +53,73 @@ func (h *ChatHandler) SuggestChat(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
-// @Summary Handle recipe modification chat request
-// @Description Handle recipe modification chat request
+// @Summary Handle getting next recipe suggestion
+// @Description Handle getting next recipe suggestion
+// @ID nextRecipeSuggestion
+// @Tags Chat
+// @Accept json
+// @Produce json
+// @Param threadId path string true "Thread ID"
+// @Success 200 {object} models.SuggestChatResponse
+// @Failure 400 {object} models.BadRequestResponse
+// @Failure 500 {object} models.InternalServerErrorResponse
+// @Router /chat/suggest/{threadId}/next [get]
+func (h *ChatHandler) NextRecipeSuggestion(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	if userID == "" {
+		errorJSON(w, errors.New("missing user ID"), http.StatusUnauthorized)
+		return
+	}
+
+	threadId := chi.URLParam(r, "threadId")
+	if threadId == "" {
+		errorJSON(w, errors.New("missing thread ID"), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.chatService.GetNextSuggestion(r.Context(), userID, threadId)
+	if err != nil {
+		errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// @Summary Handle accepting a recipe suggestion
+// @Description Handle accepting a recipe suggestion
+// @ID acceptRecipeSuggestion
+// @Tags Chat
+// @Produce json
+// @Param threadId path string true "Thread ID"
+// @Success 200 {object} models.UserRecipe
+// @Failure 400 {object} models.BadRequestResponse
+// @Failure 500 {object} models.InternalServerErrorResponse
+// @Router /chat/suggest/{threadId}/accept [post]
+func (h *ChatHandler) AcceptRecipeSuggestion(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	if userID == "" {
+		errorJSON(w, errors.New("missing user ID"), http.StatusUnauthorized)
+		return
+	}
+
+	threadId := chi.URLParam(r, "threadId")
+	if threadId == "" {
+		errorJSON(w, errors.New("missing thread ID"), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.chatService.AcceptRecipeSuggestion(r.Context(), userID, threadId)
+	if err != nil {
+		errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// @Summary Handle modifying a recipe
+// @Description Handle modifying a recipe
 // @ID modifyRecipe
 // @Tags Chat
 // @Accept json
