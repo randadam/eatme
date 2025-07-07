@@ -28,7 +28,7 @@ export default function AllRecipesPage() {
         suggestRecipe(message, {
             onSuccess: (resp) => {
                 setDrawerOpen(false)
-                nav(`/recipe/${resp.recipe_id}`)
+                nav(`/recipes/${resp.recipe_id}`)
             },
         })
     }

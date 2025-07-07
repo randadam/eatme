@@ -511,23 +511,3 @@ func migrate(db *sql.DB) error {
 func isUniqueViolation(err error, field string) bool {
 	return err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed: "+field)
 }
-
-type Ingredients []models.Ingredient
-
-func (i *Ingredients) Scan(value interface{}) error {
-	b, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan ingredients: expected []byte, got %T", value)
-	}
-	return json.Unmarshal(b, i)
-}
-
-type Steps []string
-
-func (s *Steps) Scan(value interface{}) error {
-	b, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan steps: expected []byte, got %T", value)
-	}
-	return json.Unmarshal(b, s)
-}

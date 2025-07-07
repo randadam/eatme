@@ -36,17 +36,9 @@ interface Props {
 export function Recipe({ recipe }: Props) {
     const [drawerState, setDrawerState] = useState<DrawerState>({
         open: false,
-        mode: "suggest",
-        recipe: undefined,
+        mode: "modify",
+        recipe,
     })
-
-    const openSuggest = () => {
-        setDrawerState({
-            open: true,
-            mode: "suggest",
-            recipe: undefined,
-        })
-    }
 
     const openModify = (recipe: api.ModelsUserRecipe) => {
         setDrawerState({
@@ -59,16 +51,11 @@ export function Recipe({ recipe }: Props) {
     const closeDrawer = () => {
         setDrawerState({
             open: false,
-            mode: "suggest",
-            recipe: undefined,
+            mode: "modify",
+            recipe,
         })
     }
 
-    const {
-        suggestRecipe,
-        isPending: suggestRecipePending,
-        error: suggestRecipeError
-    } = useSuggestChat()
     const {
         modifyRecipe,
         isPending: modifyRecipePending,
@@ -77,11 +64,6 @@ export function Recipe({ recipe }: Props) {
 
     const handleSend = (message: string) => {
         switch (drawerState.mode) {
-            case "suggest":
-                suggestRecipe(message, {
-                    onSuccess: () => closeDrawer(),
-                })
-                break;
             case "modify":
                 modifyRecipe(message, {
                     onSuccess: () => closeDrawer(),
@@ -91,16 +73,10 @@ export function Recipe({ recipe }: Props) {
     }
 
     return (
-        <div>
-            <div>
-                <h1>{recipe.title}</h1>
-                <div className="border rounded p-2 mt-2">
-                    <RecipeAccordion recipe={recipe} />
-                    <Button onClick={() => openModify(recipe)}>Modify</Button>
-                </div>
-            </div>
-            <div className="mt-2">
-                <Button onClick={openSuggest}>Add Recipe</Button>
+        <>
+            <div className="border rounded p-2 mt-2">
+                <RecipeAccordion recipe={recipe} />
+                <Button onClick={() => openModify(recipe)}>Modify</Button>
             </div>
             <ChatDrawer
                 open={drawerState.open}
@@ -108,16 +84,10 @@ export function Recipe({ recipe }: Props) {
                 mode={drawerState.mode}
                 recipe={drawerState.recipe}
                 onSend={handleSend}
-                loading={
-                    suggestRecipePending ||
-                    modifyRecipePending
-                }
+                loading={modifyRecipePending}
+                error={modifyRecipeError?.message}
             />
-            <div>
-                {suggestRecipeError && <p>{suggestRecipeError.message}</p>}
-                {modifyRecipeError && <p>{modifyRecipeError.message}</p>}
-            </div>
-        </div>
+        </>
     )
 }
 

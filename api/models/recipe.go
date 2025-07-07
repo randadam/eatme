@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+)
 
 type MeasurementUnit string
 
@@ -21,15 +25,35 @@ type Ingredient struct {
 	Unit     MeasurementUnit `json:"unit" example:"cup" binding:"required"`
 }
 
+type Ingredients []Ingredient
+
+func (i *Ingredients) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan ingredients: expected []byte, got %T", value)
+	}
+	return json.Unmarshal(b, i)
+}
+
+type Steps []string
+
+func (s *Steps) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan steps: expected []byte, got %T", value)
+	}
+	return json.Unmarshal(b, s)
+}
+
 // RecipeBody represents the contents of a recipe
 // @Description Contents of a recipe
 type RecipeBody struct {
-	Title            string       `json:"title" example:"Veal Bolognese" binding:"required"`
-	Description      string       `json:"description" example:"A classic Italian dish" binding:"required"`
-	Ingredients      []Ingredient `json:"ingredients" binding:"required"`
-	Steps            []string     `json:"steps" binding:"required"`
-	Servings         int          `json:"servings" example:"4" binding:"required"`
-	TotalTimeMinutes int          `json:"total_time_minutes" example:"120" binding:"required"`
+	Title            string      `json:"title" example:"Veal Bolognese" binding:"required"`
+	Description      string      `json:"description" example:"A classic Italian dish" binding:"required"`
+	Ingredients      Ingredients `json:"ingredients" binding:"required"`
+	Steps            Steps       `json:"steps" binding:"required"`
+	Servings         int         `json:"servings" example:"4" binding:"required"`
+	TotalTimeMinutes int         `json:"total_time_minutes" example:"120" binding:"required"`
 }
 
 type RecipeSource string
