@@ -74,3 +74,28 @@ func (h *MealHandler) GetMealPlan(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, mealPlan)
 }
+
+// @Summary Get all meal plans for user
+// @Description Get all meal plans for user
+// @ID getAllMealPlans
+// @Tags Meal
+// @Accept json
+// @Produce json
+// @Success 200 {array} models.MealPlan
+// @Failure 400 {object} models.BadRequestResponse
+// @Failure 500 {object} models.InternalServerErrorResponse
+// @Router /meal/plans [get]
+func (h *MealHandler) GetAllMealPlans(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	if userID == "" {
+		errorJSON(w, errors.New("missing user ID"), http.StatusUnauthorized)
+		return
+	}
+
+	mealPlans, err := h.mealService.GetAllPlans(userID)
+	if err != nil {
+		errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, http.StatusOK, mealPlans)
+}

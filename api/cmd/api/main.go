@@ -59,6 +59,7 @@ func main() {
 	mealHandler := handlers.NewMealHandler(mealService)
 	r.Route("/meal", func(r chi.Router) {
 		r.Use(handlers.AuthMiddleware(store))
+		r.Get("/plans", mealHandler.GetAllMealPlans)
 		r.Post("/plan", mealHandler.CreateMealPlan)
 		r.Get("/plan/{meal_plan_id}", mealHandler.GetMealPlan)
 	})

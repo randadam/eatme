@@ -208,6 +208,23 @@ export function getMealPlan(mealPlanId: string, opts?: Oazapfts.RequestOpts) {
     });
 }
 /**
+ * Get all meal plans for user
+ */
+export function getAllMealPlans(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsMealPlan[];
+    } | {
+        status: 400;
+        data: ModelsBadRequestResponse;
+    } | {
+        status: 500;
+        data: ModelsInternalServerErrorResponse;
+    }>("/meal/plans", {
+        ...opts
+    });
+}
+/**
  * Get user profile
  */
 export function getProfile(opts?: Oazapfts.RequestOpts) {

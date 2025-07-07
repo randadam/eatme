@@ -5,6 +5,24 @@ import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { useModifyChat, useSuggestChat } from "../chat/hooks";
 import { ChatDrawer } from "../chat/chat-drawer";
+import { useParams } from "react-router-dom";
+import { useMealPlan } from "./hooks";
+
+export default function MealPlanLayout() {
+    const mealPlanId = useParams().id
+    if (!mealPlanId) {
+        return <h1>Missing meal plan ID</h1>
+    }
+    const { data: mealPlan, isLoading, error } = useMealPlan(mealPlanId)
+    console.log('mealPlan', mealPlan)
+    return (
+        <>
+            {isLoading && <p>Loading meal plan...</p>}
+            {error && <p>Error loading meal plan: {error.message}</p>}
+            {mealPlan && <MealPlan plan={mealPlan}/>}
+        </>
+    )
+}
 
 interface DrawerState {
     open: boolean;
@@ -16,7 +34,7 @@ interface Props {
     plan: api.ModelsMealPlan
 }
 
-export default function MealPlan({ plan }: Props) {
+export function MealPlan({ plan }: Props) {
     const [drawerState, setDrawerState] = useState<DrawerState>({
         open: false,
         mode: "suggest",

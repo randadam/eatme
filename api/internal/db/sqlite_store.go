@@ -144,6 +144,31 @@ func (s *SQLiteStore) SaveMealPlan(userID string, mealPlan models.MealPlan) erro
 	return nil
 }
 
+func (s *SQLiteStore) GetAllPlans(userID string) ([]models.MealPlan, error) {
+	var mealPlans []models.MealPlan
+	var recipes []byte
+
+	rows, err := s.Query(`
+		SELECT id, user_id, recipes FROM meal_plans WHERE user_id = ?;
+	`, userID)
+	if err != nil {
+		return mealPlans, fmt.Errorf("failed to get meal plans: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var mealPlan models.MealPlan
+		if err := rows.Scan(&mealPlan.ID, &mealPlan.UserID, &recipes); err != nil {
+			return mealPlans, fmt.Errorf("failed to scan meal plan: %w", err)
+		}
+		if err := json.Unmarshal(recipes, &mealPlan.Recipes); err != nil {
+			return mealPlans, fmt.Errorf("failed to unmarshal recipes: %w", err)
+		}
+		mealPlans = append(mealPlans, mealPlan)
+	}
+	return mealPlans, nil
+}
+
 func (s *SQLiteStore) GetMealPlan(userID string, mealPlanID string) (models.MealPlan, error) {
 	var mealPlan models.MealPlan
 	var recipes []byte

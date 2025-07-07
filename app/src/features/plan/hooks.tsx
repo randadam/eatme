@@ -30,3 +30,16 @@ export function useMealPlan(mealPlanId: string) {
         },
     })
 }
+
+export function useAllMealPlans() {
+    return useQuery({
+        queryKey: mealPlanKeys.all,
+        queryFn: async () => {
+            const res = await api.getAllMealPlans()
+            if (res.status > 299) {
+                throw new Error(JSON.stringify(res.data))
+            }
+            return res.data as api.ModelsMealPlan[]
+        },
+    })
+}

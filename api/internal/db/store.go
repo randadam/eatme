@@ -8,6 +8,7 @@ type Store interface {
 	GetProfile(userID string) (models.Profile, error)
 	SaveProfile(userID string, profile models.Profile) error
 
+	GetAllPlans(userID string) ([]models.MealPlan, error)
 	GetMealPlan(userID string, mealPlanID string) (models.MealPlan, error)
 	SaveMealPlan(userID string, mealPlan models.MealPlan) error
 }

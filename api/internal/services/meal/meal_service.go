@@ -34,3 +34,7 @@ func (s *MealService) SaveMealPlan(userID string, mealPlan models.MealPlan) erro
 func (s *MealService) GetMealPlan(userID string, mealPlanID string) (models.MealPlan, error) {
 	return s.store.GetMealPlan(userID, mealPlanID)
 }
+
+func (s *MealService) GetAllPlans(userID string) ([]models.MealPlan, error) {
+	return s.store.GetAllPlans(userID)
+}

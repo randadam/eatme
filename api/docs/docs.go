@@ -265,6 +265,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/meal/plans": {
+            "get": {
+                "description": "Get all meal plans for user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Meal"
+                ],
+                "summary": "Get all meal plans for user",
+                "operationId": "getAllMealPlans",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.MealPlan"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profile": {
             "get": {
                 "description": "Gets the profile for a user",
