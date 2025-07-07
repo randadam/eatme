@@ -43,7 +43,7 @@ export default function SkillStep() {
         return <Navigate to="/" replace />
     }
 
-    const { mutate: saveProfile, isPending, error } = useSaveProfile()
+    const { saveProfile, isPending, error } = useSaveProfile()
 
     const form = useForm<z.infer<typeof skillForm>>({
         resolver: zodResolver(skillForm),

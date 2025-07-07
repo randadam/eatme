@@ -1,15 +1,6 @@
 import { Outlet, Navigate, useLocation } from "react-router-dom"
 import { useUser } from "@/features/auth/hooks"
-
-export const STEPS = {
-  account: "/signup/account",
-  profile: "/signup/profile",
-  skill: "/signup/skill",
-  cuisines: "/signup/cuisines",
-  diet: "/signup/diet",
-  equipment: "/signup/equipment",
-  allergies: "/signup/allergies",
-}
+import { STEPS } from "@/features/auth/signup/constants"
 
 export default function SignupPage() {
   const { pathname } = useLocation()

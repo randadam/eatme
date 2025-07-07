@@ -22,7 +22,7 @@ export default function AccountStep() {
     });
 
     const nav = useNavigate()
-    const { mutate: signup, isPending, error } = useSignup()
+    const { signup, isPending, error } = useSignup()
 
     function onSubmit(values: z.infer<typeof accountForm>) {
         signup(values, {

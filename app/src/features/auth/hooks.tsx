@@ -26,6 +26,17 @@ export function useSignup() {
 export function useUser() {
   const qc = useQueryClient();
   const token = getToken();
+  if (!token) {
+    return {
+      isAuthenticated: false,
+      profile: null,
+      isLoading: false,
+      isError: false,
+      error: null,
+      logout: () => {},
+      refresh: () => {},
+    }
+  }
 
   const query = useQuery({
     queryKey: keys.profile(),

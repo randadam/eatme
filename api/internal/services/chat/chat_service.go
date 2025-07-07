@@ -24,7 +24,7 @@ func NewChatService(mlClient *clients.MLClient, userService *user.UserService, r
 }
 
 func (s *ChatService) SuggestChat(ctx context.Context, userID string, req *models.SuggestChatRequest) (*models.SuggestChatResponse, error) {
-	profile, err := s.userService.GetProfile(userID)
+	profile, err := s.userService.GetProfile(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (s *ChatService) SuggestChat(ctx context.Context, userID string, req *model
 		return nil, err
 	}
 
-	newRecipe, err := s.recipeService.NewRecipe(userID, resp.NewRecipe)
+	newRecipe, err := s.recipeService.NewRecipe(ctx, userID, resp.NewRecipe)
 	if err != nil {
 		return nil, err
 	}
@@ -49,12 +49,12 @@ func (s *ChatService) SuggestChat(ctx context.Context, userID string, req *model
 }
 
 func (s *ChatService) ModifyChat(ctx context.Context, userID string, recipeID string, req *models.ModifyChatRequest) (*models.ModifyChatResponse, error) {
-	profile, err := s.userService.GetProfile(userID)
+	profile, err := s.userService.GetProfile(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	recipe, err := s.recipeService.GetUserRecipe(userID, recipeID)
+	recipe, err := s.recipeService.GetUserRecipe(ctx, userID, recipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (s *ChatService) ModifyChat(ctx context.Context, userID string, recipeID st
 		return nil, err
 	}
 
-	err = s.recipeService.UpdateRecipe(userID, recipeID, resp.NewRecipe)
+	err = s.recipeService.UpdateRecipe(ctx, userID, recipeID, resp.NewRecipe)
 	if err != nil {
 		return nil, err
 	}
@@ -78,12 +78,12 @@ func (s *ChatService) ModifyChat(ctx context.Context, userID string, recipeID st
 }
 
 func (s *ChatService) GeneralChat(ctx context.Context, userID string, recipeID string, req *models.GeneralChatRequest) (*models.GeneralChatResponse, error) {
-	profile, err := s.userService.GetProfile(userID)
+	profile, err := s.userService.GetProfile(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	recipe, err := s.recipeService.GetUserRecipe(userID, recipeID)
+	recipe, err := s.recipeService.GetUserRecipe(ctx, userID, recipeID)
 	if err != nil {
 		return nil, err
 	}

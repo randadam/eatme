@@ -33,11 +33,13 @@ export default function AllRecipesPage() {
         })
     }
 
+    const recipesList = (recipes?.data ?? []) as api.ModelsUserRecipe[]
+
     return (
         <div>
             <h1>Recipes</h1>
             <ul>
-                {(recipes?.data as api.ModelsUserRecipe[]).map(recipe => (
+                {recipesList.map(recipe => (
                     <>
                         <li key={recipe.id}>{recipe.title}</li>
                         <Button onClick={() => nav(`/recipe/${recipe.id}`)}>View</Button>

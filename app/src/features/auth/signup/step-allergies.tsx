@@ -28,7 +28,7 @@ export default function AllergiesStep() {
         return <Navigate to="/" replace />
     }
 
-    const { mutate: saveProfile, isPending, error } = useSaveProfile()
+    const { saveProfile, isPending, error } = useSaveProfile()
 
     const form = useForm<z.infer<typeof allergiesForm>>({
         resolver: zodResolver(allergiesForm),

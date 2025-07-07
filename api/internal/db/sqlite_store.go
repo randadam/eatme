@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -15,7 +16,15 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type SQLiteStore struct{ *sql.DB }
+type sqlRunner interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+}
+
+type SQLiteStore struct {
+	run sqlRunner
+}
 
 func NewSQLiteStore(dsn string) (*SQLiteStore, error) {
 	driver := "libsql"
@@ -36,11 +45,11 @@ func NewSQLiteStore(dsn string) (*SQLiteStore, error) {
 	return &SQLiteStore{db}, nil
 }
 
-func (s *SQLiteStore) CreateUser(email, password string) (models.User, error) {
+func (s *SQLiteStore) CreateUser(ctx context.Context, email, password string) (models.User, error) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	id := uuid.NewString()
 
-	_, err := s.Exec(`
+	_, err := s.run.ExecContext(ctx, `
 		INSERT INTO users (id, email, password) VALUES (?, ?, ?);`,
 		id, email, hash)
 	if err != nil {
@@ -52,7 +61,7 @@ func (s *SQLiteStore) CreateUser(email, password string) (models.User, error) {
 	return models.User{ID: id, Email: email}, nil
 }
 
-func (s *SQLiteStore) SaveProfile(userID string, p models.Profile) error {
+func (s *SQLiteStore) SaveProfile(ctx context.Context, userID string, p models.Profile) error {
 	cuisines, err := json.Marshal(p.Cuisines)
 	if err != nil {
 		return fmt.Errorf("failed to marshal cuisines: %w", err)
@@ -70,7 +79,7 @@ func (s *SQLiteStore) SaveProfile(userID string, p models.Profile) error {
 		return fmt.Errorf("failed to marshal allergies: %w", err)
 	}
 
-	_, err = s.Exec(`
+	_, err = s.run.ExecContext(ctx, `
 		INSERT INTO profiles (
 		  user_id, setup_step, name, skill,
 		  cuisines, diet, equipment, allergies
@@ -90,11 +99,11 @@ func (s *SQLiteStore) SaveProfile(userID string, p models.Profile) error {
 	return nil
 }
 
-func (s *SQLiteStore) GetProfile(userID string) (models.Profile, error) {
+func (s *SQLiteStore) GetProfile(ctx context.Context, userID string) (models.Profile, error) {
 	var p models.Profile
 	var cuisines, diet, equipment, allergies []byte
 
-	err := s.QueryRow(`
+	err := s.run.QueryRowContext(ctx, `
 		SELECT setup_step, name, skill,
 			COALESCE(cuisines, '[]'),
 			COALESCE(diet, '[]'),
@@ -128,10 +137,10 @@ func (s *SQLiteStore) GetProfile(userID string) (models.Profile, error) {
 	return p, nil
 }
 
-func (s *SQLiteStore) GetGlobalRecipe(id string) (models.GlobalRecipe, error) {
+func (s *SQLiteStore) GetGlobalRecipe(ctx context.Context, id string) (models.GlobalRecipe, error) {
 	var recipe models.GlobalRecipe
 
-	err := s.QueryRow(`
+	err := s.run.QueryRowContext(ctx, `
 		SELECT id, title, description, total_time_minutes, servings,
 			COALESCE(ingredients, '[]'),
 			COALESCE(steps, '[]'),
@@ -155,7 +164,7 @@ func (s *SQLiteStore) GetGlobalRecipe(id string) (models.GlobalRecipe, error) {
 	return recipe, nil
 }
 
-func (s *SQLiteStore) SaveGlobalRecipe(recipe models.GlobalRecipe) error {
+func (s *SQLiteStore) SaveGlobalRecipe(ctx context.Context, recipe models.GlobalRecipe) error {
 	ingredients, err := json.Marshal(recipe.RecipeBody.Ingredients)
 	if err != nil {
 		return fmt.Errorf("failed to marshal ingredients: %w", err)
@@ -165,7 +174,7 @@ func (s *SQLiteStore) SaveGlobalRecipe(recipe models.GlobalRecipe) error {
 		return fmt.Errorf("failed to marshal steps: %w", err)
 	}
 
-	_, err = s.Exec(`
+	_, err = s.run.ExecContext(ctx, `
 		INSERT INTO global_recipes (id, title, description, total_time_minutes, servings, ingredients, steps, source_type)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
@@ -176,7 +185,7 @@ func (s *SQLiteStore) SaveGlobalRecipe(recipe models.GlobalRecipe) error {
 			ingredients        = excluded.ingredients,
 			steps              = excluded.steps,
 			source_type        = excluded.source_type,
-			updated_at         = NOW();
+			updated_at         = CURRENT_TIMESTAMP;
 	`, recipe.ID, recipe.RecipeBody.Title, recipe.RecipeBody.Description,
 		recipe.RecipeBody.TotalTimeMinutes, recipe.RecipeBody.Servings, ingredients, steps, recipe.SourceType)
 	if err != nil {
@@ -185,9 +194,9 @@ func (s *SQLiteStore) SaveGlobalRecipe(recipe models.GlobalRecipe) error {
 	return nil
 }
 
-func (s *SQLiteStore) GetUserRecipe(userID string, recipeID string) (models.UserRecipe, error) {
+func (s *SQLiteStore) GetUserRecipe(ctx context.Context, userID string, recipeID string) (models.UserRecipe, error) {
 	var recipe models.UserRecipe
-	err := s.QueryRow(`
+	err := s.run.QueryRowContext(ctx, `
 		SELECT 
 			ur.id, ur.user_id, ur.global_recipe_id,
 			ur.title, ur.description, ur.is_favorite,
@@ -213,9 +222,9 @@ func (s *SQLiteStore) GetUserRecipe(userID string, recipeID string) (models.User
 	return recipe, nil
 }
 
-func (s *SQLiteStore) GetAllUserRecipes(userID string) ([]models.UserRecipe, error) {
+func (s *SQLiteStore) GetAllUserRecipes(ctx context.Context, userID string) ([]models.UserRecipe, error) {
 	var recipes []models.UserRecipe
-	rows, err := s.Query(`
+	rows, err := s.run.QueryContext(ctx, `
 		SELECT 
 			ur.id, ur.user_id, ur.global_recipe_id,
 			ur.title, ur.description, ur.is_favorite,
@@ -250,8 +259,8 @@ func (s *SQLiteStore) GetAllUserRecipes(userID string) ([]models.UserRecipe, err
 	return recipes, nil
 }
 
-func (s *SQLiteStore) SaveUserRecipe(recipe models.UserRecipe) error {
-	_, err := s.Exec(`
+func (s *SQLiteStore) SaveUserRecipe(ctx context.Context, recipe models.UserRecipe) error {
+	_, err := s.run.ExecContext(ctx, `
 		INSERT INTO user_recipes (id, user_id, global_recipe_id, title, description, is_favorite, latest_version_id)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
@@ -261,7 +270,7 @@ func (s *SQLiteStore) SaveUserRecipe(recipe models.UserRecipe) error {
 			description       = excluded.description,
 			is_favorite       = excluded.is_favorite,
 			latest_version_id = excluded.latest_version_id,
-			updated_at        = NOW();
+			updated_at        = CURRENT_TIMESTAMP;
 	`, recipe.ID, recipe.UserID, recipe.GlobalRecipeID, recipe.Title, recipe.Description, recipe.IsFavorite,
 		recipe.LatestVersionID)
 	if err != nil {
@@ -270,8 +279,8 @@ func (s *SQLiteStore) SaveUserRecipe(recipe models.UserRecipe) error {
 	return nil
 }
 
-func (s *SQLiteStore) UpdateUserRecipeVersion(userID string, recipeID string, versionID string) error {
-	_, err := s.Exec(`
+func (s *SQLiteStore) UpdateUserRecipeVersion(ctx context.Context, userID string, recipeID string, versionID string) error {
+	_, err := s.run.ExecContext(ctx, `
 		UPDATE user_recipes SET latest_version_id = ? WHERE id = ? AND user_id = ?;
 	`, versionID, recipeID, userID)
 	if err != nil {
@@ -280,10 +289,10 @@ func (s *SQLiteStore) UpdateUserRecipeVersion(userID string, recipeID string, ve
 	return nil
 }
 
-func (s *SQLiteStore) GetRecipeVersion(recipeVersionID string) (models.RecipeVersion, error) {
+func (s *SQLiteStore) GetRecipeVersion(ctx context.Context, recipeVersionID string) (models.RecipeVersion, error) {
 	var recipeVersion models.RecipeVersion
 
-	err := s.QueryRow(`
+	err := s.run.QueryRowContext(ctx, `
 		SELECT 
 			id, user_recipe_id, parent_id,
 			total_time_minutes, servings,
@@ -306,7 +315,7 @@ func (s *SQLiteStore) GetRecipeVersion(recipeVersionID string) (models.RecipeVer
 	return recipeVersion, nil
 }
 
-func (s *SQLiteStore) AddRecipeVersion(recipeVersion models.RecipeVersion) error {
+func (s *SQLiteStore) AddRecipeVersion(ctx context.Context, recipeVersion models.RecipeVersion) error {
 	ingredients, err := json.Marshal(recipeVersion.Ingredients)
 	if err != nil {
 		return fmt.Errorf("failed to marshal ingredients: %w", err)
@@ -316,7 +325,7 @@ func (s *SQLiteStore) AddRecipeVersion(recipeVersion models.RecipeVersion) error
 		return fmt.Errorf("failed to marshal steps: %w", err)
 	}
 
-	_, err = s.Exec(`
+	_, err = s.run.ExecContext(ctx, `
 		INSERT INTO recipe_versions (id, user_recipe_id, parent_id, total_time_minutes, servings, ingredients, steps, notes, created_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
@@ -335,13 +344,13 @@ func (s *SQLiteStore) AddRecipeVersion(recipeVersion models.RecipeVersion) error
 	return nil
 }
 
-func (s *SQLiteStore) SaveMealPlan(userID string, mealPlan models.MealPlan) error {
+func (s *SQLiteStore) SaveMealPlan(ctx context.Context, userID string, mealPlan models.MealPlan) error {
 	recipes, err := json.Marshal(mealPlan.Recipes)
 	if err != nil {
 		return fmt.Errorf("failed to marshal recipes: %w", err)
 	}
 
-	_, err = s.Exec(`
+	_, err = s.run.ExecContext(ctx, `
 		INSERT INTO meal_plans (id, user_id, recipes) VALUES (?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET recipes = excluded.recipes;
 	`, mealPlan.ID, userID, recipes)
@@ -351,11 +360,11 @@ func (s *SQLiteStore) SaveMealPlan(userID string, mealPlan models.MealPlan) erro
 	return nil
 }
 
-func (s *SQLiteStore) GetAllPlans(userID string) ([]models.MealPlan, error) {
+func (s *SQLiteStore) GetAllPlans(ctx context.Context, userID string) ([]models.MealPlan, error) {
 	var mealPlans []models.MealPlan
 	var recipes []byte
 
-	rows, err := s.Query(`
+	rows, err := s.run.QueryContext(ctx, `
 		SELECT id, user_id, recipes FROM meal_plans WHERE user_id = ?;
 	`, userID)
 	if err != nil {
@@ -376,11 +385,11 @@ func (s *SQLiteStore) GetAllPlans(userID string) ([]models.MealPlan, error) {
 	return mealPlans, nil
 }
 
-func (s *SQLiteStore) GetMealPlan(userID string, mealPlanID string) (models.MealPlan, error) {
+func (s *SQLiteStore) GetMealPlan(ctx context.Context, userID string, mealPlanID string) (models.MealPlan, error) {
 	var mealPlan models.MealPlan
 	var recipes []byte
 
-	err := s.QueryRow(`
+	err := s.run.QueryRowContext(ctx, `
 		SELECT id, user_id, recipes FROM meal_plans WHERE id = ? AND user_id = ?;
 	`, mealPlanID, userID).Scan(&mealPlan.ID, &mealPlan.UserID, &recipes)
 	if err != nil {
@@ -394,6 +403,20 @@ func (s *SQLiteStore) GetMealPlan(userID string, mealPlanID string) (models.Meal
 		return mealPlan, fmt.Errorf("failed to unmarshal recipes: %w", err)
 	}
 	return mealPlan, nil
+}
+
+func (s *SQLiteStore) WithTx(fn func(tx Store) error) error {
+	tx, err := s.run.(*sql.DB).BeginTx(context.Background(), nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	txStore := &SQLiteStore{run: tx}
+	if err := fn(txStore); err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit()
 }
 
 func migrate(db *sql.DB) error {
@@ -424,7 +447,7 @@ func migrate(db *sql.DB) error {
 		total_time_minutes INTEGER NOT NULL,
 		servings           INTEGER NOT NULL,
 		ingredients        JSON NOT NULL DEFAULT '[]',
-		steps              JSON NOT NULL DEFAULT '[]'
+		steps              JSON NOT NULL DEFAULT '[]',
 		source_type        TEXT NOT NULL DEFAULT 'generated',
 		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -438,7 +461,7 @@ func migrate(db *sql.DB) error {
 		title             TEXT NOT NULL,
 		description       TEXT NOT NULL,
 		is_favorite       BOOLEAN DEFAULT FALSE,
-		latest_version_id TEXT NULL REFERENCES recipe_versions(id) ON DELETE SET NULL,
+		latest_version_id TEXT NULL,
 		created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);`

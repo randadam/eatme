@@ -35,7 +35,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.CreateUser(input.Email, input.Password)
+	user, err := h.service.CreateUser(r.Context(), input.Email, input.Password)
 	if err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
@@ -69,7 +69,7 @@ func (h *UserHandler) SaveProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.service.SaveProfile(userID, profile)
+	result, err := h.service.SaveProfile(r.Context(), userID, profile)
 	if err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
@@ -94,7 +94,7 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profile, err := h.service.GetProfile(userID)
+	profile, err := h.service.GetProfile(r.Context(), userID)
 	if err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return

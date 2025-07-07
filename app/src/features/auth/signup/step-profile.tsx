@@ -25,7 +25,7 @@ export default function ProfileStep() {
         },
     })
 
-    const { mutate: saveProfile, isPending, error } = useSaveProfile()
+    const { saveProfile, isPending, error } = useSaveProfile()
 
     function onSubmit(values: z.infer<typeof profileForm>) {
         saveProfile({ ...values, setup_step: "skill" }, {

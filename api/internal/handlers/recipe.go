@@ -42,7 +42,7 @@ func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	recipe, err := h.recipeService.GetUserRecipe(userID, recipeId)
+	recipe, err := h.recipeService.GetUserRecipe(r.Context(), userID, recipeId)
 	if err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
@@ -67,7 +67,7 @@ func (h *RecipeHandler) GetAllRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	recipes, err := h.recipeService.GetAllUserRecipes(userID)
+	recipes, err := h.recipeService.GetAllUserRecipes(r.Context(), userID)
 	if err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return

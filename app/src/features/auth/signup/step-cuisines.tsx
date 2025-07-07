@@ -32,7 +32,7 @@ export default function CuisinesStep() {
         return <Navigate to="/" replace />
     }
 
-    const { mutate: saveProfile, isPending, error } = useSaveProfile()
+    const { saveProfile, isPending, error } = useSaveProfile()
 
     const form = useForm<z.infer<typeof cuisinesForm>>({
         resolver: zodResolver(cuisinesForm),
