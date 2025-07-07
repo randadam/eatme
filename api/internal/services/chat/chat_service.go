@@ -17,6 +17,14 @@ func NewChatService(mlClient *clients.MLClient) *ChatService {
 	}
 }
 
-func (s *ChatService) Chat(ctx context.Context, req *models.InternalChatRequest) (*models.ChatResponse, error) {
-	return s.mlClient.Chat(ctx, req)
+func (s *ChatService) SuggestChat(ctx context.Context, req *models.InternalSuggestChatRequest) (*models.SuggestChatResponse, error) {
+	return s.mlClient.SuggestChat(ctx, req)
+}
+
+func (s *ChatService) ModifyChat(ctx context.Context, req *models.InternalModifyChatRequest) (*models.ModifyChatResponse, error) {
+	return s.mlClient.ModifyChat(ctx, req)
+}
+
+func (s *ChatService) GeneralChat(ctx context.Context, req *models.InternalGeneralChatRequest) (*models.GeneralChatResponse, error) {
+	return s.mlClient.GeneralChat(ctx, req)
 }

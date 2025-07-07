@@ -30,32 +30,6 @@ definitions:
     required:
     - error
     type: object
-  models.ChatRequest:
-    description: A chat request
-    properties:
-      meal_plan_id:
-        type: string
-      message:
-        type: string
-    required:
-    - meal_plan_id
-    - message
-    type: object
-  models.ChatResponse:
-    description: A chat response
-    properties:
-      intent:
-        type: string
-      needs_clarification:
-        type: boolean
-      new_meal_plan:
-        $ref: '#/definitions/models.MealPlan'
-      response_text:
-        type: string
-    required:
-    - intent
-    - response_text
-    type: object
   models.Cuisine:
     enum:
     - american
@@ -122,6 +96,25 @@ definitions:
     - EquipmentSlowCooker
     - EquipmentPressureCooker
     - EquipmentSousVide
+  models.GeneralChatRequest:
+    description: A chat request to the ML backend to answer a question
+    properties:
+      message:
+        type: string
+      user_id:
+        type: string
+    required:
+    - message
+    - user_id
+    type: object
+  models.GeneralChatResponse:
+    description: A chat response to the ML backend to answer a question
+    properties:
+      response_text:
+        type: string
+    required:
+    - response_text
+    type: object
   models.Ingredient:
     properties:
       name:
@@ -185,6 +178,26 @@ definitions:
     - MeasurementUnitCup
     - MeasurementUnitOunce
     - MeasurementUnitPound
+  models.ModifyChatRequest:
+    description: A chat request to the ML backend to modify a recipe
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
+  models.ModifyChatResponse:
+    description: A chat response to the ML backend to modify a recipe
+    properties:
+      needs_clarification:
+        type: boolean
+      new_recipe:
+        $ref: '#/definitions/models.Recipe'
+      response_text:
+        type: string
+    required:
+    - response_text
+    type: object
   models.Profile:
     description: User profile information
     properties:
@@ -355,6 +368,24 @@ definitions:
     - SkillIntermediate
     - SkillAdvanced
     - SkillChef
+  models.SuggestChatRequest:
+    description: A chat request to the ML backend to suggest a recipe
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
+  models.SuggestChatResponse:
+    description: A chat response to the ML backend to suggest a recipe
+    properties:
+      new_recipe:
+        $ref: '#/definitions/models.Recipe'
+      response_text:
+        type: string
+    required:
+    - response_text
+    type: object
   models.UnauthorizedResponse:
     description: Unauthorized error response
     properties:
@@ -372,26 +403,26 @@ info:
   title: EatMe API
   version: "1.0"
 paths:
-  /chat:
+  /chat/plan/:planId:
     post:
       consumes:
       - application/json
-      description: Handle chat request
-      operationId: chat
+      description: Handle general chat request
+      operationId: generalChat
       parameters:
-      - description: Chat request
+      - description: General chat request
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.ChatRequest'
+          $ref: '#/definitions/models.GeneralChatRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChatResponse'
+            $ref: '#/definitions/models.GeneralChatResponse'
         "400":
           description: Bad Request
           schema:
@@ -400,7 +431,69 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.InternalServerErrorResponse'
-      summary: Handle chat request
+      summary: Handle general chat request
+      tags:
+      - Chat
+  /chat/plan/:planId/recipe:
+    post:
+      consumes:
+      - application/json
+      description: Handle recipe suggestion chat request
+      operationId: suggestRecipe
+      parameters:
+      - description: Suggest chat request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SuggestChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuggestChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Handle recipe suggestion chat request
+      tags:
+      - Chat
+  /chat/plan/:planId/recipe/:recipeId:
+    post:
+      consumes:
+      - application/json
+      description: Handle recipe modification chat request
+      operationId: modifyRecipe
+      parameters:
+      - description: Modify chat request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ModifyChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ModifyChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Handle recipe modification chat request
       tags:
       - Chat
   /meal/plan:

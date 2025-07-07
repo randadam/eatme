@@ -15,19 +15,34 @@ class Recipe(BaseModel):
     steps: list[str]
 
 class MealPlan(BaseModel):
+    id: str
     recipes: list[Recipe]
 
 class Profile(BaseModel):
     allergies: list[str]
 
-class ChatRequest(BaseModel):
-    user_id: str
+class SuggestChatRequest(BaseModel):
     message: str
-    meal_plan: MealPlan
     profile: Profile
 
-class ChatResponse(BaseModel):
-    intent: str
+class SuggestChatResponse(BaseModel):
     response_text: str
-    new_meal_plan: MealPlan | None = None
-    needs_clarification: bool = False
+    new_recipe: Recipe | None = None
+
+class ModifyChatRequest(BaseModel):
+    message: str
+    profile: Profile
+    recipe: Recipe
+
+class ModifyChatResponse(BaseModel):
+    response_text: str
+    new_recipe: Recipe | None = None
+
+class GeneralChatRequest(BaseModel):
+    message: str
+    profile: Profile
+    meal_plan: MealPlan
+
+class GeneralChatResponse(BaseModel):
+    response_text: str
+

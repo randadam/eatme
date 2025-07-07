@@ -1,39 +1,24 @@
 from fastapi import FastAPI
-from models import ChatRequest, ChatResponse
-from engines import classify_intent, recipe, qa
+from models import SuggestChatRequest, SuggestChatResponse, ModifyChatRequest, ModifyChatResponse, GeneralChatRequest, GeneralChatResponse
+from engines import suggest, modify, answer
 
 app = FastAPI()
 
-@app.post("/chat", response_model=ChatResponse)
-async def chat(req: ChatRequest):
-    intent = await classify_intent(req.message)
+@app.post("/chat/suggest", response_model=SuggestChatResponse)
+async def chat(req: SuggestChatRequest):
+    recipe = await suggest(req.profile, req.message)
+    text  = "Here is an idea ↓"
+    return SuggestChatResponse(response_text=text,
+                               new_recipe=recipe)
 
-    if intent == "suggest_recipe":
-        plan = await recipe.suggest(req.profile, req.message)
-        text  = f"Here are {len(plan.recipes)} ideas ↓"
-        return ChatResponse(intent=intent,
-                            response_text=text,
-                            new_meal_plan=plan)
+@app.post("/chat/modify", response_model=ModifyChatResponse)
+async def chat(req: ModifyChatRequest):
+    updated = await modify(req.recipe, req.profile, req.message)
+    text  = "Got it—modified recipe below."
+    return ModifyChatResponse(response_text=text,
+                              new_recipe=updated)
 
-    if intent == "modify_recipe":
-        updated = await recipe.modify(req.meal_plan, req.message)
-        text  = "Got it—modified recipe below."
-        return ChatResponse(intent=intent,
-                            response_text=text,
-                            new_meal_plan=updated)
-
-    if intent == "grocery_list":
-        text  = "Here’s your merged grocery list 🛒"
-        return ChatResponse(intent=intent,
-                            response_text=text)
-
-    if intent == "general_question":
-        answer = await qa.answer(req.message)
-        return ChatResponse(intent=intent,
-                            response_text=answer)
-
-    clarifier = ("Just to confirm—would you like new recipes "
-                 "or to change one you already picked?")
-    return ChatResponse(intent="ambiguous",
-                        response_text=clarifier,
-                        needs_clarification=True)
+@app.post("/chat/general", response_model=GeneralChatResponse)
+async def chat(req: GeneralChatRequest):
+    response = await answer(req.meal_plan, req.profile, req.message)
+    return GeneralChatResponse(response_text=response)

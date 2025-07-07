@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/chat": {
+        "/chat/plan/:planId": {
             "post": {
-                "description": "Handle chat request",
+                "description": "Handle general chat request",
                 "consumes": [
                     "application/json"
                 ],
@@ -27,16 +27,16 @@ const docTemplate = `{
                 "tags": [
                     "Chat"
                 ],
-                "summary": "Handle chat request",
-                "operationId": "chat",
+                "summary": "Handle general chat request",
+                "operationId": "generalChat",
                 "parameters": [
                     {
-                        "description": "Chat request",
+                        "description": "General chat request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ChatRequest"
+                            "$ref": "#/definitions/models.GeneralChatRequest"
                         }
                     }
                 ],
@@ -44,7 +44,101 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ChatResponse"
+                            "$ref": "#/definitions/models.GeneralChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chat/plan/:planId/recipe": {
+            "post": {
+                "description": "Handle recipe suggestion chat request",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "Handle recipe suggestion chat request",
+                "operationId": "suggestRecipe",
+                "parameters": [
+                    {
+                        "description": "Suggest chat request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SuggestChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuggestChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chat/plan/:planId/recipe/:recipeId": {
+            "post": {
+                "description": "Handle recipe modification chat request",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "Handle recipe modification chat request",
+                "operationId": "modifyRecipe",
+                "parameters": [
+                    {
+                        "description": "Modify chat request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ModifyChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ModifyChatResponse"
                         }
                     },
                     "400": {
@@ -313,44 +407,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ChatRequest": {
-            "description": "A chat request",
-            "type": "object",
-            "required": [
-                "meal_plan_id",
-                "message"
-            ],
-            "properties": {
-                "meal_plan_id": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.ChatResponse": {
-            "description": "A chat response",
-            "type": "object",
-            "required": [
-                "intent",
-                "response_text"
-            ],
-            "properties": {
-                "intent": {
-                    "type": "string"
-                },
-                "needs_clarification": {
-                    "type": "boolean"
-                },
-                "new_meal_plan": {
-                    "$ref": "#/definitions/models.MealPlan"
-                },
-                "response_text": {
-                    "type": "string"
-                }
-            }
-        },
         "models.Cuisine": {
             "type": "string",
             "enum": [
@@ -425,6 +481,34 @@ const docTemplate = `{
                 "EquipmentPressureCooker",
                 "EquipmentSousVide"
             ]
+        },
+        "models.GeneralChatRequest": {
+            "description": "A chat request to the ML backend to answer a question",
+            "type": "object",
+            "required": [
+                "message",
+                "user_id"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GeneralChatResponse": {
+            "description": "A chat response to the ML backend to answer a question",
+            "type": "object",
+            "required": [
+                "response_text"
+            ],
+            "properties": {
+                "response_text": {
+                    "type": "string"
+                }
+            }
         },
         "models.Ingredient": {
             "type": "object",
@@ -511,6 +595,36 @@ const docTemplate = `{
                 "MeasurementUnitOunce",
                 "MeasurementUnitPound"
             ]
+        },
+        "models.ModifyChatRequest": {
+            "description": "A chat request to the ML backend to modify a recipe",
+            "type": "object",
+            "required": [
+                "message"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ModifyChatResponse": {
+            "description": "A chat response to the ML backend to modify a recipe",
+            "type": "object",
+            "required": [
+                "response_text"
+            ],
+            "properties": {
+                "needs_clarification": {
+                    "type": "boolean"
+                },
+                "new_recipe": {
+                    "$ref": "#/definitions/models.Recipe"
+                },
+                "response_text": {
+                    "type": "string"
+                }
+            }
         },
         "models.Profile": {
             "description": "User profile information",
@@ -748,6 +862,33 @@ const docTemplate = `{
                 "SkillAdvanced",
                 "SkillChef"
             ]
+        },
+        "models.SuggestChatRequest": {
+            "description": "A chat request to the ML backend to suggest a recipe",
+            "type": "object",
+            "required": [
+                "message"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SuggestChatResponse": {
+            "description": "A chat response to the ML backend to suggest a recipe",
+            "type": "object",
+            "required": [
+                "response_text"
+            ],
+            "properties": {
+                "new_recipe": {
+                    "$ref": "#/definitions/models.Recipe"
+                },
+                "response_text": {
+                    "type": "string"
+                }
+            }
         },
         "models.UnauthorizedResponse": {
             "description": "Unauthorized error response",
