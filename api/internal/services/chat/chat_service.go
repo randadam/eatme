@@ -64,7 +64,7 @@ func (s *ChatService) StartSuggestChat(ctx context.Context, userID string, req *
 	return resp, nil
 }
 
-func (s *ChatService) AcceptRecipeSuggestion(ctx context.Context, userID string, threadID string) (models.UserRecipe, error) {
+func (s *ChatService) AcceptRecipeSuggestion(ctx context.Context, userID string, threadID string, suggestionID string) (models.UserRecipe, error) {
 	currentThread, err := s.recipeService.GetSuggestionThread(ctx, threadID)
 	if err != nil {
 		return models.UserRecipe{}, err
@@ -74,12 +74,23 @@ func (s *ChatService) AcceptRecipeSuggestion(ctx context.Context, userID string,
 		return models.UserRecipe{}, errors.New("no suggestions found")
 	}
 
-	currentSuggestion := currentThread.Suggestions[len(currentThread.Suggestions)-1]
+	var suggestion models.RecipeSuggestion
+	found := false
+	for _, s := range currentThread.Suggestions {
+		if s.ID == suggestionID {
+			suggestion = s
+			found = true
+			break
+		}
+	}
+	if !found {
+		return models.UserRecipe{}, errors.New("suggestion not found")
+	}
 
-	return s.recipeService.AcceptSuggestion(ctx, userID, threadID, currentSuggestion)
+	return s.recipeService.AcceptSuggestion(ctx, userID, threadID, suggestion)
 }
 
-func (s *ChatService) GetNextSuggestion(ctx context.Context, userID string, threadID string) (*models.SuggestChatResponse, error) {
+func (s *ChatService) GetNextSuggestion(ctx context.Context, userID string, threadID string) (*models.RecipeSuggestion, error) {
 	profile, err := s.userService.GetProfile(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -118,7 +129,11 @@ func (s *ChatService) GetNextSuggestion(ctx context.Context, userID string, thre
 		return nil, err
 	}
 
-	return resp, nil
+	return &nextSuggestion, nil
+}
+
+func (s *ChatService) GetSuggestionThread(ctx context.Context, userID string, threadID string) (models.SuggestionThread, error) {
+	return s.recipeService.GetSuggestionThread(ctx, threadID)
 }
 
 func (s *ChatService) ModifyChat(ctx context.Context, userID string, recipeID string, req *models.ModifyChatRequest) (*models.ModifyChatResponse, error) {

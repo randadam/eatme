@@ -60,10 +60,10 @@ func (h *ChatHandler) StartSuggestChat(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param threadId path string true "Thread ID"
-// @Success 200 {object} models.SuggestChatResponse
+// @Success 200 {object} models.RecipeSuggestion
 // @Failure 400 {object} models.BadRequestResponse
 // @Failure 500 {object} models.InternalServerErrorResponse
-// @Router /chat/suggest/{threadId}/next [get]
+// @Router /chat/suggest/{threadId}/next [post]
 func (h *ChatHandler) NextRecipeSuggestion(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	if userID == "" {
@@ -92,10 +92,11 @@ func (h *ChatHandler) NextRecipeSuggestion(w http.ResponseWriter, r *http.Reques
 // @Tags Chat
 // @Produce json
 // @Param threadId path string true "Thread ID"
+// @Param suggestionId path string true "Suggestion ID"
 // @Success 200 {object} models.UserRecipe
 // @Failure 400 {object} models.BadRequestResponse
 // @Failure 500 {object} models.InternalServerErrorResponse
-// @Router /chat/suggest/{threadId}/accept [post]
+// @Router /chat/suggest/{threadId}/accept/{suggestionId} [post]
 func (h *ChatHandler) AcceptRecipeSuggestion(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	if userID == "" {
@@ -109,7 +110,46 @@ func (h *ChatHandler) AcceptRecipeSuggestion(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	resp, err := h.chatService.AcceptRecipeSuggestion(r.Context(), userID, threadId)
+	suggestionId := chi.URLParam(r, "suggestionId")
+	if suggestionId == "" {
+		errorJSON(w, errors.New("missing suggestion ID"), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.chatService.AcceptRecipeSuggestion(r.Context(), userID, threadId, suggestionId)
+	if err != nil {
+		errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// @Summary Get suggestion thread
+// @Description Get suggestion thread
+// @ID getSuggestionThread
+// @Tags Chat
+// @Accept json
+// @Produce json
+// @Param threadId path string true "Thread ID"
+// @Success 200 {object} models.SuggestionThread
+// @Failure 400 {object} models.BadRequestResponse
+// @Failure 500 {object} models.InternalServerErrorResponse
+// @Router /chat/suggest/{threadId} [get]
+func (h *ChatHandler) GetSuggestionThread(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	if userID == "" {
+		errorJSON(w, errors.New("missing user ID"), http.StatusUnauthorized)
+		return
+	}
+
+	threadId := chi.URLParam(r, "threadId")
+	if threadId == "" {
+		errorJSON(w, errors.New("missing thread ID"), http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.chatService.GetSuggestionThread(r.Context(), userID, threadId)
 	if err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return

@@ -3,7 +3,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
-import { useModifyChat, useSuggestChat } from "../features/chat/hooks";
 import { ChatDrawer } from "../features/chat/chat-drawer";
 import { useParams } from "react-router-dom";
 import { useRecipe } from "../features/recipe/hooks";
@@ -56,18 +55,10 @@ export function Recipe({ recipe }: Props) {
         })
     }
 
-    const {
-        modifyRecipe,
-        isPending: modifyRecipePending,
-        error: modifyRecipeError
-    } = useModifyChat(recipe.id)
-
     const handleSend = (message: string) => {
         switch (drawerState.mode) {
             case "modify":
-                modifyRecipe(message, {
-                    onSuccess: () => closeDrawer(),
-                })
+                console.log(message)
                 break;
         }
     }
@@ -84,8 +75,7 @@ export function Recipe({ recipe }: Props) {
                 mode={drawerState.mode}
                 recipe={drawerState.recipe}
                 onSend={handleSend}
-                loading={modifyRecipePending}
-                error={modifyRecipeError?.message}
+                loading={false}
             />
         </>
     )

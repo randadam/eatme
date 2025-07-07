@@ -47,8 +47,15 @@ func TestSuggestionFlow(t *testing.T) {
 	require.Equal(t, "Beef Stroganoff", suggestionResponse.NewRecipe.Title)
 
 	// check thread
-	thread, err := store.GetSuggestionThread(context.Background(), suggestionResponse.ThreadID)
+	req, err = http.NewRequest("GET", ts.URL+"/chat/suggest/"+suggestionResponse.ThreadID, nil)
 	require.NoError(t, err)
+	req.Header.Set("Authorization", authToken)
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var thread models.SuggestionThread
+	json.NewDecoder(resp.Body).Decode(&thread)
 	require.Equal(t, prompt, thread.OriginalPrompt)
 	require.Equal(t, "How about Beef Stroganoff?", thread.Suggestions[0].ResponseText)
 	require.Equal(t, 1, len(thread.Suggestions))
@@ -56,7 +63,7 @@ func TestSuggestionFlow(t *testing.T) {
 	require.Equal(t, false, thread.Suggestions[0].Accepted)
 
 	// 2️⃣ reject first -> next
-	req, err = http.NewRequest("GET", ts.URL+"/chat/suggest/"+suggestionResponse.ThreadID+"/next", nil)
+	req, err = http.NewRequest("POST", ts.URL+"/chat/suggest/"+suggestionResponse.ThreadID+"/next", nil)
 	require.NoError(t, err)
 	req.Header.Set("Authorization", authToken)
 	resp, err = http.DefaultClient.Do(req)
@@ -69,8 +76,14 @@ func TestSuggestionFlow(t *testing.T) {
 	require.Equal(t, "Maybe Beef & Mushroom Tacos?", next.ResponseText)
 
 	// check thread
-	thread, err = store.GetSuggestionThread(context.Background(), suggestionResponse.ThreadID)
+	req, err = http.NewRequest("GET", ts.URL+"/chat/suggest/"+suggestionResponse.ThreadID, nil)
 	require.NoError(t, err)
+	req.Header.Set("Authorization", authToken)
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	json.NewDecoder(resp.Body).Decode(&thread)
 	require.Equal(t, prompt, thread.OriginalPrompt)
 	require.Equal(t, 2, len(thread.Suggestions))
 	require.Equal(t, "Beef Stroganoff", thread.Suggestions[0].Suggestion.Title)
@@ -81,7 +94,8 @@ func TestSuggestionFlow(t *testing.T) {
 	require.Equal(t, false, thread.Suggestions[1].Accepted)
 
 	// 3️⃣ accept
-	acceptURL := ts.URL + "/chat/suggest/" + suggestionResponse.ThreadID + "/accept"
+	suggestionToAccept := thread.Suggestions[1]
+	acceptURL := ts.URL + "/chat/suggest/" + suggestionResponse.ThreadID + "/accept/" + suggestionToAccept.ID
 	req, err = http.NewRequest("POST", acceptURL, nil)
 	require.NoError(t, err)
 	req.Header.Set("Authorization", authToken)
@@ -93,9 +107,14 @@ func TestSuggestionFlow(t *testing.T) {
 	require.Equal(t, "Beef & Mushroom Tacos", accepted.Title)
 
 	// check thread
-	thread, err = store.GetSuggestionThread(context.Background(), suggestionResponse.ThreadID)
+	req, err = http.NewRequest("GET", ts.URL+"/chat/suggest/"+suggestionResponse.ThreadID, nil)
 	require.NoError(t, err)
-	require.Equal(t, 2, len(thread.Suggestions))
+	req.Header.Set("Authorization", authToken)
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	json.NewDecoder(resp.Body).Decode(&thread)
 	require.Equal(t, "Beef Stroganoff", thread.Suggestions[0].Suggestion.Title)
 	require.Equal(t, "How about Beef Stroganoff?", thread.Suggestions[0].ResponseText)
 	require.Equal(t, false, thread.Suggestions[0].Accepted)

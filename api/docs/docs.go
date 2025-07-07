@@ -170,7 +170,52 @@ const docTemplate = `{
                 }
             }
         },
-        "/chat/suggest/{threadId}/accept": {
+        "/chat/suggest/{threadId}": {
+            "get": {
+                "description": "Get suggestion thread",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "Get suggestion thread",
+                "operationId": "getSuggestionThread",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thread ID",
+                        "name": "threadId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuggestionThread"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.BadRequestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chat/suggest/{threadId}/accept/{suggestionId}": {
             "post": {
                 "description": "Handle accepting a recipe suggestion",
                 "produces": [
@@ -186,6 +231,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Thread ID",
                         "name": "threadId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Suggestion ID",
+                        "name": "suggestionId",
                         "in": "path",
                         "required": true
                     }
@@ -213,7 +265,7 @@ const docTemplate = `{
             }
         },
         "/chat/suggest/{threadId}/next": {
-            "get": {
+            "post": {
                 "description": "Handle getting next recipe suggestion",
                 "consumes": [
                     "application/json"
@@ -239,7 +291,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.SuggestChatResponse"
+                            "$ref": "#/definitions/models.RecipeSuggestion"
                         }
                     },
                     "400": {
@@ -865,6 +917,42 @@ const docTemplate = `{
                 }
             }
         },
+        "models.RecipeSuggestion": {
+            "description": "A suggestion for a recipe",
+            "type": "object",
+            "required": [
+                "accepted",
+                "created_at",
+                "id",
+                "response_text",
+                "suggestion",
+                "thread_id",
+                "updated_at"
+            ],
+            "properties": {
+                "accepted": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "response_text": {
+                    "type": "string"
+                },
+                "suggestion": {
+                    "$ref": "#/definitions/models.RecipeBody"
+                },
+                "thread_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "models.SetupStep": {
             "type": "string",
             "enum": [
@@ -963,6 +1051,37 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "thread_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SuggestionThread": {
+            "description": "A thread of suggestions for a recipe",
+            "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "original_prompt",
+                "suggestions",
+                "updated_at"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "original_prompt": {
+                    "type": "string"
+                },
+                "suggestions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.RecipeSuggestion"
+                    }
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

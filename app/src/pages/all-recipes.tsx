@@ -1,17 +1,16 @@
-import { useAllRecipes } from "@/features/recipe/hooks"
+import { useAllRecipes, useStartSuggestionThread } from "@/features/recipe/hooks"
 import type api from "@/api"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import { ChatDrawer } from "@/features/chat/chat-drawer"
 import { useState } from "react"
-import { useSuggestChat } from "@/features/chat/hooks"
 
 export default function AllRecipesPage() { 
     const [drawerOpen, setDrawerOpen] = useState(false)
 
     const nav = useNavigate()
     const { recipes, isLoading, error } = useAllRecipes()
-    const { suggestRecipe, isPending: suggestRecipePending, error: suggestRecipeError } = useSuggestChat()
+    const { startThread, startThreadPending, startThreadError } = useStartSuggestionThread()
 
     if (isLoading) {
         return <p>Loading...</p>
@@ -25,10 +24,12 @@ export default function AllRecipesPage() {
     }
 
     function handleSuggestRecipe(message: string) {
-        suggestRecipe(message, {
+        startThread(message, {
             onSuccess: (resp) => {
+                const threadData = resp.data as api.ModelsSuggestChatResponse
+                console.log(threadData)
                 setDrawerOpen(false)
-                nav(`/recipes/${resp.recipe_id}`)
+                nav(`/suggest/${threadData.thread_id}`)
             },
         })
     }
@@ -52,8 +53,8 @@ export default function AllRecipesPage() {
                 onOpenChange={(open) => setDrawerOpen(open)}
                 mode="suggest"
                 onSend={handleSuggestRecipe}
-                loading={suggestRecipePending}
-                error={suggestRecipeError?.message}
+                loading={startThreadPending}
+                error={startThreadError?.message}
             />
         </div>
     )

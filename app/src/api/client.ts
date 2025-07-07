@@ -58,6 +58,22 @@ export type ModelsSuggestChatResponse = {
     response_text: string;
     thread_id: string;
 };
+export type ModelsRecipeSuggestion = {
+    accepted: boolean;
+    created_at: string;
+    id: string;
+    response_text: string;
+    suggestion: ModelsRecipeBody;
+    thread_id: string;
+    updated_at: string;
+};
+export type ModelsSuggestionThread = {
+    created_at: string;
+    id: string;
+    original_prompt: string;
+    suggestions: ModelsRecipeSuggestion[];
+    updated_at: string;
+};
 export type ModelsUserRecipe = {
     created_at: string;
     description: string;
@@ -183,9 +199,26 @@ export function suggestRecipe(modelsSuggestChatRequest: ModelsSuggestChatRequest
     }));
 }
 /**
+ * Get suggestion thread
+ */
+export function getSuggestionThread(threadId: string, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsSuggestionThread;
+    } | {
+        status: 400;
+        data: ModelsBadRequestResponse;
+    } | {
+        status: 500;
+        data: ModelsInternalServerErrorResponse;
+    }>(`/chat/suggest/${encodeURIComponent(threadId)}`, {
+        ...opts
+    });
+}
+/**
  * Handle accepting a recipe suggestion
  */
-export function acceptRecipeSuggestion(threadId: string, opts?: Oazapfts.RequestOpts) {
+export function acceptRecipeSuggestion(threadId: string, suggestionId: string, opts?: Oazapfts.RequestOpts) {
     return oazapfts.fetchJson<{
         status: 200;
         data: ModelsUserRecipe;
@@ -195,7 +228,7 @@ export function acceptRecipeSuggestion(threadId: string, opts?: Oazapfts.Request
     } | {
         status: 500;
         data: ModelsInternalServerErrorResponse;
-    }>(`/chat/suggest/${encodeURIComponent(threadId)}/accept`, {
+    }>(`/chat/suggest/${encodeURIComponent(threadId)}/accept/${encodeURIComponent(suggestionId)}`, {
         ...opts,
         method: "POST"
     });
@@ -206,7 +239,7 @@ export function acceptRecipeSuggestion(threadId: string, opts?: Oazapfts.Request
 export function nextRecipeSuggestion(threadId: string, opts?: Oazapfts.RequestOpts) {
     return oazapfts.fetchJson<{
         status: 200;
-        data: ModelsSuggestChatResponse;
+        data: ModelsRecipeSuggestion;
     } | {
         status: 400;
         data: ModelsBadRequestResponse;
@@ -214,7 +247,8 @@ export function nextRecipeSuggestion(threadId: string, opts?: Oazapfts.RequestOp
         status: 500;
         data: ModelsInternalServerErrorResponse;
     }>(`/chat/suggest/${encodeURIComponent(threadId)}/next`, {
-        ...opts
+        ...opts,
+        method: "POST"
     });
 }
 /**

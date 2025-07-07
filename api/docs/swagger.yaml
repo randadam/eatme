@@ -290,6 +290,32 @@ definitions:
     - title
     - total_time_minutes
     type: object
+  models.RecipeSuggestion:
+    description: A suggestion for a recipe
+    properties:
+      accepted:
+        type: boolean
+      created_at:
+        type: string
+      id:
+        type: string
+      response_text:
+        type: string
+      suggestion:
+        $ref: '#/definitions/models.RecipeBody'
+      thread_id:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - accepted
+    - created_at
+    - id
+    - response_text
+    - suggestion
+    - thread_id
+    - updated_at
+    type: object
   models.SetupStep:
     enum:
     - profile
@@ -366,6 +392,28 @@ definitions:
     - new_recipe
     - response_text
     - thread_id
+    type: object
+  models.SuggestionThread:
+    description: A thread of suggestions for a recipe
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      original_prompt:
+        type: string
+      suggestions:
+        items:
+          $ref: '#/definitions/models.RecipeSuggestion'
+        type: array
+      updated_at:
+        type: string
+    required:
+    - created_at
+    - id
+    - original_prompt
+    - suggestions
+    - updated_at
     type: object
   models.UnauthorizedResponse:
     description: Unauthorized error response
@@ -538,7 +586,37 @@ paths:
       summary: Handle starting a recipe suggestion chat
       tags:
       - Chat
-  /chat/suggest/{threadId}/accept:
+  /chat/suggest/{threadId}:
+    get:
+      consumes:
+      - application/json
+      description: Get suggestion thread
+      operationId: getSuggestionThread
+      parameters:
+      - description: Thread ID
+        in: path
+        name: threadId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuggestionThread'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Get suggestion thread
+      tags:
+      - Chat
+  /chat/suggest/{threadId}/accept/{suggestionId}:
     post:
       description: Handle accepting a recipe suggestion
       operationId: acceptRecipeSuggestion
@@ -546,6 +624,11 @@ paths:
       - description: Thread ID
         in: path
         name: threadId
+        required: true
+        type: string
+      - description: Suggestion ID
+        in: path
+        name: suggestionId
         required: true
         type: string
       produces:
@@ -567,7 +650,7 @@ paths:
       tags:
       - Chat
   /chat/suggest/{threadId}/next:
-    get:
+    post:
       consumes:
       - application/json
       description: Handle getting next recipe suggestion
@@ -584,7 +667,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SuggestChatResponse'
+            $ref: '#/definitions/models.RecipeSuggestion'
         "400":
           description: Bad Request
           schema:

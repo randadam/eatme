@@ -62,8 +62,9 @@ func NewRouter(app *App) *chi.Mux {
 	r.Route("/chat", func(r chi.Router) {
 		r.Use(handlers.AuthMiddleware(app.store))
 		r.Post("/suggest", chatHandler.StartSuggestChat)
-		r.Get("/suggest/{threadId}/next", chatHandler.NextRecipeSuggestion)
-		r.Post("/suggest/{threadId}/accept", chatHandler.AcceptRecipeSuggestion)
+		r.Get("/suggest/{threadId}", chatHandler.GetSuggestionThread)
+		r.Post("/suggest/{threadId}/next", chatHandler.NextRecipeSuggestion)
+		r.Post("/suggest/{threadId}/accept/{suggestionId}", chatHandler.AcceptRecipeSuggestion)
 		r.Put("/recipes/{recipeId}", chatHandler.ModifyChat)
 		r.Post("/recipes/{recipeId}/question", chatHandler.GeneralChat)
 	})
