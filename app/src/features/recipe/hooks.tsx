@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import api from "@/api"
 import { useState } from "react"
 
@@ -18,6 +18,24 @@ export function useRecipe(recipeId: string) {
     })
 
     return { recipe, isLoading, error }
+}
+
+export function useModifyRecipe(recipeId: string) {
+    const qc = useQueryClient()
+    const { mutate: modifyRecipe, isPending: modifyRecipePending, error: modifyRecipeError } = useMutation({
+        mutationFn: async (recipe: api.ModelsModifyChatRequest) => {
+            const resp = await api.modifyRecipe(recipeId, recipe)
+            if (resp.status > 299) {
+                throw new Error(JSON.stringify(resp.data))
+            }
+            return resp.data as unknown as api.ModelsUserRecipe
+        },
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: recipeKeys.byId(recipeId) })
+        }
+    })
+
+    return { modifyRecipe, modifyRecipePending, modifyRecipeError }
 }
 
 export function useAllRecipes() {
@@ -54,47 +72,74 @@ export function useGetSuggestionThread(threadId: string) {
 
 
 export function useSuggestionThread(initialThread: api.ModelsSuggestionThread) {
-    const [thread, setThread] = useState(initialThread)
-    const [index, setIndex] = useState(initialThread.suggestions.length - 1)
+    const [threadState, setThreadState] = useState({
+        thread: initialThread,
+        currentIndex: initialThread.suggestions.length - 1,
+    })
 
     const { mutate: getNextSuggestion, isPending: getNextSuggestionPending, error: getNextSuggestionError } = useMutation({
         mutationFn: async () => {
-            const resp = await api.nextRecipeSuggestion(thread.id)
+            const resp = await api.nextRecipeSuggestion(threadState.thread.id)
             if (resp.status > 299) {
                 throw new Error(JSON.stringify(resp.data))
             }
             return resp.data as unknown as api.ModelsRecipeSuggestion
         },
         onSuccess: (newSuggestion) => {
-            setThread(prev => ({
+            setThreadState(prev => ({
                 ...prev,
-                suggestions: [...prev.suggestions, newSuggestion],
+                suggestions: [...prev.thread.suggestions, newSuggestion],
+                currentIndex: prev.thread.suggestions.length,
             }))
-            setIndex(prev => prev + 1)
         },
     })
     const reject = () => getNextSuggestion()
 
     const { mutate: acceptSuggestion, isPending: acceptSuggestionPending, error: acceptSuggestionError } = useMutation({
-        mutationFn: async () => {
-            const resp = await api.acceptRecipeSuggestion(thread.id, thread.suggestions[index].id)
+        mutationFn: async (cb?: (recipeId: string) => void) => {
+            const resp = await api.acceptRecipeSuggestion(threadState.thread.id, threadState.thread.suggestions[threadState.currentIndex].id)
             if (resp.status > 299) {
                 throw new Error(JSON.stringify(resp.data))
             }
-            return resp.data as unknown as api.ModelsUserRecipe
+            const respData = resp.data as unknown as api.ModelsUserRecipe
+            if (cb) {
+                cb(respData.id)
+            }
+            return respData
         },
     })
-    const accept = () => acceptSuggestion()
+    const accept = (cb?: (recipeId: string) => void) => acceptSuggestion(cb)
 
-    const loading = getNextSuggestionPending || acceptSuggestionPending
     const error = getNextSuggestionError || acceptSuggestionError
 
+    const back = () => {
+        setThreadState(prev => ({
+            ...prev,
+            currentIndex: prev.currentIndex - 1,
+        }))
+    }
+    const forward = () => {
+        setThreadState(prev => {
+            if (prev.currentIndex < prev.thread.suggestions.length - 1) {
+                return {
+                    ...prev,
+                    currentIndex: prev.currentIndex + 1,
+                }
+            }
+            return prev
+        })
+    }
+
     return {
-        thread,
-        currentSuggestion: thread.suggestions[index],
+        thread: threadState.thread,
+        currentSuggestion: threadState.thread.suggestions[threadState.currentIndex],
+        currentIndex: threadState.currentIndex,
         reject,
+        rejectLoading: getNextSuggestionPending,
         accept,
-        loading,
+        acceptLoading: acceptSuggestionPending,
         error,
+        back,
+        forward,
     }
 }

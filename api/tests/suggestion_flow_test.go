@@ -40,7 +40,7 @@ func TestSuggestionFlow(t *testing.T) {
 	// check response
 	var suggestionResponse models.SuggestChatResponse
 	json.NewDecoder(resp.Body).Decode(&suggestionResponse)
-	fmt.Printf("suggestionResponse: %+v\n", suggestionResponse)
+	fmt.Printf("initial suggestionResponse: %+v\n", suggestionResponse)
 	require.NotEmpty(t, suggestionResponse.ThreadID)
 	require.NotEmpty(t, suggestionResponse.NewRecipe.Title)
 	require.Equal(t, "How about Beef Stroganoff?", suggestionResponse.ResponseText)
@@ -70,9 +70,10 @@ func TestSuggestionFlow(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	var next models.SuggestChatResponse
+	var next models.RecipeSuggestion
 	json.NewDecoder(resp.Body).Decode(&next)
-	require.Equal(t, "Beef & Mushroom Tacos", next.NewRecipe.Title)
+	fmt.Printf("next suggestionResponse: %+v\n", next)
+	require.Equal(t, "Beef & Mushroom Tacos", next.Suggestion.Title)
 	require.Equal(t, "Maybe Beef & Mushroom Tacos?", next.ResponseText)
 
 	// check thread

@@ -3,6 +3,7 @@ package chat
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/ajohnston1219/eatme/api/internal/clients"
 	"github.com/ajohnston1219/eatme/api/internal/services/recipe"
@@ -76,6 +77,7 @@ func (s *ChatService) AcceptRecipeSuggestion(ctx context.Context, userID string,
 
 	var suggestion models.RecipeSuggestion
 	found := false
+	fmt.Printf("currentThread: %+v\n", currentThread)
 	for _, s := range currentThread.Suggestions {
 		if s.ID == suggestionID {
 			suggestion = s

@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { ChatDrawer } from "../features/chat/chat-drawer";
 import { useParams } from "react-router-dom";
-import { useRecipe } from "../features/recipe/hooks";
+import { useModifyRecipe, useRecipe } from "../features/recipe/hooks";
 
 export default function RecipePage() {
     const recipeId = useParams().id
@@ -39,6 +39,8 @@ export function Recipe({ recipe }: Props) {
         recipe,
     })
 
+    const { modifyRecipe, modifyRecipePending, modifyRecipeError } = useModifyRecipe(recipe.id)
+
     const openModify = (recipe: api.ModelsUserRecipe) => {
         setDrawerState({
             open: true,
@@ -58,7 +60,7 @@ export function Recipe({ recipe }: Props) {
     const handleSend = (message: string) => {
         switch (drawerState.mode) {
             case "modify":
-                console.log(message)
+                modifyRecipe({ message }, { onSuccess: () => closeDrawer() })
                 break;
         }
     }
@@ -75,7 +77,8 @@ export function Recipe({ recipe }: Props) {
                 mode={drawerState.mode}
                 recipe={drawerState.recipe}
                 onSend={handleSend}
-                loading={false}
+                loading={modifyRecipePending}
+                error={modifyRecipeError?.message}
             />
         </>
     )

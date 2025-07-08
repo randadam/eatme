@@ -371,17 +371,20 @@ func (s *SQLiteStore) GetAllUserRecipes(ctx context.Context, userID string) ([]m
 
 func (s *SQLiteStore) SaveUserRecipe(ctx context.Context, recipe models.UserRecipe) error {
 	_, err := s.run.ExecContext(ctx, `
-		INSERT INTO user_recipes (id, user_id, global_recipe_id, title, description, is_favorite, latest_version_id)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO user_recipes (id, user_id, global_recipe_id, title, description, total_time_minutes, servings, is_favorite, latest_version_id)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
-			user_id           = excluded.user_id,
-			global_recipe_id  = excluded.global_recipe_id,
-			title             = excluded.title,
-			description       = excluded.description,
-			is_favorite       = excluded.is_favorite,
-			latest_version_id = excluded.latest_version_id,
-			updated_at        = CURRENT_TIMESTAMP;
-	`, recipe.ID, recipe.UserID, recipe.GlobalRecipeID, recipe.Title, recipe.Description, recipe.IsFavorite,
+			user_id            = excluded.user_id,
+			global_recipe_id   = excluded.global_recipe_id,
+			title              = excluded.title,
+			description        = excluded.description,
+			total_time_minutes = excluded.total_time_minutes,
+			servings           = excluded.servings,
+			is_favorite        = excluded.is_favorite,
+			latest_version_id  = excluded.latest_version_id,
+			updated_at         = CURRENT_TIMESTAMP;
+	`, recipe.ID, recipe.UserID, recipe.GlobalRecipeID, recipe.Title, recipe.Description,
+		recipe.RecipeBody.TotalTimeMinutes, recipe.RecipeBody.Servings, recipe.IsFavorite,
 		recipe.LatestVersionID)
 	if err != nil {
 		return fmt.Errorf("failed to save user recipe: %w", err)
@@ -389,10 +392,17 @@ func (s *SQLiteStore) SaveUserRecipe(ctx context.Context, recipe models.UserReci
 	return nil
 }
 
-func (s *SQLiteStore) UpdateUserRecipeVersion(ctx context.Context, userID string, recipeID string, versionID string) error {
+func (s *SQLiteStore) UpdateUserRecipeVersion(ctx context.Context, userID string, recipeID string, version models.RecipeVersion) error {
 	_, err := s.run.ExecContext(ctx, `
-		UPDATE user_recipes SET latest_version_id = ? WHERE id = ? AND user_id = ?;
-	`, versionID, recipeID, userID)
+		UPDATE user_recipes
+		SET 
+		    title              = ?,
+		    description        = ?,
+			total_time_minutes = ?,
+			servings           = ?,
+			latest_version_id  = ?
+		WHERE id = ? AND user_id = ?;
+	`, version.Title, version.Description, version.TotalTimeMinutes, version.Servings, version.ID, recipeID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to update user recipe version: %w", err)
 	}
@@ -585,15 +595,17 @@ func migrate(db *sql.DB) error {
 
 	const userRecipes = `
 	CREATE TABLE IF NOT EXISTS user_recipes (
-		id                TEXT PRIMARY KEY,
-		user_id           TEXT REFERENCES users(id) ON DELETE CASCADE,
-		global_recipe_id  TEXT NULL REFERENCES global_recipes(id) ON DELETE SET NULL,
-		title             TEXT NOT NULL,
-		description       TEXT NOT NULL,
-		is_favorite       BOOLEAN DEFAULT FALSE,
-		latest_version_id TEXT NULL,
-		created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+		id                 TEXT PRIMARY KEY,
+		user_id            TEXT REFERENCES users(id) ON DELETE CASCADE,
+		global_recipe_id   TEXT NULL REFERENCES global_recipes(id) ON DELETE SET NULL,
+		title              TEXT NOT NULL,
+		description        TEXT NOT NULL,
+		total_time_minutes INTEGER NOT NULL,
+		servings           INTEGER NOT NULL,
+		is_favorite        BOOLEAN DEFAULT FALSE,
+		latest_version_id  TEXT NULL,
+		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);`
 
 	const recipeVersions = `

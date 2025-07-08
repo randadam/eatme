@@ -84,7 +84,7 @@ func (s *RecipeService) UpdateRecipe(ctx context.Context, userID string, recipeI
 		if err != nil {
 			return err
 		}
-		return tx.UpdateUserRecipeVersion(ctx, userID, recipeID, recipeVersion.ID)
+		return tx.UpdateUserRecipeVersion(ctx, userID, recipeID, recipeVersion)
 	})
 }
 
