@@ -31,7 +31,7 @@ export function ChatDrawer({
 }: ChatDrawerProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="flex flex-col w-full sm:w-[380px]">
+      <SheetContent side="bottom" className="flex flex-col w-full sm:w-[380px] h-[50vh] p-4">
         <SheetHeader>
           <SheetTitle>
             {mode === "suggest" && "Suggest a Recipe"}

@@ -392,6 +392,15 @@ func (s *SQLiteStore) SaveUserRecipe(ctx context.Context, recipe models.UserReci
 	return nil
 }
 
+func (s *SQLiteStore) DeleteUserRecipe(ctx context.Context, userID string, recipeID string) error {
+	_, err := s.run.ExecContext(ctx, `
+		DELETE FROM user_recipes WHERE id = ? AND user_id = ?;`, recipeID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to delete user recipe: %w", err)
+	}
+	return nil
+}
+
 func (s *SQLiteStore) UpdateUserRecipeVersion(ctx context.Context, userID string, recipeID string, version models.RecipeVersion) error {
 	_, err := s.run.ExecContext(ctx, `
 		UPDATE user_recipes

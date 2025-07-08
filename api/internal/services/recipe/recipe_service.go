@@ -141,6 +141,14 @@ func (s *RecipeService) GetAllUserRecipes(ctx context.Context, userID string) ([
 	return recipes, nil
 }
 
+func (s *RecipeService) DeleteUserRecipe(ctx context.Context, userID string, recipeID string) error {
+	err := s.store.DeleteUserRecipe(ctx, userID, recipeID)
+	if err != nil {
+		return fmt.Errorf("failed to delete user recipe in delete user recipe: %w", err)
+	}
+	return nil
+}
+
 func createRecipe(ctx context.Context, st db.Store, userID string,
 	body models.RecipeBody) (models.UserRecipe, error) {
 

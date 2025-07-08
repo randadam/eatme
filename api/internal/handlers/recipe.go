@@ -74,3 +74,35 @@ func (h *RecipeHandler) GetAllRecipes(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, recipes)
 }
+
+// @Summary Delete recipe
+// @Description Delete recipe
+// @ID deleteRecipe
+// @Tags Recipe
+// @Accept json
+// @Produce json
+// @Param recipe_id path string true "Recipe ID"
+// @Success 200 {object} models.UserRecipe
+// @Failure 400 {object} models.BadRequestResponse
+// @Failure 500 {object} models.InternalServerErrorResponse
+// @Router /recipes/{recipe_id} [delete]
+func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	if userID == "" {
+		errorJSON(w, errors.New("missing user ID"), http.StatusUnauthorized)
+		return
+	}
+
+	recipeId := chi.URLParam(r, "recipe_id")
+	if recipeId == "" {
+		errorJSON(w, errors.New("missing recipe ID"), http.StatusBadRequest)
+		return
+	}
+
+	err := h.recipeService.DeleteUserRecipe(r.Context(), userID, recipeId)
+	if err != nil {
+		errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, http.StatusOK, nil)
+}

@@ -41,3 +41,21 @@ export function useAllRecipes() {
 
     return { recipes, isLoading, error }
 }
+
+export function useDeleteRecipe() {
+    const qc = useQueryClient()
+    const { mutate: deleteRecipe, isPending: deleteRecipePending, error: deleteRecipeError } = useMutation({
+        mutationFn: async (recipeId: string) => {
+            const resp = await api.deleteRecipe(recipeId)
+            if (resp.status > 299) {
+                throw new Error(JSON.stringify(resp.data))
+            }
+            return resp.data as unknown as api.ModelsUserRecipe
+        },
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: recipeKeys.all })
+        }
+    })
+
+    return { deleteRecipe, deleteRecipePending, deleteRecipeError }
+}

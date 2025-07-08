@@ -762,6 +762,35 @@ paths:
       tags:
       - Recipe
   /recipes/{recipe_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete recipe
+      operationId: deleteRecipe
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserRecipe'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.BadRequestResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.InternalServerErrorResponse'
+      summary: Delete recipe
+      tags:
+      - Recipe
     get:
       consumes:
       - application/json

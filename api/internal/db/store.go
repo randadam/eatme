@@ -24,6 +24,7 @@ type Store interface {
 	GetAllUserRecipes(ctx context.Context, userID string) ([]models.UserRecipe, error)
 	SaveUserRecipe(ctx context.Context, recipe models.UserRecipe) error
 	UpdateUserRecipeVersion(ctx context.Context, userID string, recipeID string, version models.RecipeVersion) error
+	DeleteUserRecipe(ctx context.Context, userID string, recipeID string) error
 
 	GetRecipeVersion(ctx context.Context, recipeVersionID string) (models.RecipeVersion, error)
 	AddRecipeVersion(ctx context.Context, recipeVersion models.RecipeVersion) error

@@ -59,6 +59,7 @@ func NewRouter(app *App) *chi.Mux {
 		r.Use(handlers.AuthMiddleware(app.store))
 		r.Get("/{recipe_id}", recipeHandler.GetRecipe)
 		r.Get("/", recipeHandler.GetAllRecipes)
+		r.Delete("/{recipe_id}", recipeHandler.DeleteRecipe)
 	})
 
 	// Chat

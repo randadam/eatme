@@ -325,6 +325,24 @@ export function getRecipe(recipeId: string, opts?: Oazapfts.RequestOpts) {
     });
 }
 /**
+ * Delete recipe
+ */
+export function deleteRecipe(recipeId: string, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsUserRecipe;
+    } | {
+        status: 400;
+        data: ModelsBadRequestResponse;
+    } | {
+        status: 500;
+        data: ModelsInternalServerErrorResponse;
+    }>(`/recipes/${encodeURIComponent(recipeId)}`, {
+        ...opts,
+        method: "DELETE"
+    });
+}
+/**
  * Create a new user account
  */
 export function signup(modelsSignupRequest: ModelsSignupRequest, opts?: Oazapfts.RequestOpts) {
