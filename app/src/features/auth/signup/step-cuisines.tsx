@@ -9,6 +9,8 @@ import WizardButtons from "./wizard-buttons";
 import { useSaveProfile, useUser } from "../hooks";
 import { Navigate, useNavigate } from "react-router-dom";
 import type { ModelsCuisine } from "@/api/client";
+import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
+import { toast } from "sonner";
 
 const cuisines = [
     { name: "American", value: "american" },
@@ -32,7 +34,7 @@ export default function CuisinesStep() {
         return <Navigate to="/" replace />
     }
 
-    const { saveProfile, isPending, error } = useSaveProfile()
+    const { saveProfile, isPending } = useSaveProfile()
 
     const form = useForm<z.infer<typeof cuisinesForm>>({
         resolver: zodResolver(cuisinesForm),
@@ -40,6 +42,7 @@ export default function CuisinesStep() {
             cuisines: profile?.cuisines ?? [],
         },
     })
+    const handleFormError = useFormErrorHandler(form)
 
     function onSubmit(values: z.infer<typeof cuisinesForm>) {
         const req = {
@@ -47,7 +50,11 @@ export default function CuisinesStep() {
             cuisines: values.cuisines.map((cuisine) => cuisine) as ModelsCuisine[],
         }
         saveProfile(req, {
-            onSuccess: () => nav("/signup/diet"),
+            onSuccess: () => {
+                toast.success("Getting hungry just thinking about the possibilities!")
+                nav("/signup/diet")
+            },
+            onError: (err) => handleFormError(err),
         })
     }
 
@@ -86,10 +93,10 @@ export default function CuisinesStep() {
                             </FormItem>
                         )}
                     />
+                    <FormErrorMessage form={form}/>
                     <WizardButtons loading={isPending}/>
                 </form>
             </Form>
-            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     )
 }

@@ -9,6 +9,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useSaveProfile, useUser } from "../hooks";
 import type { ModelsEquipment } from "@/api/client";
 import WizardButtons from "./wizard-buttons";
+import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
+import { toast } from "sonner";
 
 const equipmentList = [
     { name: "Stove", value: "stove" },
@@ -29,7 +31,7 @@ export default function EquipmentStep() {
         return <Navigate to="/" replace />
     }
 
-    const { saveProfile, isPending, error } = useSaveProfile()
+    const { saveProfile, isPending } = useSaveProfile()
 
     const form = useForm<z.infer<typeof equipmentForm>>({
         resolver: zodResolver(equipmentForm),
@@ -37,6 +39,7 @@ export default function EquipmentStep() {
             equipment: profile?.equipment ?? [],
         },
     })
+    const handleFormError = useFormErrorHandler(form)
 
     function onSubmit(values: z.infer<typeof equipmentForm>) {
         const req = {
@@ -44,7 +47,11 @@ export default function EquipmentStep() {
             equipment: values.equipment.map((equipment) => equipment) as ModelsEquipment[],
         }
         saveProfile(req, {
-            onSuccess: () => nav("/signup/done"),
+            onSuccess: () => {
+                toast.success("We can work with that!")
+                nav("/signup/done")
+            },
+            onError: (err) => handleFormError(err),
         })
     }
 
@@ -79,10 +86,10 @@ export default function EquipmentStep() {
                             </FormItem>
                         )}
                     />
+                    <FormErrorMessage form={form}/>
                     <WizardButtons loading={isPending}/>
                 </form>
             </Form>
-            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     )
 }

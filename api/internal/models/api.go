@@ -3,8 +3,8 @@ package models
 // APIError represents an API error response
 // @Description API error response
 type APIError struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code    string `json:"code" binding:"required"`
+	Message string `json:"message" binding:"required"`
 	Details string `json:"details,omitempty"`
 	Field   string `json:"field,omitempty"`
 }

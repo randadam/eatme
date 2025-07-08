@@ -680,6 +680,10 @@ const docTemplate = `{
         "models.APIError": {
             "description": "API error response",
             "type": "object",
+            "required": [
+                "code",
+                "message"
+            ],
             "properties": {
                 "code": {
                     "type": "string"

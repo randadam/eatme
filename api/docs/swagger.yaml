@@ -11,6 +11,9 @@ definitions:
         type: string
       message:
         type: string
+    required:
+    - code
+    - message
     type: object
   models.Allergy:
     enum:

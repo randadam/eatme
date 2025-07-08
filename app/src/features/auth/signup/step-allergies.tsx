@@ -9,6 +9,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useSaveProfile, useUser } from "../hooks";
 import type { ModelsAllergy } from "@/api/client";
 import WizardButtons from "./wizard-buttons";
+import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
+import { toast } from "sonner";
 
 const allergies = [
     { name: "Dairy", value: "dairy" },
@@ -28,7 +30,7 @@ export default function AllergiesStep() {
         return <Navigate to="/" replace />
     }
 
-    const { saveProfile, isPending, error } = useSaveProfile()
+    const { saveProfile, isPending } = useSaveProfile()
 
     const form = useForm<z.infer<typeof allergiesForm>>({
         resolver: zodResolver(allergiesForm),
@@ -37,13 +39,20 @@ export default function AllergiesStep() {
         },
     })
 
+    const handleFormError = useFormErrorHandler(form)
+
     function onSubmit(values: z.infer<typeof allergiesForm>) {
         const req = {
             setup_step: "equipment" as const,
             allergies: values.allergies.map((allergy) => allergy) as ModelsAllergy[],
         }
         saveProfile(req, {
-            onSuccess: () => nav("/signup/equipment"),
+            onSuccess: () => {
+                // TODO: Confirmation that user is still responsible for allergies
+                toast.success("We'll keep that in mind!")
+                nav("/signup/equipment")
+            },
+            onError: (err) => handleFormError(err),
         })
     }
 
@@ -82,10 +91,10 @@ export default function AllergiesStep() {
                             </FormItem>
                         )}
                     />
+                    <FormErrorMessage form={form}/>
                     <WizardButtons loading={isPending}/>
                 </form>
             </Form>
-            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     )
 }

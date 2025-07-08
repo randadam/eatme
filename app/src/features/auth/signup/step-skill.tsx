@@ -9,6 +9,8 @@ import type { z } from "zod";
 import WizardButtons from "./wizard-buttons";
 import { useSaveProfile, useUser } from "../hooks";
 import { Navigate, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 
 const skills: SkillLevelProps[] = [
   {
@@ -41,7 +43,7 @@ export default function SkillStep() {
         return <Navigate to="/" replace />
     }
 
-    const { saveProfile, isPending, error } = useSaveProfile()
+    const { saveProfile, isPending } = useSaveProfile()
 
     const form = useForm<z.infer<typeof skillForm>>({
         resolver: zodResolver(skillForm),
@@ -49,10 +51,30 @@ export default function SkillStep() {
             skill: (profile?.skill ?? "beginner") as z.infer<typeof skillForm>['skill'],
         },
     })
+    const handleFormError = useFormErrorHandler(form)
 
     function onSubmit(values: z.infer<typeof skillForm>) {
         saveProfile({ ...values, setup_step: "cuisines" }, {
-            onSuccess: () => nav("/signup/cuisines"),
+            onSuccess: (profile) => {
+                let skillLevelMessage = "Skill level set successfully"
+                switch (profile.skill) {
+                    case "beginner":
+                        skillLevelMessage = "We're going to turn you into a master chef!"
+                        break
+                    case "intermediate":
+                        skillLevelMessage = "You're on your way to becoming a master chef!"
+                        break
+                    case "advanced":
+                        skillLevelMessage = "You're well on your way to becoming a master chef!"
+                        break
+                    case "chef":
+                        skillLevelMessage = "Can't wait to help you hone your skills!"
+                        break
+                }
+                toast.success(skillLevelMessage)
+                nav("/signup/cuisines")
+            },
+            onError: (err) => handleFormError(err),
         })
     }
 
@@ -89,10 +111,10 @@ export default function SkillStep() {
                             </FormItem>
                         )}
                     />
+                    <FormErrorMessage form={form}/>
                     <WizardButtons loading={isPending}/>
                 </form>
             </Form>
-            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     )
 }

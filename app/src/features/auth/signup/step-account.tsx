@@ -8,6 +8,8 @@ import type { z } from "zod";
 import { useSignup } from "../hooks";
 import { useNavigate } from "react-router-dom";
 import WizardButtons from "./wizard-buttons";
+import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
+import { toast } from "sonner";
 
 export default function AccountStep() {
     const form = useForm<z.infer<typeof accountForm>>({
@@ -20,11 +22,18 @@ export default function AccountStep() {
     });
 
     const nav = useNavigate()
-    const { signup, isPending, error } = useSignup()
+    const { signup, isPending } = useSignup()
+    const handleFormError = useFormErrorHandler(form)
 
     function onSubmit(values: z.infer<typeof accountForm>) {
         signup(values, {
-            onSuccess: () => nav("/signup/profile"),
+            onSuccess: () => {
+                toast.success("Account created successfully")
+                nav("/signup/profile")
+            },
+            onError: (err) => {
+                handleFormError(err)
+            },
         })
     }
 
@@ -72,10 +81,10 @@ export default function AccountStep() {
                             </FormItem>
                         )}
                     />
+                    <FormErrorMessage form={form}/>
                     <WizardButtons loading={isPending}/>
                 </form>
             </Form>
-            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     );
 }

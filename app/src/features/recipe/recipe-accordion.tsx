@@ -4,13 +4,14 @@ import { Separator } from "@/components/ui/separator"
 import { RecipeOverview } from "./recipe-overview"
 
 export interface RecipeAccordianProps {
-    recipe: api.ModelsUserRecipe
+    id: string
+    recipe: api.ModelsRecipeBody
 }
 
-export function RecipeAccordion({ recipe }: RecipeAccordianProps) {
+export function RecipeAccordion({ id, recipe }: RecipeAccordianProps) {
     return (
         <Accordion type="single" collapsible>
-            <AccordionItem value={recipe.id}>
+            <AccordionItem value={id}>
                 <AccordionTrigger>
                     <RecipeOverview recipe={recipe} />
                 </AccordionTrigger>

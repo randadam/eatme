@@ -1,7 +1,7 @@
 import type api from "@/api"
 
 export interface RecipeOverviewProps {
-    recipe: api.ModelsUserRecipe
+    recipe: api.ModelsRecipeBody
 }
 
 export function RecipeOverview({ recipe }: RecipeOverviewProps) {

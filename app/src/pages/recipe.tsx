@@ -68,7 +68,7 @@ export function Recipe({ recipe }: Props) {
     return (
         <>
             <div className="border rounded p-2">
-                <RecipeAccordion recipe={recipe} />
+                <RecipeAccordion id={recipe.id} recipe={recipe} />
                 <Button onClick={() => openModify(recipe)}>Modify</Button>
             </div>
             <ChatDrawer

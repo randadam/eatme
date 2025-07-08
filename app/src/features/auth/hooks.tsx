@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import api from "@/api"
+import api, { HttpApiError } from "@/api"
 
 const keys = {
     profile: () => ["profile"],
@@ -9,14 +9,10 @@ export function useSignup() {
     const { mutate: signup, isPending, error } = useMutation({
         mutationFn: async (data: api.ModelsSignupRequest) => {
             const res = await api.signup(data)
-            if (res.status > 299) {
-                throw new Error(JSON.stringify(res.data))
-            }
-            return res
+            return res.data as api.ModelsSignupResponse
         },
-        onSuccess: (res) => {
-            const body = res.data as api.ModelsSignupResponse
-            setToken(body.token)
+        onSuccess: (data) => {
+            setToken(data.token)
         }
     })
 
@@ -38,23 +34,27 @@ export function useUser() {
     }
   }
 
-  const query = useQuery({
-    queryKey: keys.profile(),
-    queryFn: async () => {
-        const res = await api.getProfile()
-        if (res.status > 299) {
-            throw new Error(JSON.stringify(res.data))
-        }
-        return res.data as api.ModelsProfile
-    },
-    enabled: !!token,
-    staleTime: 1000 * 60 * 10,
-  });
-
   const logout = () => {
     clearToken();
     qc.removeQueries({ queryKey: keys.profile() });
   };
+
+  const query = useQuery({
+    queryKey: keys.profile(),
+    queryFn: async () => {
+        try {
+            const res = await api.getProfile()
+            return res.data as api.ModelsProfile
+        } catch (err) {
+            if (err instanceof HttpApiError && err.status === 401) {
+                logout()
+            }
+            throw err
+        }
+    },
+    enabled: !!token,
+    staleTime: 1000 * 60 * 10,
+  });
 
   const refresh = () => qc.invalidateQueries({ queryKey: keys.profile() });
 
@@ -72,8 +72,10 @@ export function useUser() {
 export function useSaveProfile() {
     const queryClient = useQueryClient()
     const { mutate: saveProfile, isPending, error } = useMutation({
-        mutationFn: (data: api.ModelsProfileUpdateRequest) =>
-            api.saveProfile(data),
+        mutationFn: async (data: api.ModelsProfileUpdateRequest) => {
+            const res = await api.saveProfile(data)
+            return res.data as api.ModelsProfile
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: keys.profile(),

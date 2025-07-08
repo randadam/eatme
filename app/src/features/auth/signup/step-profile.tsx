@@ -8,6 +8,8 @@ import type { z } from "zod";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useSaveProfile, useUser } from "../hooks";
 import WizardButtons from "./wizard-buttons";
+import { toast } from "sonner";
+import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 
 export default function ProfileStep() {
     const nav = useNavigate()
@@ -23,11 +25,16 @@ export default function ProfileStep() {
         },
     })
 
-    const { saveProfile, isPending, error } = useSaveProfile()
+    const { saveProfile, isPending } = useSaveProfile()
+    const handleFormError = useFormErrorHandler(form)
 
     function onSubmit(values: z.infer<typeof profileForm>) {
         saveProfile({ ...values, setup_step: "skill" }, {
-            onSuccess: () => nav("/signup/skill"),
+            onSuccess: (profile) => {
+                toast.success(`Welcome aboard ${profile.name}!`)
+                nav("/signup/skill")
+            },
+            onError: (err) => handleFormError(err),
         })
     }
 
@@ -53,10 +60,10 @@ export default function ProfileStep() {
                             </FormItem>
                         )}
                     />
+                    <FormErrorMessage form={form}/>
                     <WizardButtons loading={isPending}/>
                 </form>
             </Form>
-            {error && <p className="text-red-500">{JSON.parse(error.message).detail}</p>}
         </>
     )
 }
