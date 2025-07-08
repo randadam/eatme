@@ -1,12 +1,13 @@
 import { Outlet, Navigate, useLocation } from "react-router-dom"
 import { useUser } from "@/features/auth/hooks"
 import { STEPS } from "@/features/auth/signup/constants"
+import { Loader2 } from "lucide-react"
 
 export default function SignupPage() {
   const { pathname } = useLocation()
   const { isAuthenticated, profile, isLoading } = useUser()
 
-  if (isLoading) return null
+  if (isLoading) return <Loader2 className="animate-spin" />
 
   if (pathname === "/signup") {
     if (!isAuthenticated || !profile) {

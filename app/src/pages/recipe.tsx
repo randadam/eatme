@@ -17,7 +17,7 @@ export default function RecipePage() {
             <h2 className="text-2xl font-bold pb-6">Recipe Details</h2>
             {isLoading && <p>Loading recipe...</p>}
             {error && <p>Error loading recipe: {error.message}</p>}
-            {recipe && <Recipe recipe={recipe.data as api.ModelsUserRecipe}/>}
+            {recipe && <Recipe recipe={recipe}/>}
         </div>
     )
 }
@@ -69,7 +69,10 @@ export function Recipe({ recipe }: Props) {
         <>
             <div className="border rounded p-2">
                 <RecipeAccordion id={recipe.id} recipe={recipe} />
-                <Button onClick={() => openModify(recipe)}>Modify</Button>
+                <div className="flex justify-between">
+                    <Button variant="outline"onClick={() => openModify(recipe)}>Modify</Button>
+                    <Button onClick={() => {}}>Start Cooking</Button>
+                </div>
             </div>
             <ChatDrawer
                 open={drawerState.open}

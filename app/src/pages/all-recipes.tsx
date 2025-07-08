@@ -14,8 +14,8 @@ export default function AllRecipesPage() {
 
     const nav = useNavigate()
     const { recipes, isLoading, error } = useAllRecipes()
-    const { deleteRecipe, deleteRecipePending, deleteRecipeError } = useDeleteRecipe()
-    const { startThread, startThreadPending, startThreadError } = useStartSuggestionThread()
+    const { deleteRecipe, deleteRecipePending } = useDeleteRecipe()
+    const { startThread, startThreadPending } = useStartSuggestionThread()
 
     if (isLoading) {
         return <p>Loading...</p>
@@ -39,7 +39,7 @@ export default function AllRecipesPage() {
         })
     }
 
-    const recipesList = (recipes?.data ?? []) as api.ModelsUserRecipe[]
+    const recipesList = recipes ?? []
 
     return (
         <div>
@@ -50,14 +50,15 @@ export default function AllRecipesPage() {
                         <Separator />
                         <div className="p-2">
                             <RecipeOverview recipe={recipe} />
-                            <Button variant="outline" className="mt-2" onClick={() => nav(`/recipes/${recipe.id}`)}>
-                                View Recipe
-                            </Button>
-                            <Button variant="outline" className="mt-2" onClick={() => deleteRecipe(recipe.id)} disabled={deleteRecipePending}>
-                                {deleteRecipePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Delete Recipe
-                            </Button>
-                            {deleteRecipeError && <p className="text-red-500">{deleteRecipeError.message}</p>}
+                            <div className="flex justify-between">
+                                <Button variant="destructive" className="mt-2" onClick={() => deleteRecipe(recipe.id)} disabled={deleteRecipePending}>
+                                    {deleteRecipePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Delete Recipe
+                                </Button>
+                                <Button className="mt-2" onClick={() => nav(`/recipes/${recipe.id}`)}>
+                                    View Recipe
+                                </Button>
+                            </div>
                         </div>
                     </li>
                 ))}
@@ -69,7 +70,6 @@ export default function AllRecipesPage() {
                 mode="suggest"
                 onSend={handleSuggestRecipe}
                 loading={startThreadPending}
-                error={startThreadError?.message}
             />
         </div>
     )
