@@ -1,5 +1,5 @@
 import type api from "@/api"
-import { useSuggestionThread } from "@/features/recipe/hooks"
+import { useSuggestionThread } from "@/features/chat/hooks"
 import SuggestionCard from "./suggestion-card"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
@@ -22,6 +22,9 @@ export default function SuggestionThread({ initialThread }: SuggestionThreadProp
         back,
         forward,
     } = useSuggestionThread(initialThread)
+
+    console.log('currentIndex', currentIndex)
+    console.log('currentSuggestion', currentSuggestion)
 
     function handleAccept() {
         accept(recipeId => nav(`/recipes/${recipeId}`))

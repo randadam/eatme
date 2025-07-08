@@ -3,12 +3,14 @@ package chat
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/ajohnston1219/eatme/api/internal/clients"
 	"github.com/ajohnston1219/eatme/api/internal/services/recipe"
 	"github.com/ajohnston1219/eatme/api/internal/services/user"
 	"github.com/ajohnston1219/eatme/api/models"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type ChatService struct {
@@ -28,8 +30,9 @@ func NewChatService(mlClient clients.MLClient, userService *user.UserService, re
 func (s *ChatService) StartSuggestChat(ctx context.Context, userID string, req *models.SuggestChatRequest) (*models.SuggestChatResponse, error) {
 	profile, err := s.userService.GetProfile(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get profile in suggest chat: %w", err)
 	}
+	zap.L().Debug("loaded user profile")
 
 	internalReq := &models.InternalSuggestChatRequest{
 		Message: req.Message,
@@ -38,8 +41,9 @@ func (s *ChatService) StartSuggestChat(ctx context.Context, userID string, req *
 	}
 	resp, err := s.mlClient.SuggestChat(ctx, internalReq)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get suggest chat response: %w", err)
 	}
+	zap.L().Debug("got suggest chat response")
 
 	suggestionThread := models.SuggestionThread{
 		ID:             uuid.New().String(),
@@ -58,8 +62,9 @@ func (s *ChatService) StartSuggestChat(ctx context.Context, userID string, req *
 
 	err = s.recipeService.NewSuggestionThread(ctx, userID, suggestionThread)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create suggestion thread: %w", err)
 	}
+	zap.L().Debug("created suggestion thread")
 
 	return resp, nil
 }
@@ -67,8 +72,9 @@ func (s *ChatService) StartSuggestChat(ctx context.Context, userID string, req *
 func (s *ChatService) AcceptRecipeSuggestion(ctx context.Context, userID string, threadID string, suggestionID string) (models.UserRecipe, error) {
 	currentThread, err := s.recipeService.GetSuggestionThread(ctx, threadID)
 	if err != nil {
-		return models.UserRecipe{}, err
+		return models.UserRecipe{}, fmt.Errorf("failed to get suggestion thread: %w", err)
 	}
+	zap.L().Debug("got suggestion thread")
 
 	if len(currentThread.Suggestions) == 0 {
 		return models.UserRecipe{}, errors.New("no suggestions found")
@@ -86,20 +92,29 @@ func (s *ChatService) AcceptRecipeSuggestion(ctx context.Context, userID string,
 	if !found {
 		return models.UserRecipe{}, errors.New("suggestion not found")
 	}
+	zap.L().Debug("found suggestion")
 
-	return s.recipeService.AcceptSuggestion(ctx, userID, threadID, suggestion)
+	recipe, err := s.recipeService.AcceptSuggestion(ctx, userID, threadID, suggestion)
+	if err != nil {
+		return models.UserRecipe{}, fmt.Errorf("failed to accept suggestion: %w", err)
+	}
+	zap.L().Debug("accepted suggestion")
+
+	return recipe, nil
 }
 
 func (s *ChatService) GetNextSuggestion(ctx context.Context, userID string, threadID string) (*models.RecipeSuggestion, error) {
 	profile, err := s.userService.GetProfile(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get profile in get next suggestion: %w", err)
 	}
+	zap.L().Debug("got profile")
 
 	currentThread, err := s.recipeService.GetSuggestionThread(ctx, threadID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get suggestion thread for next suggestion: %w", err)
 	}
+	zap.L().Debug("got suggestion thread")
 
 	history := make([]string, len(currentThread.Suggestions))
 	for i, suggestion := range currentThread.Suggestions {
@@ -113,8 +128,9 @@ func (s *ChatService) GetNextSuggestion(ctx context.Context, userID string, thre
 	}
 	resp, err := s.mlClient.SuggestChat(ctx, &req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get suggest chat response for next suggestion: %w", err)
 	}
+	zap.L().Debug("got suggest chat response")
 
 	nextSuggestion := models.RecipeSuggestion{
 		ID:           uuid.New().String(),
@@ -126,26 +142,34 @@ func (s *ChatService) GetNextSuggestion(ctx context.Context, userID string, thre
 
 	err = s.recipeService.AppendToSuggestionThread(ctx, threadID, nextSuggestion)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to append to suggestion thread for next suggestion: %w", err)
 	}
+	zap.L().Debug("appended to suggestion thread")
 
 	return &nextSuggestion, nil
 }
 
 func (s *ChatService) GetSuggestionThread(ctx context.Context, userID string, threadID string) (models.SuggestionThread, error) {
-	return s.recipeService.GetSuggestionThread(ctx, threadID)
+	thread, err := s.recipeService.GetSuggestionThread(ctx, threadID)
+	if err != nil {
+		return models.SuggestionThread{}, fmt.Errorf("failed to get suggestion thread in get suggestion thread: %w", err)
+	}
+	zap.L().Debug("got suggestion thread")
+	return thread, nil
 }
 
 func (s *ChatService) ModifyRecipeChat(ctx context.Context, userID string, recipeID string, req *models.ModifyChatRequest) (*models.ModifyChatResponse, error) {
 	profile, err := s.userService.GetProfile(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get profile in modify recipe chat: %w", err)
 	}
+	zap.L().Debug("got profile")
 
 	recipe, err := s.recipeService.GetUserRecipe(ctx, userID, recipeID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get user recipe in modify recipe chat: %w", err)
 	}
+	zap.L().Debug("got user recipe")
 
 	internalReq := &models.InternalModifyChatRequest{
 		Message: req.Message,
@@ -154,13 +178,15 @@ func (s *ChatService) ModifyRecipeChat(ctx context.Context, userID string, recip
 	}
 	resp, err := s.mlClient.ModifyChat(ctx, internalReq)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get modify chat response in modify recipe chat: %w", err)
 	}
+	zap.L().Debug("got modify chat response")
 
 	err = s.recipeService.UpdateRecipe(ctx, userID, recipeID, resp.NewRecipe)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to update recipe in modify recipe chat: %w", err)
 	}
+	zap.L().Debug("updated recipe")
 
 	return resp, nil
 }
@@ -168,18 +194,24 @@ func (s *ChatService) ModifyRecipeChat(ctx context.Context, userID string, recip
 func (s *ChatService) GeneralRecipeChat(ctx context.Context, userID string, recipeID string, req *models.GeneralChatRequest) (*models.GeneralChatResponse, error) {
 	profile, err := s.userService.GetProfile(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get profile in general recipe chat: %w", err)
 	}
 
 	recipe, err := s.recipeService.GetUserRecipe(ctx, userID, recipeID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get user recipe in general recipe chat: %w", err)
 	}
+	zap.L().Debug("got user recipe")
 
 	internalReq := &models.InternalGeneralChatRequest{
 		Message: req.Message,
 		Profile: profile,
 		Recipe:  recipe.RecipeBody,
 	}
-	return s.mlClient.GeneralChat(ctx, internalReq)
+	resp, err := s.mlClient.GeneralChat(ctx, internalReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get general chat response in general recipe chat: %w", err)
+	}
+	zap.L().Debug("got general chat response")
+	return resp, nil
 }

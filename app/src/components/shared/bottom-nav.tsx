@@ -1,9 +1,9 @@
-import { NotebookPen } from "lucide-react"
+import { Notebook } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 
 const items = [
-  { to: "/plans", icon: NotebookPen, label: "Plans" },
+  { to: "/recipes", icon: Notebook, label: "Recipes" },
 ]
 
 const hiddenRoutes: RegExp[] = [

@@ -1,8 +1,6 @@
-"use client"
-
 import { useParams } from "react-router-dom"
-import { useGetSuggestionThread } from "@/features/recipe/hooks"
-import SuggestionThread from "@/features/recipe/suggest/suggestion-thread"
+import { useGetSuggestionThread } from "@/features/chat/hooks"
+import SuggestionThread from "@/features/chat/suggest/suggestion-thread"
 
 export default function Suggest() {
     const threadId = useParams().threadId

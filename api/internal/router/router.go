@@ -9,6 +9,7 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/services/chat"
 	"github.com/ajohnston1219/eatme/api/internal/services/recipe"
 	"github.com/ajohnston1219/eatme/api/internal/services/user"
+	"github.com/ajohnston1219/eatme/api/internal/utils"
 	"github.com/go-chi/chi/v5"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -26,7 +27,11 @@ func NewApp(store db.Store, mlClient clients.MLClient) *App {
 }
 
 func NewRouter(app *App) *chi.Mux {
+	utils.InitLogger()
+
 	r := chi.NewRouter()
+
+	r.Use(handlers.RequestLogger)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
