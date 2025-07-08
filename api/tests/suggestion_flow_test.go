@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -14,7 +13,7 @@ import (
 
 func TestSuggestionFlow(t *testing.T) {
 	ml := &MLStub{
-		Responses: []models.SuggestChatResponse{
+		SuggestResponses: []models.SuggestChatResponse{
 			{ResponseText: "How about Beef Stroganoff?", NewRecipe: makeFakeRecipe("Beef Stroganoff")},
 			{ResponseText: "Maybe Beef & Mushroom Tacos?", NewRecipe: makeFakeRecipe("Beef & Mushroom Tacos")},
 		},
@@ -22,9 +21,10 @@ func TestSuggestionFlow(t *testing.T) {
 	ts, store := NewTestServer(t, ml)
 	defer ts.Close()
 
-	userID := "user-123"
-	authToken := "Bearer " + userID
-	createUser(store, userID)
+	email := "user@example.com"
+	user, err := createUser(store, email)
+	require.NoError(t, err)
+	authToken := "Bearer " + user.ID
 	prompt := "beef & mushrooms"
 
 	// 1️⃣ start thread
@@ -40,7 +40,6 @@ func TestSuggestionFlow(t *testing.T) {
 	// check response
 	var suggestionResponse models.SuggestChatResponse
 	json.NewDecoder(resp.Body).Decode(&suggestionResponse)
-	fmt.Printf("initial suggestionResponse: %+v\n", suggestionResponse)
 	require.NotEmpty(t, suggestionResponse.ThreadID)
 	require.NotEmpty(t, suggestionResponse.NewRecipe.Title)
 	require.Equal(t, "How about Beef Stroganoff?", suggestionResponse.ResponseText)
@@ -72,7 +71,6 @@ func TestSuggestionFlow(t *testing.T) {
 
 	var next models.RecipeSuggestion
 	json.NewDecoder(resp.Body).Decode(&next)
-	fmt.Printf("next suggestionResponse: %+v\n", next)
 	require.Equal(t, "Beef & Mushroom Tacos", next.Suggestion.Title)
 	require.Equal(t, "Maybe Beef & Mushroom Tacos?", next.ResponseText)
 
@@ -124,7 +122,7 @@ func TestSuggestionFlow(t *testing.T) {
 	require.Equal(t, true, thread.Suggestions[1].Accepted)
 
 	// 4️⃣ verify DB: verify a recipe was created
-	recipe, err := store.GetUserRecipe(context.Background(), userID, accepted.ID)
+	recipe, err := store.GetUserRecipe(context.Background(), user.ID, accepted.ID)
 	require.NoError(t, err)
 	require.Equal(t, "Beef & Mushroom Tacos", recipe.Title)
 }

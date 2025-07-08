@@ -7,13 +7,15 @@ import (
 )
 
 type MLStub struct {
-	Responses []models.SuggestChatResponse
-	call      int
+	SuggestResponses []models.SuggestChatResponse
+	suggestCall      int
+	ModifyResponses  []models.ModifyChatResponse
+	modifyCall       int
 }
 
 func (m *MLStub) SuggestChat(_ context.Context, _ *models.InternalSuggestChatRequest) (*models.SuggestChatResponse, error) {
-	resp := m.Responses[m.call]
-	m.call++
+	resp := m.SuggestResponses[m.suggestCall]
+	m.suggestCall++
 	return &models.SuggestChatResponse{
 		ResponseText: resp.ResponseText,
 		NewRecipe:    resp.NewRecipe,
@@ -21,7 +23,12 @@ func (m *MLStub) SuggestChat(_ context.Context, _ *models.InternalSuggestChatReq
 }
 
 func (m *MLStub) ModifyChat(_ context.Context, _ *models.InternalModifyChatRequest) (*models.ModifyChatResponse, error) {
-	return nil, nil
+	resp := m.ModifyResponses[m.modifyCall]
+	m.modifyCall++
+	return &models.ModifyChatResponse{
+		ResponseText: resp.ResponseText,
+		NewRecipe:    resp.NewRecipe,
+	}, nil
 }
 
 func (m *MLStub) GeneralChat(_ context.Context, _ *models.InternalGeneralChatRequest) (*models.GeneralChatResponse, error) {

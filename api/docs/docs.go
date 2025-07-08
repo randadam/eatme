@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/chat/recipes/{recipeId}": {
+        "/chat/modify/recipes/{recipeId}": {
             "put": {
                 "description": "Handle modifying a recipe",
                 "consumes": [
@@ -69,7 +69,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/chat/recipes/{recipeId}/question": {
+        "/chat/question/recipes/{recipeId}": {
             "post": {
                 "description": "Handle general chat request",
                 "consumes": [

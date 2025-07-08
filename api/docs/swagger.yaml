@@ -483,7 +483,7 @@ info:
   title: EatMe API
   version: "1.0"
 paths:
-  /chat/recipes/{recipeId}:
+  /chat/modify/recipes/{recipeId}:
     put:
       consumes:
       - application/json
@@ -519,7 +519,7 @@ paths:
       summary: Handle modifying a recipe
       tags:
       - Chat
-  /chat/recipes/{recipeId}/question:
+  /chat/question/recipes/{recipeId}:
     post:
       consumes:
       - application/json

@@ -9,7 +9,7 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
-        "/chat/recipes/{recipeId}": {
+        "/chat/modify/recipes/{recipeId}": {
             "put": {
                 "description": "Handle modifying a recipe",
                 "consumes": [
@@ -63,7 +63,7 @@
                 }
             }
         },
-        "/chat/recipes/{recipeId}/question": {
+        "/chat/question/recipes/{recipeId}": {
             "post": {
                 "description": "Handle general chat request",
                 "consumes": [

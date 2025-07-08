@@ -86,10 +86,10 @@ func (s *UserService) SaveProfile(ctx context.Context, userID string, profile mo
 }
 
 func (s *UserService) GetProfile(ctx context.Context, userID string) (models.Profile, error) {
-	prefs, err := s.store.GetProfile(ctx, userID)
+	profile, err := s.store.GetProfile(ctx, userID)
 	if err != nil {
 		return models.Profile{}, err
 	}
 
-	return prefs, nil
+	return profile, nil
 }

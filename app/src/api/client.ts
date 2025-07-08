@@ -154,7 +154,7 @@ export function modifyRecipe(recipeId: string, modelsModifyChatRequest: ModelsMo
     } | {
         status: 500;
         data: ModelsInternalServerErrorResponse;
-    }>(`/chat/recipes/${encodeURIComponent(recipeId)}`, oazapfts.json({
+    }>(`/chat/modify/recipes/${encodeURIComponent(recipeId)}`, oazapfts.json({
         ...opts,
         method: "PUT",
         body: modelsModifyChatRequest
@@ -173,7 +173,7 @@ export function generalChat(recipeId: string, modelsGeneralChatRequest: ModelsGe
     } | {
         status: 500;
         data: ModelsInternalServerErrorResponse;
-    }>(`/chat/recipes/${encodeURIComponent(recipeId)}/question`, oazapfts.json({
+    }>(`/chat/question/recipes/${encodeURIComponent(recipeId)}`, oazapfts.json({
         ...opts,
         method: "POST",
         body: modelsGeneralChatRequest

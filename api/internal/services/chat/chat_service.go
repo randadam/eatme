@@ -3,7 +3,6 @@ package chat
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/ajohnston1219/eatme/api/internal/clients"
 	"github.com/ajohnston1219/eatme/api/internal/services/recipe"
@@ -77,7 +76,6 @@ func (s *ChatService) AcceptRecipeSuggestion(ctx context.Context, userID string,
 
 	var suggestion models.RecipeSuggestion
 	found := false
-	fmt.Printf("currentThread: %+v\n", currentThread)
 	for _, s := range currentThread.Suggestions {
 		if s.ID == suggestionID {
 			suggestion = s
@@ -138,7 +136,7 @@ func (s *ChatService) GetSuggestionThread(ctx context.Context, userID string, th
 	return s.recipeService.GetSuggestionThread(ctx, threadID)
 }
 
-func (s *ChatService) ModifyChat(ctx context.Context, userID string, recipeID string, req *models.ModifyChatRequest) (*models.ModifyChatResponse, error) {
+func (s *ChatService) ModifyRecipeChat(ctx context.Context, userID string, recipeID string, req *models.ModifyChatRequest) (*models.ModifyChatResponse, error) {
 	profile, err := s.userService.GetProfile(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -167,7 +165,7 @@ func (s *ChatService) ModifyChat(ctx context.Context, userID string, recipeID st
 	return resp, nil
 }
 
-func (s *ChatService) GeneralChat(ctx context.Context, userID string, recipeID string, req *models.GeneralChatRequest) (*models.GeneralChatResponse, error) {
+func (s *ChatService) GeneralRecipeChat(ctx context.Context, userID string, recipeID string, req *models.GeneralChatRequest) (*models.GeneralChatResponse, error) {
 	profile, err := s.userService.GetProfile(ctx, userID)
 	if err != nil {
 		return nil, err

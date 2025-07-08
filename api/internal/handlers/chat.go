@@ -169,8 +169,8 @@ func (h *ChatHandler) GetSuggestionThread(w http.ResponseWriter, r *http.Request
 // @Success 200 {object} models.ModifyChatResponse
 // @Failure 400 {object} models.BadRequestResponse
 // @Failure 500 {object} models.InternalServerErrorResponse
-// @Router /chat/recipes/{recipeId} [put]
-func (h *ChatHandler) ModifyChat(w http.ResponseWriter, r *http.Request) {
+// @Router /chat/modify/recipes/{recipeId} [put]
+func (h *ChatHandler) ModifyRecipeChat(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	if userID == "" {
 		errorJSON(w, errors.New("missing user ID"), http.StatusUnauthorized)
@@ -189,7 +189,7 @@ func (h *ChatHandler) ModifyChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.chatService.ModifyChat(r.Context(), userID, recipeId, &requestBody)
+	resp, err := h.chatService.ModifyRecipeChat(r.Context(), userID, recipeId, &requestBody)
 	if err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
@@ -209,8 +209,8 @@ func (h *ChatHandler) ModifyChat(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} models.GeneralChatResponse
 // @Failure 400 {object} models.BadRequestResponse
 // @Failure 500 {object} models.InternalServerErrorResponse
-// @Router /chat/recipes/{recipeId}/question [post]
-func (h *ChatHandler) GeneralChat(w http.ResponseWriter, r *http.Request) {
+// @Router /chat/question/recipes/{recipeId} [post]
+func (h *ChatHandler) GeneralRecipeChat(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	if userID == "" {
 		errorJSON(w, errors.New("missing user ID"), http.StatusUnauthorized)
@@ -229,7 +229,7 @@ func (h *ChatHandler) GeneralChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.chatService.GeneralChat(r.Context(), userID, recipeId, &requestBody)
+	resp, err := h.chatService.GeneralRecipeChat(r.Context(), userID, recipeId, &requestBody)
 	if err != nil {
 		errorJSON(w, err, http.StatusInternalServerError)
 		return
