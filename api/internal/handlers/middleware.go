@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/ajohnston1219/eatme/api/internal/db"
+	"github.com/ajohnston1219/eatme/api/internal/models"
 	"go.uber.org/zap"
 )
 
@@ -18,7 +18,7 @@ func AuthMiddleware(store db.Store) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token := r.Header.Get("Authorization")
 			if token == "" {
-				errorJSON(w, errors.New("missing auth"), http.StatusUnauthorized)
+				errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
 				return
 			}
 			userID := strings.TrimPrefix(token, "Bearer ")

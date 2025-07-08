@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/ajohnston1219/eatme/api/internal/db"
-	"github.com/ajohnston1219/eatme/api/models"
+	"github.com/ajohnston1219/eatme/api/internal/models"
 	"go.uber.org/zap"
 )
 
@@ -20,11 +20,17 @@ func NewUserService(store db.Store) *UserService {
 
 func (s *UserService) CreateUser(ctx context.Context, email string, password string) (models.User, error) {
 	var user models.User
+
 	err := s.store.WithTx(func(tx db.Store) error {
 		var err error
 		user, err = tx.CreateUser(ctx, email, password)
 		if err != nil {
-			return fmt.Errorf("failed to create user in create user: %w", err)
+			switch {
+			case errors.Is(err, db.ErrEmailExists):
+				return ErrEmailExists
+			default:
+				return fmt.Errorf("failed to create user: %w", err)
+			}
 		}
 		zap.L().Debug("created user")
 		defaultProfile := models.Profile{
@@ -44,10 +50,8 @@ func (s *UserService) CreateUser(ctx context.Context, email string, password str
 		zap.L().Debug("saved default profile")
 		return nil
 	})
-	if err != nil {
-		return models.User{}, fmt.Errorf("failed to create user in create user: %w", err)
-	}
-	return user, nil
+
+	return user, err
 }
 
 func (s *UserService) SaveProfile(ctx context.Context, userID string, profile models.ProfileUpdateRequest) (models.Profile, error) {
@@ -61,7 +65,12 @@ func (s *UserService) SaveProfile(ctx context.Context, userID string, profile mo
 		var err error
 		currentProfile, err = tx.GetProfile(ctx, userID)
 		if err != nil {
-			return fmt.Errorf("failed to get profile in save profile: %w", err)
+			switch {
+			case errors.Is(err, db.ErrNotFound):
+				return ErrProfileNotFound
+			default:
+				return fmt.Errorf("failed to get profile: %w", err)
+			}
 		}
 		zap.L().Debug("found profile")
 
@@ -87,22 +96,24 @@ func (s *UserService) SaveProfile(ctx context.Context, userID string, profile mo
 
 		err = tx.SaveProfile(ctx, userID, currentProfile)
 		if err != nil {
-			return fmt.Errorf("failed to save profile in save profile: %w", err)
+			return fmt.Errorf("failed to save profile: %w", err)
 		}
 		zap.L().Debug("saved profile")
 		return nil
 	})
 
-	if err != nil {
-		return models.Profile{}, fmt.Errorf("failed to save profile in save profile: %w", err)
-	}
-	return currentProfile, nil
+	return currentProfile, err
 }
 
 func (s *UserService) GetProfile(ctx context.Context, userID string) (models.Profile, error) {
 	profile, err := s.store.GetProfile(ctx, userID)
 	if err != nil {
-		return models.Profile{}, fmt.Errorf("failed to get profile in get profile: %w", err)
+		switch {
+		case errors.Is(err, db.ErrNotFound):
+			return models.Profile{}, ErrProfileNotFound
+		default:
+			return models.Profile{}, fmt.Errorf("failed to get profile: %w", err)
+		}
 	}
 
 	return profile, nil

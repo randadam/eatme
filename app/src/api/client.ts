@@ -36,13 +36,11 @@ export type ModelsModifyChatResponse = {
     new_recipe: ModelsRecipeBody;
     response_text: string;
 };
-export type ModelsBadRequestResponse = {
-    /** Error message */
-    error: string;
-};
-export type ModelsInternalServerErrorResponse = {
-    /** Error message */
-    error: string;
+export type ModelsApiError = {
+    code?: string;
+    details?: string;
+    field?: string;
+    message?: string;
 };
 export type ModelsGeneralChatRequest = {
     message: string;
@@ -111,10 +109,6 @@ export type ModelsProfile = {
     /** User's skill level */
     skill: ModelsSkill;
 };
-export type ModelsUnauthorizedResponse = {
-    /** Error message */
-    error: string;
-};
 export type ModelsProfileUpdateRequest = {
     /** User's allergies */
     allergies?: ModelsAllergy[];
@@ -150,10 +144,16 @@ export function modifyRecipe(recipeId: string, modelsModifyChatRequest: ModelsMo
         data: ModelsModifyChatResponse;
     } | {
         status: 400;
-        data: ModelsBadRequestResponse;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>(`/chat/modify/recipes/${encodeURIComponent(recipeId)}`, oazapfts.json({
         ...opts,
         method: "PUT",
@@ -169,10 +169,16 @@ export function generalChat(recipeId: string, modelsGeneralChatRequest: ModelsGe
         data: ModelsGeneralChatResponse;
     } | {
         status: 400;
-        data: ModelsBadRequestResponse;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>(`/chat/question/recipes/${encodeURIComponent(recipeId)}`, oazapfts.json({
         ...opts,
         method: "POST",
@@ -188,10 +194,13 @@ export function suggestRecipe(modelsSuggestChatRequest: ModelsSuggestChatRequest
         data: ModelsSuggestChatResponse;
     } | {
         status: 400;
-        data: ModelsBadRequestResponse;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>("/chat/suggest", oazapfts.json({
         ...opts,
         method: "POST",
@@ -207,10 +216,16 @@ export function getSuggestionThread(threadId: string, opts?: Oazapfts.RequestOpt
         data: ModelsSuggestionThread;
     } | {
         status: 400;
-        data: ModelsBadRequestResponse;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>(`/chat/suggest/${encodeURIComponent(threadId)}`, {
         ...opts
     });
@@ -224,10 +239,16 @@ export function acceptRecipeSuggestion(threadId: string, suggestionId: string, o
         data: ModelsUserRecipe;
     } | {
         status: 400;
-        data: ModelsBadRequestResponse;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>(`/chat/suggest/${encodeURIComponent(threadId)}/accept/${encodeURIComponent(suggestionId)}`, {
         ...opts,
         method: "POST"
@@ -242,10 +263,16 @@ export function nextRecipeSuggestion(threadId: string, opts?: Oazapfts.RequestOp
         data: ModelsRecipeSuggestion;
     } | {
         status: 400;
-        data: ModelsBadRequestResponse;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>(`/chat/suggest/${encodeURIComponent(threadId)}/next`, {
         ...opts,
         method: "POST"
@@ -260,10 +287,13 @@ export function getProfile(opts?: Oazapfts.RequestOpts) {
         data: ModelsProfile;
     } | {
         status: 401;
-        data: ModelsUnauthorizedResponse;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>("/profile", {
         ...opts
     });
@@ -277,13 +307,13 @@ export function saveProfile(modelsProfileUpdateRequest: ModelsProfileUpdateReque
         data: ModelsProfile;
     } | {
         status: 400;
-        data: ModelsBadRequestResponse;
+        data: ModelsApiError;
     } | {
         status: 401;
-        data: ModelsUnauthorizedResponse;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>("/profile", oazapfts.json({
         ...opts,
         method: "PUT",
@@ -299,10 +329,13 @@ export function getAllRecipes(opts?: Oazapfts.RequestOpts) {
         data: ModelsUserRecipe[];
     } | {
         status: 400;
-        data: ModelsBadRequestResponse;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>("/recipes", {
         ...opts
     });
@@ -316,10 +349,16 @@ export function getRecipe(recipeId: string, opts?: Oazapfts.RequestOpts) {
         data: ModelsUserRecipe;
     } | {
         status: 400;
-        data: ModelsBadRequestResponse;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>(`/recipes/${encodeURIComponent(recipeId)}`, {
         ...opts
     });
@@ -333,10 +372,16 @@ export function deleteRecipe(recipeId: string, opts?: Oazapfts.RequestOpts) {
         data: ModelsUserRecipe;
     } | {
         status: 400;
-        data: ModelsBadRequestResponse;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>(`/recipes/${encodeURIComponent(recipeId)}`, {
         ...opts,
         method: "DELETE"
@@ -351,10 +396,13 @@ export function signup(modelsSignupRequest: ModelsSignupRequest, opts?: Oazapfts
         data: ModelsSignupResponse;
     } | {
         status: 400;
-        data: ModelsBadRequestResponse;
+        data: ModelsApiError;
+    } | {
+        status: 409;
+        data: ModelsApiError;
     } | {
         status: 500;
-        data: ModelsInternalServerErrorResponse;
+        data: ModelsApiError;
     }>("/signup", oazapfts.json({
         ...opts,
         method: "POST",

@@ -1,5 +1,17 @@
 basePath: /
 definitions:
+  models.APIError:
+    description: API error response
+    properties:
+      code:
+        type: string
+      details:
+        type: string
+      field:
+        type: string
+      message:
+        type: string
+    type: object
   models.Allergy:
     enum:
     - dairy
@@ -20,16 +32,6 @@ definitions:
     - AllergySoy
     - AllergyTreeNuts
     - AllergyWheat
-  models.BadRequestResponse:
-    description: Bad request error response
-    properties:
-      error:
-        description: Error message
-        example: Invalid input
-        type: string
-    required:
-    - error
-    type: object
   models.Cuisine:
     enum:
     - american
@@ -128,16 +130,6 @@ definitions:
     - name
     - quantity
     - unit
-    type: object
-  models.InternalServerErrorResponse:
-    description: Internal server error response
-    properties:
-      error:
-        description: Error message
-        example: Internal server error
-        type: string
-    required:
-    - error
     type: object
   models.MeasurementUnit:
     enum:
@@ -415,16 +407,6 @@ definitions:
     - suggestions
     - updated_at
     type: object
-  models.UnauthorizedResponse:
-    description: Unauthorized error response
-    properties:
-      error:
-        description: Error message
-        example: Unauthorized
-        type: string
-    required:
-    - error
-    type: object
   models.UserRecipe:
     description: The user's personal copy (favorites, edits).
     properties:
@@ -509,13 +491,21 @@ paths:
           schema:
             $ref: '#/definitions/models.ModifyChatResponse'
         "400":
-          description: Bad Request
+          description: Invalid input
           schema:
-            $ref: '#/definitions/models.BadRequestResponse'
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Recipe not found
+          schema:
+            $ref: '#/definitions/models.APIError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Handle modifying a recipe
       tags:
       - Chat
@@ -545,13 +535,21 @@ paths:
           schema:
             $ref: '#/definitions/models.GeneralChatResponse'
         "400":
-          description: Bad Request
+          description: Invalid input
           schema:
-            $ref: '#/definitions/models.BadRequestResponse'
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Recipe not found
+          schema:
+            $ref: '#/definitions/models.APIError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Handle general chat request
       tags:
       - Chat
@@ -576,13 +574,17 @@ paths:
           schema:
             $ref: '#/definitions/models.SuggestChatResponse'
         "400":
-          description: Bad Request
+          description: Invalid input
           schema:
-            $ref: '#/definitions/models.BadRequestResponse'
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Handle starting a recipe suggestion chat
       tags:
       - Chat
@@ -606,13 +608,21 @@ paths:
           schema:
             $ref: '#/definitions/models.SuggestionThread'
         "400":
-          description: Bad Request
+          description: Invalid input
           schema:
-            $ref: '#/definitions/models.BadRequestResponse'
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Suggestion thread not found
+          schema:
+            $ref: '#/definitions/models.APIError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Get suggestion thread
       tags:
       - Chat
@@ -639,13 +649,21 @@ paths:
           schema:
             $ref: '#/definitions/models.UserRecipe'
         "400":
-          description: Bad Request
+          description: Invalid input
           schema:
-            $ref: '#/definitions/models.BadRequestResponse'
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Suggestion thread not found
+          schema:
+            $ref: '#/definitions/models.APIError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Handle accepting a recipe suggestion
       tags:
       - Chat
@@ -669,13 +687,21 @@ paths:
           schema:
             $ref: '#/definitions/models.RecipeSuggestion'
         "400":
-          description: Bad Request
+          description: Invalid input
           schema:
-            $ref: '#/definitions/models.BadRequestResponse'
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Suggestion thread not found
+          schema:
+            $ref: '#/definitions/models.APIError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Handle getting next recipe suggestion
       tags:
       - Chat
@@ -693,11 +719,15 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.UnauthorizedResponse'
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.APIError'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Get user profile
       tags:
       - users
@@ -723,15 +753,15 @@ paths:
         "400":
           description: Invalid input
           schema:
-            $ref: '#/definitions/models.BadRequestResponse'
+            $ref: '#/definitions/models.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.UnauthorizedResponse'
+            $ref: '#/definitions/models.APIError'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Save user profile
       tags:
       - users
@@ -751,13 +781,17 @@ paths:
               $ref: '#/definitions/models.UserRecipe'
             type: array
         "400":
-          description: Bad Request
+          description: Invalid input
           schema:
-            $ref: '#/definitions/models.BadRequestResponse'
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Get all recipes for user
       tags:
       - Recipe
@@ -781,13 +815,21 @@ paths:
           schema:
             $ref: '#/definitions/models.UserRecipe'
         "400":
-          description: Bad Request
+          description: Invalid input
           schema:
-            $ref: '#/definitions/models.BadRequestResponse'
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Recipe not found
+          schema:
+            $ref: '#/definitions/models.APIError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Delete recipe
       tags:
       - Recipe
@@ -810,13 +852,21 @@ paths:
           schema:
             $ref: '#/definitions/models.UserRecipe'
         "400":
-          description: Bad Request
+          description: Invalid input
           schema:
-            $ref: '#/definitions/models.BadRequestResponse'
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Recipe not found
+          schema:
+            $ref: '#/definitions/models.APIError'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Get recipe by ID
       tags:
       - Recipe
@@ -843,11 +893,15 @@ paths:
         "400":
           description: Invalid input
           schema:
-            $ref: '#/definitions/models.BadRequestResponse'
+            $ref: '#/definitions/models.APIError'
+        "409":
+          description: Email already exists
+          schema:
+            $ref: '#/definitions/models.APIError'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/models.InternalServerErrorResponse'
+            $ref: '#/definitions/models.APIError'
       summary: Create a new user account
       tags:
       - users

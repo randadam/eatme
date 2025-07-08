@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"go.uber.org/zap"
+
+	"github.com/ajohnston1219/eatme/api/internal/models"
 )
 
 func getUserID(r *http.Request) string {
@@ -17,7 +19,7 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	_ = json.NewEncoder(w).Encode(v)
 }
 
-func errorJSON(w http.ResponseWriter, err error, status int) {
+func errorJSON(w http.ResponseWriter, status int, err models.APIError) {
 	if status >= 500 {
 		zap.L().Error("server error", zap.Error(err))
 	} else {
@@ -26,6 +28,6 @@ func errorJSON(w http.ResponseWriter, err error, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(map[string]any{
-		"error": err.Error(),
+		"error": err,
 	})
 }

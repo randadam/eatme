@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ajohnston1219/eatme/api/models"
+	"github.com/ajohnston1219/eatme/api/internal/models"
 )
 
 type MLClient interface {
@@ -31,28 +31,33 @@ func NewMLClient(host string) MLClient {
 func (c mlClient) SuggestChat(ctx context.Context, req *models.InternalSuggestChatRequest) (*models.SuggestChatResponse, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
-		return nil, fmt.Errorf("marshal req: %w", err)
+		return nil, fmt.Errorf("marshal req: %w", ErrMLBadRequest)
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.host+"/chat/suggest", bytes.NewReader(body))
 	if err != nil {
-		return nil, fmt.Errorf("new req: %w", err)
+		return nil, fmt.Errorf("new req: %w", ErrMLCallFailed)
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(httpReq)
 	if err != nil {
-		return nil, fmt.Errorf("ml call: %w", err)
+		return nil, fmt.Errorf("ml call: %w", ErrMLCallFailed)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ml bad status: %s", resp.Status)
+		switch resp.StatusCode {
+		case http.StatusBadRequest:
+			return nil, fmt.Errorf("ml bad status: %s", ErrMLBadRequest)
+		default:
+			return nil, fmt.Errorf("ml bad status: %s", ErrMLCallFailed)
+		}
 	}
 
 	var mlResp models.SuggestChatResponse
 	if err := json.NewDecoder(resp.Body).Decode(&mlResp); err != nil {
-		return nil, fmt.Errorf("decode ml resp: %w", err)
+		return nil, fmt.Errorf("decode ml resp: %w", ErrMLCallFailed)
 	}
 	return &mlResp, nil
 }
@@ -60,28 +65,33 @@ func (c mlClient) SuggestChat(ctx context.Context, req *models.InternalSuggestCh
 func (c mlClient) ModifyChat(ctx context.Context, req *models.InternalModifyChatRequest) (*models.ModifyChatResponse, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
-		return nil, fmt.Errorf("marshal req: %w", err)
+		return nil, fmt.Errorf("marshal req: %w", ErrMLBadRequest)
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.host+"/chat/modify", bytes.NewReader(body))
 	if err != nil {
-		return nil, fmt.Errorf("new req: %w", err)
+		return nil, fmt.Errorf("new req: %w", ErrMLCallFailed)
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(httpReq)
 	if err != nil {
-		return nil, fmt.Errorf("ml call: %w", err)
+		return nil, fmt.Errorf("ml call: %w", ErrMLCallFailed)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ml bad status: %s", resp.Status)
+		switch resp.StatusCode {
+		case http.StatusBadRequest:
+			return nil, fmt.Errorf("ml bad status: %s", ErrMLBadRequest)
+		default:
+			return nil, fmt.Errorf("ml bad status: %s", ErrMLCallFailed)
+		}
 	}
 
 	var mlResp models.ModifyChatResponse
 	if err := json.NewDecoder(resp.Body).Decode(&mlResp); err != nil {
-		return nil, fmt.Errorf("decode ml resp: %w", err)
+		return nil, fmt.Errorf("decode ml resp: %w", ErrMLCallFailed)
 	}
 	return &mlResp, nil
 }
@@ -89,28 +99,33 @@ func (c mlClient) ModifyChat(ctx context.Context, req *models.InternalModifyChat
 func (c mlClient) GeneralChat(ctx context.Context, req *models.InternalGeneralChatRequest) (*models.GeneralChatResponse, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
-		return nil, fmt.Errorf("marshal req: %w", err)
+		return nil, fmt.Errorf("marshal req: %w", ErrMLBadRequest)
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.host+"/chat/general", bytes.NewReader(body))
 	if err != nil {
-		return nil, fmt.Errorf("new req: %w", err)
+		return nil, fmt.Errorf("new req: %w", ErrMLCallFailed)
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(httpReq)
 	if err != nil {
-		return nil, fmt.Errorf("ml call: %w", err)
+		return nil, fmt.Errorf("ml call: %w", ErrMLCallFailed)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ml bad status: %s", resp.Status)
+		switch resp.StatusCode {
+		case http.StatusBadRequest:
+			return nil, fmt.Errorf("ml bad status: %s", ErrMLBadRequest)
+		default:
+			return nil, fmt.Errorf("ml bad status: %s", ErrMLCallFailed)
+		}
 	}
 
 	var mlResp models.GeneralChatResponse
 	if err := json.NewDecoder(resp.Body).Decode(&mlResp); err != nil {
-		return nil, fmt.Errorf("decode ml resp: %w", err)
+		return nil, fmt.Errorf("decode ml resp: %w", ErrMLCallFailed)
 	}
 	return &mlResp, nil
 }

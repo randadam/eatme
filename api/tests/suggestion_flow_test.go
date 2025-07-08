@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/ajohnston1219/eatme/api/models"
+	"github.com/ajohnston1219/eatme/api/internal/models"
 	"github.com/stretchr/testify/require"
 )
 

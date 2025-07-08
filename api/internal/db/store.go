@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 
-	"github.com/ajohnston1219/eatme/api/models"
+	"github.com/ajohnston1219/eatme/api/internal/models"
 )
 
 type Store interface {

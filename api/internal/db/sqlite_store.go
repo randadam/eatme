@@ -9,7 +9,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/ajohnston1219/eatme/api/models"
+	"github.com/ajohnston1219/eatme/api/internal/models"
 	"github.com/google/uuid"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 	"golang.org/x/crypto/bcrypt"

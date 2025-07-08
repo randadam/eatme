@@ -55,15 +55,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Recipe not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -109,15 +121,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Recipe not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -156,15 +180,21 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -201,15 +231,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Suggestion thread not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -250,15 +292,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Suggestion thread not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -295,15 +349,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Suggestion thread not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -330,13 +396,19 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.UnauthorizedResponse"
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -375,19 +447,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.UnauthorizedResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -418,15 +490,21 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -463,15 +541,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Recipe not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -506,15 +596,27 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Recipe not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -555,13 +657,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.BadRequestResponse"
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Email already exists",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.InternalServerErrorResponse"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -569,6 +677,24 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.APIError": {
+            "description": "API error response",
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "string"
+                },
+                "field": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Allergy": {
             "type": "string",
             "enum": [
@@ -591,20 +717,6 @@ const docTemplate = `{
                 "AllergyTreeNuts",
                 "AllergyWheat"
             ]
-        },
-        "models.BadRequestResponse": {
-            "description": "Bad request error response",
-            "type": "object",
-            "required": [
-                "error"
-            ],
-            "properties": {
-                "error": {
-                    "description": "Error message",
-                    "type": "string",
-                    "example": "Invalid input"
-                }
-            }
         },
         "models.Cuisine": {
             "type": "string",
@@ -728,20 +840,6 @@ const docTemplate = `{
                         }
                     ],
                     "example": "cup"
-                }
-            }
-        },
-        "models.InternalServerErrorResponse": {
-            "description": "Internal server error response",
-            "type": "object",
-            "required": [
-                "error"
-            ],
-            "properties": {
-                "error": {
-                    "description": "Error message",
-                    "type": "string",
-                    "example": "Internal server error"
                 }
             }
         },
@@ -1126,20 +1224,6 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
-                }
-            }
-        },
-        "models.UnauthorizedResponse": {
-            "description": "Unauthorized error response",
-            "type": "object",
-            "required": [
-                "error"
-            ],
-            "properties": {
-                "error": {
-                    "description": "Error message",
-                    "type": "string",
-                    "example": "Unauthorized"
                 }
             }
         },
