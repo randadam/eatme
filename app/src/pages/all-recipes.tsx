@@ -8,21 +8,18 @@ import { useStartSuggestionThread } from "@/features/chat/hooks"
 import { Separator } from "@/components/ui/separator"
 import { RecipeOverview } from "@/features/recipe/recipe-overview"
 import { Loader2, PlusIcon } from "lucide-react"
+import RecipeSkeleton from "@/features/recipe/recipe-skeleton"
+import { ErrorPage } from "./error"
+import { useErrorHandler } from "@/lib/error/error-provider"
 
 export default function AllRecipesPage() { 
     const [drawerOpen, setDrawerOpen] = useState(false)
 
     const nav = useNavigate()
+    const showError = useErrorHandler()
     const { recipes, isLoading, error } = useAllRecipes()
     const { deleteRecipe, deleteRecipePending } = useDeleteRecipe()
     const { startThread, startThreadPending } = useStartSuggestionThread()
-
-    if (isLoading) {
-        return <p>Loading...</p>
-    }
-    if (error) {
-        return <p>Error: {error.message}</p>
-    }
 
     function handleAddRecipe() {
         setDrawerOpen(true)
@@ -30,39 +27,27 @@ export default function AllRecipesPage() {
 
     function handleSuggestRecipe(message: string) {
         startThread(message, {
-            onSuccess: (resp) => {
-                const threadData = resp.data as api.ModelsSuggestChatResponse
-                console.log(threadData)
+            onSuccess: (threadData) => {
                 setDrawerOpen(false)
                 nav(`/suggest/${threadData.thread_id}`)
             },
+            onError: (error) => {
+                showError(error)
+            }
         })
     }
-
-    const recipesList = recipes ?? []
 
     return (
         <div>
             <h1 className="text-2xl font-bold pb-6">Recipe Book</h1>
-            <ul className="space-y-2 pb-2">
-                {recipesList.map(recipe => (
-                    <li key={recipe.id}>
-                        <Separator />
-                        <div className="p-2">
-                            <RecipeOverview recipe={recipe} />
-                            <div className="flex justify-between">
-                                <Button variant="destructive" className="mt-2" onClick={() => deleteRecipe(recipe.id)} disabled={deleteRecipePending}>
-                                    {deleteRecipePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Delete Recipe
-                                </Button>
-                                <Button className="mt-2" onClick={() => nav(`/recipes/${recipe.id}`)}>
-                                    View Recipe
-                                </Button>
-                            </div>
-                        </div>
-                    </li>
-                ))}
-            </ul>
+            <RecipeList 
+                recipes={recipes} 
+                isLoading={isLoading} 
+                error={error} 
+                deleteRecipe={deleteRecipe} 
+                deleteRecipePending={deleteRecipePending}
+                viewRecipe={(recipeId) => nav(`/recipes/${recipeId}`)}
+            />
             <AddButton onClick={handleAddRecipe}/>
             <ChatDrawer
                 open={drawerOpen}
@@ -72,6 +57,52 @@ export default function AllRecipesPage() {
                 loading={startThreadPending}
             />
         </div>
+    )
+}
+
+interface RecipeListProps {
+    recipes?: api.ModelsUserRecipe[]
+    isLoading: boolean
+    error: Error | null
+    deleteRecipe: (recipeId: string) => void
+    deleteRecipePending: boolean
+    viewRecipe: (recipeId: string) => void
+}
+
+function RecipeList({ recipes, isLoading, error, deleteRecipe, deleteRecipePending, viewRecipe }: RecipeListProps) {
+    if (isLoading) {
+        return (
+            <div className="space-y-2">
+                <RecipeSkeleton />
+                <Separator />
+                <RecipeSkeleton />
+            </div>
+        )
+    }
+    if (error) {
+        return <ErrorPage title="Error loading recipes" description={error.message} />
+    }
+
+    return (
+        <ul className="space-y-2 pb-2">
+            {(recipes ?? []).map(recipe => (
+                <li key={recipe.id}>
+                    <Separator />
+                    <div className="p-2">
+                        <RecipeOverview recipe={recipe} />
+                        <div className="flex justify-between">
+                            <Button variant="destructive" className="mt-2" onClick={() => deleteRecipe(recipe.id)} disabled={deleteRecipePending}>
+                                {deleteRecipePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Delete Recipe
+                            </Button>
+                            <Button className="mt-2" onClick={() => viewRecipe(recipe.id)}>
+                                View Recipe
+                            </Button>
+                        </div>
+                    </div>
+                </li>
+            ))}
+        </ul>
     )
 }
 

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import api from "@/api"
-import { useErrorHandler } from "@/lib/error/error-provider"
+import { isHttpApiError } from "@/lib/error/error-provider"
 
 export const recipeKeys = {
     all: ["recipes"] as const,
@@ -8,27 +8,22 @@ export const recipeKeys = {
 }
 
 export function useRecipe(recipeId: string) {
-    const showError = useErrorHandler()
 
     const { data: recipe, isLoading, error } = useQuery({
         queryKey: recipeKeys.byId(recipeId),
         queryFn: async () => {
-            try {
-                const resp = await api.getRecipe(recipeId)
-                return resp.data as unknown as api.ModelsUserRecipe
-            } catch (err: any) {
-                showError(err)
-                throw err
-            }
+            const resp = await api.getRecipe(recipeId)
+            return resp.data as unknown as api.ModelsUserRecipe
         },
     })
 
-    return { recipe, isLoading, error }
+    const notFound = isHttpApiError(error) && error.status === 404
+
+    return { recipe, isLoading, error, notFound }
 }
 
 export function useModifyRecipe(recipeId: string) {
     const qc = useQueryClient()
-    const showError = useErrorHandler()
 
     const { mutate: modifyRecipe, isPending: modifyRecipePending, error: modifyRecipeError } = useMutation({
         mutationFn: async (recipe: api.ModelsModifyChatRequest) => {
@@ -38,27 +33,17 @@ export function useModifyRecipe(recipeId: string) {
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: recipeKeys.byId(recipeId) })
         },
-        onError: (err: any) => {
-            showError(err)
-        }
     })
 
     return { modifyRecipe, modifyRecipePending, modifyRecipeError }
 }
 
 export function useAllRecipes() {
-    const showError = useErrorHandler()
-
     const { data: recipes, isLoading, error } = useQuery({
         queryKey: recipeKeys.all,
         queryFn: async () => {
-            try {
-                const resp = await api.getAllRecipes()
-                return resp.data as unknown as api.ModelsUserRecipe[]
-            } catch (err: any) {
-                showError(err)
-                throw err
-            }
+            const resp = await api.getAllRecipes()
+            return resp.data as unknown as api.ModelsUserRecipe[]
         },
     })
 
@@ -67,7 +52,6 @@ export function useAllRecipes() {
 
 export function useDeleteRecipe() {
     const qc = useQueryClient()
-    const showError = useErrorHandler()
 
     const { mutate: deleteRecipe, isPending: deleteRecipePending, error: deleteRecipeError } = useMutation({
         mutationFn: async (recipeId: string) => {
@@ -77,9 +61,6 @@ export function useDeleteRecipe() {
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: recipeKeys.all })
         },
-        onError: (err: any) => {
-            showError(err)
-        }
     })
 
     return { deleteRecipe, deleteRecipePending, deleteRecipeError }
