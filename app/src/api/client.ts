@@ -37,10 +37,10 @@ export type ModelsModifyChatResponse = {
     response_text: string;
 };
 export type ModelsApiError = {
-    code?: string;
+    code: string;
     details?: string;
     field?: string;
-    message?: string;
+    message: string;
 };
 export type ModelsGeneralChatRequest = {
     message: string;

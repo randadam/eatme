@@ -8,6 +8,7 @@ const items = [
 
 const hiddenRoutes: RegExp[] = [
     new RegExp("^/signup"),
+    new RegExp("^/cook/.*"),
 ]
 
 export default function BottomNav() {

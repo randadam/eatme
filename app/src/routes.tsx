@@ -15,6 +15,7 @@ const Signup = lazy(() => import("@/pages/signup"))
 const Recipe = lazy(() => import("@/pages/recipe"))
 const AllRecipes = lazy(() => import("@/pages/all-recipes"))
 const Suggest = lazy(() => import("@/pages/suggest"))
+const Cook = lazy(() => import("@/pages/cook"))
 
 export const router = createBrowserRouter([
     {
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
             {
                 path: "/suggest/:threadId",
                 element: <Suggest/>,
+            },
+            {
+                path: "/cook/:recipeId",
+                element: <Cook/>,
             },
             {
                 path: "/signup",
