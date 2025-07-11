@@ -1,8 +1,7 @@
 import StepInstructions from "./step-instructions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { dietForm } from "./schemas/forms";
 import type { z } from "zod";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -11,6 +10,7 @@ import WizardButtons from "./wizard-buttons";
 import type { ModelsDiet } from "@/api/client";
 import { toast } from "sonner";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
+import { MultiSelectBadges } from "@/components/shared/multi-select-badge";
 
 const diets = [
     { name: "Vegetarian", value: "vegetarian" },
@@ -60,29 +60,19 @@ export default function DietStep() {
                     <FormField
                         control={form.control}
                         name="diet"
-                        render={({field}) => (
+                        render={() => (
                             <FormItem>
                                 <FormLabel>Diet</FormLabel>
                                 <FormDescription className="text-left">
                                     Select any diets you follow.
                                 </FormDescription>
-                                {diets.map((diet) => (
-                                    <FormItem key={diet.value} className="flex">
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value.includes(diet.value)}
-                                                onCheckedChange={(checked) => (
-                                                    field.onChange(
-                                                        checked
-                                                            ? [...field.value, diet.value]
-                                                            : field.value.filter((value) => value !== diet.value)
-                                                    )   
-                                                )}
-                                            />
-                                        </FormControl>
-                                        <FormLabel>{diet.name}</FormLabel>
-                                    </FormItem>
-                                ))}
+                                <div className="pt-4">
+                                    <MultiSelectBadges
+                                        name="diet"
+                                        control={form.control}
+                                        options={diets}
+                                    />
+                                </div>
                                 <FormMessage/>
                             </FormItem>
                         )}

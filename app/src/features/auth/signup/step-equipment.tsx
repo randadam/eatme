@@ -1,8 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import StepInstructions from "./step-instructions";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { equipmentForm } from "./schemas/forms";
 import type { z } from "zod";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -11,6 +10,7 @@ import type { ModelsEquipment } from "@/api/client";
 import WizardButtons from "./wizard-buttons";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 import { toast } from "sonner";
+import { MultiSelectBadges } from "@/components/shared/multi-select-badge";
 
 const equipmentList = [
     { name: "Stove", value: "stove" },
@@ -63,25 +63,19 @@ export default function EquipmentStep() {
                     <FormField
                         control={form.control}
                         name="equipment"
-                        render={({field}) => (
+                        render={() => (
                             <FormItem>
-                                {equipmentList.map((equipment) => (
-                                    <FormItem key={equipment.value} className="flex">
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value.includes(equipment.value)}
-                                                onCheckedChange={(checked) => (
-                                                    field.onChange(
-                                                        checked
-                                                            ? [...field.value, equipment.value]
-                                                            : field.value.filter((value) => value !== equipment.value)
-                                                        )
-                                                )}
-                                            />
-                                        </FormControl>
-                                        <FormLabel>{equipment.name}</FormLabel>
-                                    </FormItem>
-                                ))}
+                                <FormLabel>Equipment</FormLabel>
+                                <FormDescription className="text-left">
+                                    Select any equipment you have.
+                                </FormDescription>
+                                <div className="pt-4">
+                                    <MultiSelectBadges
+                                        name="equipment"
+                                        control={form.control}
+                                        options={equipmentList}
+                                    />
+                                </div>
                                 <FormMessage/>
                             </FormItem>
                         )}

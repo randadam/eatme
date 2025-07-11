@@ -1,8 +1,7 @@
 import StepInstructions from "./step-instructions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { cuisinesForm } from "./schemas/forms";
 import type { z } from "zod";
 import WizardButtons from "./wizard-buttons";
@@ -11,6 +10,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import type { ModelsCuisine } from "@/api/client";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 import { toast } from "sonner";
+import { MultiSelectBadges } from "@/components/shared/multi-select-badge";
 
 const cuisines = [
     { name: "American", value: "american" },
@@ -66,29 +66,19 @@ export default function CuisinesStep() {
                     <FormField
                         control={form.control}
                         name="cuisines"
-                        render={({field}) => (
+                        render={() => (
                             <FormItem>
                                 <FormLabel>Cuisines</FormLabel>
                                 <FormDescription className="text-left">
                                     Select your favorite cuisines.
                                 </FormDescription>
-                                {cuisines.map((cuisine) => (
-                                    <FormItem key={cuisine.value} className="flex">
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value.includes(cuisine.value)}
-                                                onCheckedChange={(checked) => (
-                                                    field.onChange(
-                                                        checked
-                                                            ? [...field.value, cuisine.value]
-                                                            : field.value.filter((value) => value !== cuisine.value)
-                                                    )   
-                                                )}
-                                            />
-                                        </FormControl>
-                                        <FormLabel>{cuisine.name}</FormLabel>
-                                    </FormItem>
-                                ))}
+                                <div className="pt-4">
+                                    <MultiSelectBadges
+                                        name="cuisines"
+                                        control={form.control}
+                                        options={cuisines}
+                                    />
+                                </div>
                                 <FormMessage/>
                             </FormItem>
                         )}
