@@ -57,6 +57,17 @@ else
     echo "✅ pnpm is already installed."
 fi
 
+# Run pnpm install
+echo "📦 Installing ui dependencies..."
+cd app
+pnpm install
+echo "✅ UI dependencies installed."
+
+echo "📦 Installing playwright for E2E tests..."
+pnpm dlx playwright install
+echo "✅ Playwright installed."
+cd ..
+
 # Check for Python
 echo "🔎 Checking for Python..."
 if ! command -v python3 &> /dev/null; then
@@ -113,19 +124,12 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 EATME_SCRIPT_PATH="$SCRIPT_DIR/scripts/eatme.sh"
 INSTALL_PATH="/usr/local/bin/eatme"
 
+# Create symlink for 'eatme' command
 echo "🔗 Creating symlink for 'eatme' command at $INSTALL_PATH..."
-
-# Check for sudo permissions to create the symlink
-if [ "$(id -u)" -ne 0 ]; then
-  echo "This script requires sudo permissions to create a symlink in /usr/local/bin."
-  echo "Please run with 'sudo ./setup.sh' or enter your password."
-  sudo ln -sf "$EATME_SCRIPT_PATH" "$INSTALL_PATH"
-else
-  ln -sf "$EATME_SCRIPT_PATH" "$INSTALL_PATH"
-fi
+sudo ln -sf "$EATME_SCRIPT_PATH" "$INSTALL_PATH"
 
 # Ensure all scripts are executable
-chmod +x "$SCRIPT_DIR/scripts"/*.sh
+sudo chmod +x "$SCRIPT_DIR/scripts"/*.sh
 
 echo "✅ Setup complete!"
 echo "You can now use the 'eatme' command from anywhere."
