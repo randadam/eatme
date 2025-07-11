@@ -1,21 +1,21 @@
-package handlers
+package chat
 
 import (
 	"encoding/json"
 	"errors"
 	"net/http"
 
+	"github.com/ajohnston1219/eatme/api/internal/api"
 	"github.com/ajohnston1219/eatme/api/internal/models"
-	"github.com/ajohnston1219/eatme/api/internal/services/chat"
-	"github.com/ajohnston1219/eatme/api/internal/services/recipe"
+	"github.com/ajohnston1219/eatme/api/internal/recipe"
 	"github.com/go-chi/chi/v5"
 )
 
 type ChatHandler struct {
-	chatService *chat.ChatService
+	chatService *ChatService
 }
 
-func NewChatHandler(chatService *chat.ChatService) *ChatHandler {
+func NewChatHandler(chatService *ChatService) *ChatHandler {
 	return &ChatHandler{
 		chatService: chatService,
 	}
@@ -34,15 +34,15 @@ func NewChatHandler(chatService *chat.ChatService) *ChatHandler {
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /chat/suggest [post]
 func (h *ChatHandler) StartSuggestChat(w http.ResponseWriter, r *http.Request) {
-	userID := getUserID(r)
+	userID := api.GetUserID(r)
 	if userID == "" {
-		errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	requestBody := models.SuggestChatRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
@@ -50,14 +50,14 @@ func (h *ChatHandler) StartSuggestChat(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, recipe.ErrRecipeNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrRecipeNotFound)
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrRecipeNotFound)
 		default:
-			errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		}
 		return
 	}
 
-	writeJSON(w, http.StatusOK, resp)
+	api.WriteJSON(w, http.StatusOK, resp)
 }
 
 // @Summary Handle getting next recipe suggestion
@@ -74,15 +74,15 @@ func (h *ChatHandler) StartSuggestChat(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /chat/suggest/{threadId}/next [post]
 func (h *ChatHandler) NextRecipeSuggestion(w http.ResponseWriter, r *http.Request) {
-	userID := getUserID(r)
+	userID := api.GetUserID(r)
 	if userID == "" {
-		errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	threadId := chi.URLParam(r, "threadId")
 	if threadId == "" {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
@@ -90,16 +90,16 @@ func (h *ChatHandler) NextRecipeSuggestion(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		switch {
 		case errors.Is(err, recipe.ErrRecipeNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrRecipeNotFound)
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrRecipeNotFound)
 		case errors.Is(err, recipe.ErrSuggestionThreadNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrSuggestionThreadNotFound)
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrSuggestionThreadNotFound)
 		default:
-			errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		}
 		return
 	}
 
-	writeJSON(w, http.StatusOK, resp)
+	api.WriteJSON(w, http.StatusOK, resp)
 }
 
 // @Summary Handle accepting a recipe suggestion
@@ -116,21 +116,21 @@ func (h *ChatHandler) NextRecipeSuggestion(w http.ResponseWriter, r *http.Reques
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /chat/suggest/{threadId}/accept/{suggestionId} [post]
 func (h *ChatHandler) AcceptRecipeSuggestion(w http.ResponseWriter, r *http.Request) {
-	userID := getUserID(r)
+	userID := api.GetUserID(r)
 	if userID == "" {
-		errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	threadId := chi.URLParam(r, "threadId")
 	if threadId == "" {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	suggestionId := chi.URLParam(r, "suggestionId")
 	if suggestionId == "" {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
@@ -138,18 +138,18 @@ func (h *ChatHandler) AcceptRecipeSuggestion(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		switch {
 		case errors.Is(err, recipe.ErrRecipeNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrRecipeNotFound)
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrRecipeNotFound)
 		case errors.Is(err, recipe.ErrSuggestionThreadNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrSuggestionThreadNotFound)
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrSuggestionThreadNotFound)
 		case errors.Is(err, recipe.ErrSuggestionNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrSuggestionNotFound)
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrSuggestionNotFound)
 		default:
-			errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		}
 		return
 	}
 
-	writeJSON(w, http.StatusOK, resp)
+	api.WriteJSON(w, http.StatusOK, resp)
 }
 
 // @Summary Get suggestion thread
@@ -166,15 +166,15 @@ func (h *ChatHandler) AcceptRecipeSuggestion(w http.ResponseWriter, r *http.Requ
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /chat/suggest/{threadId} [get]
 func (h *ChatHandler) GetSuggestionThread(w http.ResponseWriter, r *http.Request) {
-	userID := getUserID(r)
+	userID := api.GetUserID(r)
 	if userID == "" {
-		errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	threadId := chi.URLParam(r, "threadId")
 	if threadId == "" {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
@@ -182,16 +182,16 @@ func (h *ChatHandler) GetSuggestionThread(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		switch {
 		case errors.Is(err, recipe.ErrRecipeNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrRecipeNotFound)
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrRecipeNotFound)
 		case errors.Is(err, recipe.ErrSuggestionThreadNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrSuggestionThreadNotFound)
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrSuggestionThreadNotFound)
 		default:
-			errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		}
 		return
 	}
 
-	writeJSON(w, http.StatusOK, resp)
+	api.WriteJSON(w, http.StatusOK, resp)
 }
 
 // @Summary Handle modifying a recipe
@@ -209,21 +209,21 @@ func (h *ChatHandler) GetSuggestionThread(w http.ResponseWriter, r *http.Request
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /chat/modify/recipes/{recipeId} [put]
 func (h *ChatHandler) ModifyRecipeChat(w http.ResponseWriter, r *http.Request) {
-	userID := getUserID(r)
+	userID := api.GetUserID(r)
 	if userID == "" {
-		errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	recipeId := chi.URLParam(r, "recipeId")
 	if recipeId == "" {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	requestBody := models.ModifyChatRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
@@ -231,14 +231,14 @@ func (h *ChatHandler) ModifyRecipeChat(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, recipe.ErrRecipeNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrRecipeNotFound)
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrRecipeNotFound)
 		default:
-			errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		}
 		return
 	}
 
-	writeJSON(w, http.StatusOK, resp)
+	api.WriteJSON(w, http.StatusOK, resp)
 }
 
 // @Summary Handle general chat request
@@ -256,21 +256,21 @@ func (h *ChatHandler) ModifyRecipeChat(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /chat/question/recipes/{recipeId} [post]
 func (h *ChatHandler) GeneralRecipeChat(w http.ResponseWriter, r *http.Request) {
-	userID := getUserID(r)
+	userID := api.GetUserID(r)
 	if userID == "" {
-		errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	recipeId := chi.URLParam(r, "recipeId")
 	if recipeId == "" {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	requestBody := models.GeneralChatRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
@@ -278,12 +278,12 @@ func (h *ChatHandler) GeneralRecipeChat(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		switch {
 		case errors.Is(err, recipe.ErrRecipeNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrRecipeNotFound)
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrRecipeNotFound)
 		default:
-			errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		}
 		return
 	}
 
-	writeJSON(w, http.StatusOK, resp)
+	api.WriteJSON(w, http.StatusOK, resp)
 }

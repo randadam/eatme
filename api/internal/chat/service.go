@@ -7,8 +7,8 @@ import (
 
 	"github.com/ajohnston1219/eatme/api/internal/clients"
 	"github.com/ajohnston1219/eatme/api/internal/models"
-	"github.com/ajohnston1219/eatme/api/internal/services/recipe"
-	"github.com/ajohnston1219/eatme/api/internal/services/user"
+	"github.com/ajohnston1219/eatme/api/internal/recipe"
+	"github.com/ajohnston1219/eatme/api/internal/user"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )

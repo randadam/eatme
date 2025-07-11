@@ -3,12 +3,12 @@ package router
 import (
 	"net/http"
 
+	"github.com/ajohnston1219/eatme/api/internal/chat"
 	"github.com/ajohnston1219/eatme/api/internal/clients"
 	"github.com/ajohnston1219/eatme/api/internal/db"
-	"github.com/ajohnston1219/eatme/api/internal/handlers"
-	"github.com/ajohnston1219/eatme/api/internal/services/chat"
-	"github.com/ajohnston1219/eatme/api/internal/services/recipe"
-	"github.com/ajohnston1219/eatme/api/internal/services/user"
+	"github.com/ajohnston1219/eatme/api/internal/middleware"
+	"github.com/ajohnston1219/eatme/api/internal/recipe"
+	"github.com/ajohnston1219/eatme/api/internal/user"
 	"github.com/ajohnston1219/eatme/api/internal/utils"
 	"github.com/go-chi/chi/v5"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -31,7 +31,7 @@ func NewRouter(app *App) *chi.Mux {
 
 	r := chi.NewRouter()
 
-	r.Use(handlers.RequestLogger)
+	r.Use(middleware.RequestLogger)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
@@ -44,19 +44,19 @@ func NewRouter(app *App) *chi.Mux {
 
 	// User
 	userService := user.NewUserService(app.store)
-	userHandler := handlers.NewUserHandler(userService)
+	userHandler := user.NewUserHandler(userService)
 	r.Post("/signup", userHandler.Signup)
 	r.Route("/profile", func(r chi.Router) {
-		r.Use(handlers.AuthMiddleware(app.store))
+		r.Use(middleware.AuthMiddleware(app.store))
 		r.Put("/", userHandler.SaveProfile)
 		r.Get("/", userHandler.GetProfile)
 	})
 
 	// Recipe
 	recipeService := recipe.NewRecipeService(app.store)
-	recipeHandler := handlers.NewRecipeHandler(recipeService)
+	recipeHandler := recipe.NewRecipeHandler(recipeService)
 	r.Route("/recipes", func(r chi.Router) {
-		r.Use(handlers.AuthMiddleware(app.store))
+		r.Use(middleware.AuthMiddleware(app.store))
 		r.Get("/{recipe_id}", recipeHandler.GetRecipe)
 		r.Get("/", recipeHandler.GetAllRecipes)
 		r.Delete("/{recipe_id}", recipeHandler.DeleteRecipe)
@@ -64,9 +64,9 @@ func NewRouter(app *App) *chi.Mux {
 
 	// Chat
 	chatService := chat.NewChatService(app.mlClient, userService, recipeService)
-	chatHandler := handlers.NewChatHandler(chatService)
+	chatHandler := chat.NewChatHandler(chatService)
 	r.Route("/chat", func(r chi.Router) {
-		r.Use(handlers.AuthMiddleware(app.store))
+		r.Use(middleware.AuthMiddleware(app.store))
 		r.Post("/suggest", chatHandler.StartSuggestChat)
 		r.Get("/suggest/{threadId}", chatHandler.GetSuggestionThread)
 		r.Post("/suggest/{threadId}/next", chatHandler.NextRecipeSuggestion)

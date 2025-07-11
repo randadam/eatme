@@ -40,19 +40,19 @@ func (e APIError) Error() string {
 
 var (
 	// Common
-	ErrUnauthorized = NewAPIError("UNAUTHORIZED", "You must be logged in")
-	ErrBadRequest   = NewAPIError("BAD_REQUEST", "Invalid request")
-	ErrInternal     = NewAPIError("INTERNAL_SERVER_ERROR", "Internal server error")
+	ApiErrUnauthorized = NewAPIError("UNAUTHORIZED", "You must be logged in")
+	ApiErrBadRequest   = NewAPIError("BAD_REQUEST", "Invalid request")
+	ApiErrInternal     = NewAPIError("INTERNAL_SERVER_ERROR", "Internal server error")
 
 	// User
-	ErrEmailExists     = NewAPIError("EMAIL_EXISTS", "Email already exists", WithField("email"))
-	ErrUserNotFound    = NewAPIError("USER_NOT_FOUND", "User not found")
-	ErrProfileNotFound = NewAPIError("PROFILE_NOT_FOUND", "Profile not found")
+	ApiErrEmailExists     = NewAPIError("EMAIL_EXISTS", "Email already exists", WithField("email"))
+	ApiErrUserNotFound    = NewAPIError("USER_NOT_FOUND", "User not found")
+	ApiErrProfileNotFound = NewAPIError("PROFILE_NOT_FOUND", "Profile not found")
 
 	// Recipe
-	ErrRecipeNotFound = NewAPIError("RECIPE_NOT_FOUND", "Recipe not found")
+	ApiErrRecipeNotFound = NewAPIError("RECIPE_NOT_FOUND", "Recipe not found")
 
 	// Chat
-	ErrSuggestionThreadNotFound = NewAPIError("SUGGESTION_THREAD_NOT_FOUND", "Suggestion thread not found")
-	ErrSuggestionNotFound       = NewAPIError("SUGGESTION_NOT_FOUND", "Suggestion not found")
+	ApiErrSuggestionThreadNotFound = NewAPIError("SUGGESTION_THREAD_NOT_FOUND", "Suggestion thread not found")
+	ApiErrSuggestionNotFound       = NewAPIError("SUGGESTION_NOT_FOUND", "Suggestion not found")
 )

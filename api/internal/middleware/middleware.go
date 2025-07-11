@@ -1,4 +1,4 @@
-package handlers
+package middleware
 
 import (
 	"context"
@@ -6,23 +6,22 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ajohnston1219/eatme/api/internal/api"
 	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/models"
 	"go.uber.org/zap"
 )
-
-type userIDKey struct{}
 
 func AuthMiddleware(store db.Store) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token := r.Header.Get("Authorization")
 			if token == "" {
-				errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+				api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 				return
 			}
 			userID := strings.TrimPrefix(token, "Bearer ")
-			ctx := context.WithValue(r.Context(), userIDKey{}, userID)
+			ctx := context.WithValue(r.Context(), api.UserIDKey{}, userID)
 			*r = *r.WithContext(ctx)
 			next.ServeHTTP(w, r)
 		})
@@ -36,7 +35,7 @@ func RequestLogger(next http.Handler) http.Handler {
 		srw := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(srw, r)
 
-		userID, ok := r.Context().Value(userIDKey{}).(string)
+		userID, ok := r.Context().Value(api.UserIDKey{}).(string)
 		if !ok {
 			userID = ""
 		}

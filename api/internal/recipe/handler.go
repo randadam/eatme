@@ -1,19 +1,19 @@
-package handlers
+package recipe
 
 import (
 	"errors"
 	"net/http"
 
+	"github.com/ajohnston1219/eatme/api/internal/api"
 	"github.com/ajohnston1219/eatme/api/internal/models"
-	recipeService "github.com/ajohnston1219/eatme/api/internal/services/recipe"
 	"github.com/go-chi/chi/v5"
 )
 
 type RecipeHandler struct {
-	recipeService *recipeService.RecipeService
+	recipeService *RecipeService
 }
 
-func NewRecipeHandler(recipeService *recipeService.RecipeService) *RecipeHandler {
+func NewRecipeHandler(recipeService *RecipeService) *RecipeHandler {
 	return &RecipeHandler{
 		recipeService: recipeService,
 	}
@@ -33,29 +33,29 @@ func NewRecipeHandler(recipeService *recipeService.RecipeService) *RecipeHandler
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /recipes/{recipe_id} [get]
 func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
-	userID := getUserID(r)
+	userID := api.GetUserID(r)
 	if userID == "" {
-		errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	recipeId := chi.URLParam(r, "recipe_id")
 	if recipeId == "" {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	recipe, err := h.recipeService.GetUserRecipe(r.Context(), userID, recipeId)
 	if err != nil {
 		switch {
-		case errors.Is(err, recipeService.ErrRecipeNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrRecipeNotFound)
+		case errors.Is(err, ErrRecipeNotFound):
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrRecipeNotFound)
 		default:
-			errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		}
 		return
 	}
-	writeJSON(w, http.StatusOK, recipe)
+	api.WriteJSON(w, http.StatusOK, recipe)
 }
 
 // @Summary Get all recipes for user
@@ -64,24 +64,24 @@ func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
 // @Tags Recipe
 // @Accept json
 // @Produce json
-// @Success 200 {array} models.UserRecipe
+// @Success 200 {array}  models.UserRecipe
 // @Failure 400 {object} models.APIError "Invalid input"
 // @Failure 401 {object} models.APIError "Unauthorized"
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /recipes [get]
 func (h *RecipeHandler) GetAllRecipes(w http.ResponseWriter, r *http.Request) {
-	userID := getUserID(r)
+	userID := api.GetUserID(r)
 	if userID == "" {
-		errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	recipes, err := h.recipeService.GetAllUserRecipes(r.Context(), userID)
 	if err != nil {
-		errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+		api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		return
 	}
-	writeJSON(w, http.StatusOK, recipes)
+	api.WriteJSON(w, http.StatusOK, recipes)
 }
 
 // @Summary Delete recipe
@@ -98,27 +98,27 @@ func (h *RecipeHandler) GetAllRecipes(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /recipes/{recipe_id} [delete]
 func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
-	userID := getUserID(r)
+	userID := api.GetUserID(r)
 	if userID == "" {
-		errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	recipeId := chi.URLParam(r, "recipe_id")
 	if recipeId == "" {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	err := h.recipeService.DeleteUserRecipe(r.Context(), userID, recipeId)
 	if err != nil {
 		switch {
-		case errors.Is(err, recipeService.ErrRecipeNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrRecipeNotFound)
+		case errors.Is(err, ErrRecipeNotFound):
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrRecipeNotFound)
 		default:
-			errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		}
 		return
 	}
-	writeJSON(w, http.StatusOK, nil)
+	api.WriteJSON(w, http.StatusOK, nil)
 }

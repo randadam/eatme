@@ -1,19 +1,19 @@
-package handlers
+package user
 
 import (
 	"encoding/json"
 	"errors"
 	"net/http"
 
+	"github.com/ajohnston1219/eatme/api/internal/api"
 	"github.com/ajohnston1219/eatme/api/internal/models"
-	userService "github.com/ajohnston1219/eatme/api/internal/services/user"
 )
 
 type UserHandler struct {
-	service *userService.UserService
+	service *UserService
 }
 
-func NewUserHandler(service *userService.UserService) *UserHandler {
+func NewUserHandler(service *UserService) *UserHandler {
 	return &UserHandler{service: service}
 }
 
@@ -32,22 +32,22 @@ func NewUserHandler(service *userService.UserService) *UserHandler {
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	var input models.SignupRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	user, err := h.service.CreateUser(r.Context(), input.Email, input.Password)
 	if err != nil {
 		switch {
-		case errors.Is(err, userService.ErrEmailExists):
-			errorJSON(w, http.StatusConflict, models.ErrEmailExists)
+		case errors.Is(err, ErrEmailExists):
+			api.ErrorJSON(w, http.StatusConflict, models.ApiErrEmailExists)
 		default:
-			errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		}
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, models.SignupResponse{Token: user.ID})
+	api.WriteJSON(w, http.StatusCreated, models.SignupResponse{Token: user.ID})
 }
 
 // @Summary Save user profile
@@ -63,25 +63,25 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /profile [put]
 func (h *UserHandler) SaveProfile(w http.ResponseWriter, r *http.Request) {
-	userID := getUserID(r)
+	userID := api.GetUserID(r)
 	if userID == "" {
-		errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	var profile models.ProfileUpdateRequest
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
-		errorJSON(w, http.StatusBadRequest, models.ErrBadRequest)
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	result, err := h.service.SaveProfile(r.Context(), userID, profile)
 	if err != nil {
-		errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+		api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, result)
+	api.WriteJSON(w, http.StatusOK, result)
 }
 
 // @Summary Get user profile
@@ -95,22 +95,22 @@ func (h *UserHandler) SaveProfile(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /profile [get]
 func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
-	userID := getUserID(r)
+	userID := api.GetUserID(r)
 	if userID == "" {
-		errorJSON(w, http.StatusUnauthorized, models.ErrUnauthorized)
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	profile, err := h.service.GetProfile(r.Context(), userID)
 	if err != nil {
 		switch {
-		case errors.Is(err, userService.ErrProfileNotFound):
-			errorJSON(w, http.StatusNotFound, models.ErrProfileNotFound)
+		case errors.Is(err, ErrProfileNotFound):
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrProfileNotFound)
 		default:
-			errorJSON(w, http.StatusInternalServerError, models.ErrInternal)
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		}
 		return
 	}
 
-	writeJSON(w, http.StatusOK, profile)
+	api.WriteJSON(w, http.StatusOK, profile)
 }

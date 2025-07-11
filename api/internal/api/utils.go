@@ -1,25 +1,26 @@
-package handlers
+package api
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"go.uber.org/zap"
-
 	"github.com/ajohnston1219/eatme/api/internal/models"
+	"go.uber.org/zap"
 )
 
-func getUserID(r *http.Request) string {
-	return r.Context().Value(userIDKey{}).(string)
+type UserIDKey struct{}
+
+func GetUserID(r *http.Request) string {
+	return r.Context().Value(UserIDKey{}).(string)
 }
 
-func writeJSON(w http.ResponseWriter, status int, v any) {
+func WriteJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(v)
 }
 
-func errorJSON(w http.ResponseWriter, status int, err models.APIError) {
+func ErrorJSON(w http.ResponseWriter, status int, err models.APIError) {
 	if status >= 500 {
 		zap.L().Error("server error", zap.Error(err))
 	} else {
