@@ -6,4 +6,8 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 APP_DIR="$SCRIPT_DIR/../app"
 
 # Run the app
-cd "$APP_DIR" && pnpm dev
+if [ "$1" == "host" ]; then
+    cd "$APP_DIR" && pnpm dev:host
+else
+    cd "$APP_DIR" && pnpm dev
+fi

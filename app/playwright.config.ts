@@ -1,9 +1,9 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: "./tests",
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: "http://localhost:5173",
     headless: true,
     viewport: { width: 1280, height: 720 },
   },

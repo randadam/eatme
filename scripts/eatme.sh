@@ -42,7 +42,8 @@ case "$1" in
     shift # Remove 'app' from the arguments
     case "$1" in
       start)
-        "$SCRIPT_DIR/app-start.sh"
+        shift # Remove 'start' from the arguments
+        "$SCRIPT_DIR/app-start.sh" "$@"
         ;;
       test)
         "$SCRIPT_DIR/app-test.sh"
@@ -81,7 +82,7 @@ case "$1" in
     echo "    test              - Run API tests"
     echo "    docs              - Generate API documentation"
     echo "  app <command>       - App development commands"
-    echo "    start             - Start app"
+    echo "    start [host]      - Start app (host optional)"
     echo "    test              - Run app tests"
     echo "    add dep <pkg>     - Add a new dependency"
     echo "    add comp <pkg>    - Add a new component"
