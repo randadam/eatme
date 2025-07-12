@@ -3,7 +3,7 @@ import { FormField, FormLabel, FormDescription, FormItem, FormMessage } from "@/
 import type { EquipmentFormValues } from "./types"
 import { MultiSelectBadges } from "@/components/shared/multi-select-badge"
 
-const equipmentList = [
+export const equipmentOptions = [
     { name: "Stove", value: "stove" },
     { name: "Oven", value: "oven" },
     { name: "Microwave", value: "microwave" },
@@ -35,7 +35,7 @@ export default function EquipmentForm({ control, showTitle = true }: EquipmentFo
                         <MultiSelectBadges
                             name="equipment"
                             control={control}
-                            options={equipmentList}
+                            options={equipmentOptions}
                         />
                     </div>
                     <FormMessage />

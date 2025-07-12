@@ -4,7 +4,7 @@ import { MultiSelectBadges } from "@/components/shared/multi-select-badge"
 import type { Control } from "react-hook-form"
 import type { AllergiesFormValues } from "./types"
 
-const allergies = [
+export const allergyOptions = [
     { name: "Dairy", value: "dairy" },
     { name: "Eggs", value: "eggs" },
     { name: "Fish", value: "fish" },
@@ -35,7 +35,7 @@ export default function AllergiesForm({ control, showTitle = true }: AllergiesFo
                         <MultiSelectBadges
                             name="allergies"
                             control={control}
-                            options={allergies}
+                            options={allergyOptions}
                         />
                     </div>
                     <FormMessage/>

@@ -7,6 +7,7 @@ import { SignupDietPage } from "./pages/signup-diet-page"
 import { SignupEquipmentPage } from "./pages/signup-equipment-page"
 import { SignupDonePage } from "./pages/signup-done-page"
 import { SignupAllergiesPage } from "./pages/signup-allergies-page"
+import { ProfilePage } from "./pages/profile-page"
 
 test("sanity check", async ({ page }) => {
     await page.goto("/signup")
@@ -23,41 +24,58 @@ test("full signup flow", async ({ page }) => {
     await accountPage.fillConfirmPassword("password")
     await accountPage.submit()
 
-    const profilePage = new SignupProfilePage(page)
-    await profilePage.expectToBeHere()
-    await profilePage.fillName("Testi")
-    await profilePage.submit()
+    const name = "Testi"
+    const profileSetupPage = new SignupProfilePage(page)
+    await profileSetupPage.expectToBeHere()
+    await profileSetupPage.fillName(name)
+    await profileSetupPage.submit()
 
     const skillsPage = new SignupSkillPage(page)
     await skillsPage.expectToBeHere()
     await skillsPage.selectSkill("chef")
     await skillsPage.submit()
 
+    const cuisines = ["italian", "mexican"]
     const cuisinesPage = new SignupCuisinesPage(page)
     await cuisinesPage.expectToBeHere()
-    await cuisinesPage.selectCuisine("italian")
-    await cuisinesPage.selectCuisine("mexican")
+    for (const cuisine of cuisines) {
+        await cuisinesPage.selectCuisine(cuisine)
+    }
     await cuisinesPage.submit()
 
+    const diets = ["high_protein", "keto"]
     const dietPage = new SignupDietPage(page)
     await dietPage.expectToBeHere()
-    await dietPage.selectDiet("high_protein")
+    for (const diet of diets) {
+        await dietPage.selectDiet(diet)
+    }
     await dietPage.submit()
 
+    const allergies = ["dairy", "eggs"]
     const allergiesPage = new SignupAllergiesPage(page)
     await allergiesPage.expectToBeHere()
-    await allergiesPage.selectAllergy("dairy")
+    for (const allergy of allergies) {
+        await allergiesPage.selectAllergy(allergy)
+    }
     await allergiesPage.submit()
 
+    const equipment = ["stove", "oven", "microwave"]
     const equipmentPage = new SignupEquipmentPage(page)
     await equipmentPage.expectToBeHere()
-    await equipmentPage.selectEquipment("stove")
-    await equipmentPage.selectEquipment("oven")
-    await equipmentPage.selectEquipment("microwave")
+    for (const e of equipment) {
+        await equipmentPage.selectEquipment(e)
+    }
     await equipmentPage.submit()
 
     const donePage = new SignupDonePage(page)
     await donePage.expectToBeHere()
 
-    // TODO(adam): go to profile page and verify it matches selections
+    const profilePage = new ProfilePage(page)
+    await profilePage.goto()
+    await profilePage.expectName(name)
+    await profilePage.expectSkill("chef")
+    await profilePage.expectCuisines(cuisines)
+    await profilePage.expectDiets(diets)
+    await profilePage.expectAllergies(allergies)
+    await profilePage.expectEquipment(equipment)
 })

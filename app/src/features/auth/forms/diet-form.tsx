@@ -4,7 +4,7 @@ import { MultiSelectBadges } from "@/components/shared/multi-select-badge"
 import type { Control } from "react-hook-form"
 import type { DietFormValues } from "./types"
 
-const diets = [
+export const dietOptions = [
     { name: "Vegetarian", value: "vegetarian" },
     { name: "Vegan", value: "vegan" },
     { name: "Keto", value: "keto" },
@@ -33,7 +33,7 @@ export default function DietForm({ control, showTitle = true }: DietFormProps) {
                         <MultiSelectBadges
                             name="diet"
                             control={control}
-                            options={diets}
+                            options={dietOptions}
                         />
                     </div>
                     <FormMessage/>
