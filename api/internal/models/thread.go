@@ -35,6 +35,7 @@ const (
 	ThreadEventTypePromptEdited        ThreadEventType = "PromptEdited"
 	ThreadEventTypeSuggestionGenerated ThreadEventType = "SuggestionGenerated"
 	ThreadEventTypeSuggestionAccepted  ThreadEventType = "SuggestionAccepted"
+	ThreadEventTypeSuggestionRejected  ThreadEventType = "SuggestionRejected"
 	ThreadEventTypeRecipeModified      ThreadEventType = "RecipeModified"
 	ThreadEventTypeQuestionAnswered    ThreadEventType = "QuestionAnswered"
 )
@@ -74,6 +75,7 @@ type RecipeSuggestion struct {
 	Suggestion   RecipeBody `json:"suggestion" binding:"required"`
 	ResponseText string     `json:"response_text" binding:"required"`
 	Accepted     bool       `json:"accepted" binding:"required"`
+	Rejected     bool       `json:"rejected" binding:"required"`
 	CreatedAt    time.Time  `json:"created_at" binding:"required"`
 	UpdatedAt    time.Time  `json:"updated_at" binding:"required"`
 }

@@ -9,8 +9,8 @@ export const suggestionThreadKeys = {
 export function useStartSuggestionThread() {
     const { mutate: startThread, isPending: startThreadPending } = useMutation({
         mutationFn: async (message: string) => {
-            const resp = await api.suggestRecipe({ message })
-            return resp.data as api.ModelsSuggestChatResponse
+            const resp = await api.startSuggestionThread({ prompt: message })
+            return resp.data as api.ModelsThreadState
         },
     })
 
@@ -21,8 +21,8 @@ export function useGetSuggestionThread(threadId: string) {
     const { data: thread, isLoading: fetchLoading, error: fetchError } = useQuery({
         queryKey: suggestionThreadKeys.byId(threadId),
         queryFn: async () => {
-            const resp = await api.getSuggestionThread(threadId)
-            return resp.data as api.ModelsSuggestionThread
+            const resp = await api.getThread(threadId)
+            return resp.data as api.ModelsThreadState
         },
     })
 
@@ -30,32 +30,52 @@ export function useGetSuggestionThread(threadId: string) {
 }
 
 
-export function useSuggestionThread(initialThread: api.ModelsSuggestionThread) {
+export function useSuggestionThread(initialThread: api.ModelsThreadState) {
+    let firstNotSeen = initialThread.suggestions.findIndex(s => !s.accepted && !s.rejected)
+    if (firstNotSeen === -1) {
+        firstNotSeen = initialThread.suggestions.length - 1
+    }
+
     const [threadState, setThreadState] = useState({
         thread: initialThread,
-        currentIndex: initialThread.suggestions.length - 1,
+        currentIndex: firstNotSeen,
     })
 
     const { mutate: getNextSuggestion, isPending: getNextSuggestionPending, error: getNextSuggestionError } = useMutation({
-        mutationFn: async () => {
-            const resp = await api.nextRecipeSuggestion(threadState.thread.id)
-            return resp.data as api.ModelsRecipeSuggestion
+        mutationFn: async (threadId: string, updatedPrompt?: string) => {
+            const req: api.ModelsGetNewSuggestionsRequest = {
+                prompt: updatedPrompt,
+            }
+            const resp = await api.getNewSuggestions(threadId, req)
+            return resp.data as api.ModelsRecipeSuggestion[]
         },
-        onSuccess: (newSuggestion) => {
+        onSuccess: (newSuggestions) => {
             setThreadState(prev => ({
                 thread: {
                     ...prev.thread,
-                    suggestions: [...prev.thread.suggestions, newSuggestion],
+                    suggestions: [...prev.thread.suggestions, ...newSuggestions],
                 },
-                currentIndex: prev.thread.suggestions.length,
+                currentIndex: prev.currentIndex + 1,
             }))
         },
     })
-    const reject = () => getNextSuggestion()
+    const reject = () => {
+        const nextIndex = threadState.currentIndex + 1;
+        console.log('nextIndex', nextIndex)
+        console.log('threadState.thread.suggestions.length', threadState.thread.suggestions.length)
+        if (nextIndex < threadState.thread.suggestions.length) {
+            setThreadState(prev => ({
+                ...prev,
+                currentIndex: nextIndex,
+            }))
+        } else {
+            getNextSuggestion(threadState.thread.id)
+        }
+    }
 
     const { mutate: acceptSuggestion, isPending: acceptSuggestionPending, error: acceptSuggestionError } = useMutation({
         mutationFn: async (cb?: (recipeId: string) => void) => {
-            const resp = await api.acceptRecipeSuggestion(threadState.thread.id, threadState.thread.suggestions[threadState.currentIndex].id)
+            const resp = await api.acceptSuggestion(threadState.thread.id, threadState.thread.suggestions[threadState.currentIndex].id)
             const respData = resp.data as api.ModelsUserRecipe
             if (cb) {
                 cb(respData.id)

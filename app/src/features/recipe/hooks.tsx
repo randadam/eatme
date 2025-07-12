@@ -26,8 +26,8 @@ export function useModifyRecipe(recipeId: string) {
     const qc = useQueryClient()
 
     const { mutate: modifyRecipe, isPending: modifyRecipePending, error: modifyRecipeError } = useMutation({
-        mutationFn: async (recipe: api.ModelsModifyChatRequest) => {
-            const resp = await api.modifyRecipe(recipeId, recipe)
+        mutationFn: async (request: api.ModelsModifyRecipeViaChatRequest) => {
+            const resp = await api.modifyRecipe(recipeId, request)
             return resp.data as unknown as api.ModelsUserRecipe
         },
         onSuccess: () => {

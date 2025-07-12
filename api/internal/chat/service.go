@@ -29,7 +29,7 @@ func (s *ChatService) GenerateSuggestions(ctx context.Context, req *models.Sugge
 	if err != nil {
 		return nil, fmt.Errorf("failed to get chat response: %w", err)
 	}
-	zap.L().Debug("got chat response")
+	zap.L().Debug("got chat response", zap.Any("response", resp))
 	return resp, nil
 }
 

@@ -1,5 +1,5 @@
 from .llm import as_json, sys, usr
-from models import Recipe, Profile
+from models import Recipe, Profile, SuggestionRecipes
 
 def suggest_template(profile: Profile, history: list[str], message: str, num_suggestions: int) -> str:
     return f"""

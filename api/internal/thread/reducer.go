@@ -14,7 +14,9 @@ func ReduceThreadEvents(threadID string, events []models.ThreadEvent) (*models.T
 		Suggestions: []*models.RecipeSuggestion{},
 		RecipeID:    nil,
 	}
+	zap.L().Debug("reducing thread events", zap.Int("event_count", len(events)))
 	for _, event := range events {
+		zap.L().Debug("reducing thread event", zap.String("event_type", event.Type), zap.String("event_payload", string(event.Payload)))
 		thread.UpdatedAt = event.Timestamp
 		switch event.Type {
 		case string(models.ThreadEventTypePromptSet):
@@ -63,6 +65,25 @@ func ReduceThreadEvents(threadID string, events []models.ThreadEvent) (*models.T
 					thread.Suggestions[i].Accepted = true
 					thread.Suggestions[i].UpdatedAt = event.Timestamp
 					thread.CurrentRecipe = &suggestion.Suggestion
+					found = true
+					break
+				}
+			}
+			if !found {
+				return nil, ErrSuggestionNotFound
+			}
+		case string(models.ThreadEventTypeSuggestionRejected):
+			suggestionEvent := models.SuggestionRejectedEvent{}
+			err := json.Unmarshal(event.Payload, &suggestionEvent)
+			if err != nil {
+				zap.L().Error("failed to unmarshal suggestion rejected event", zap.Error(err))
+				return nil, ErrInvalidThreadEventPayload
+			}
+			found := false
+			for i, suggestion := range thread.Suggestions {
+				if suggestion.ID == suggestionEvent.SuggestionID {
+					thread.Suggestions[i].Rejected = true
+					thread.Suggestions[i].UpdatedAt = event.Timestamp
 					found = true
 					break
 				}

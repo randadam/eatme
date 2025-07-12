@@ -15,7 +15,8 @@ func TestReduceThreadEvents(t *testing.T) {
 		withEvent(models.ThreadEventTypePromptEdited, models.PromptEditedEvent{Prompt: "test_prompt_edited"}),
 		withEvent(models.ThreadEventTypeSuggestionGenerated, models.SuggestionGeneratedEvent{SuggestionID: "test_suggestion_id_1", Recipe: models.RecipeBody{Title: "test_recipe", Ingredients: []models.Ingredient{{Name: "test_ingredient"}}, Steps: []string{"test_step"}}}),
 		withEvent(models.ThreadEventTypeSuggestionGenerated, models.SuggestionGeneratedEvent{SuggestionID: "test_suggestion_id_2", Recipe: models.RecipeBody{Title: "test_recipe_2", Ingredients: []models.Ingredient{{Name: "test_ingredient_2"}}, Steps: []string{"test_step_2"}}}),
-		withEvent(models.ThreadEventTypeSuggestionAccepted, models.SuggestionAcceptedEvent{SuggestionID: "test_suggestion_id_1"}),
+		withEvent(models.ThreadEventTypeSuggestionRejected, models.SuggestionRejectedEvent{SuggestionID: "test_suggestion_id_1"}),
+		withEvent(models.ThreadEventTypeSuggestionAccepted, models.SuggestionAcceptedEvent{SuggestionID: "test_suggestion_id_2"}),
 		withEvent(models.ThreadEventTypeRecipeModified, models.RecipeModifiedEvent{Recipe: models.RecipeBody{Title: "test_recipe_2", Description: "test_recipe_2_description", Ingredients: []models.Ingredient{{Name: "test_ingredient_2"}}, Steps: []string{"test_step_2"}}}),
 	)
 	thread, err := ReduceThreadEvents(threadID, events)
@@ -37,14 +38,20 @@ func TestReduceThreadEvents(t *testing.T) {
 	if thread.Suggestions[0].ID != "test_suggestion_id_1" {
 		t.Fatalf("expected suggestion ID %s, got %s", "test_suggestion_id_1", thread.Suggestions[0].ID)
 	}
-	if thread.Suggestions[0].Accepted != true {
+	if thread.Suggestions[0].Accepted != false {
 		t.Fatalf("expected suggestion accepted to be true, got %t", thread.Suggestions[0].Accepted)
+	}
+	if thread.Suggestions[0].Rejected != true {
+		t.Fatalf("expected suggestion rejected to be false, got %t", thread.Suggestions[0].Rejected)
 	}
 	if thread.Suggestions[1].ID != "test_suggestion_id_2" {
 		t.Fatalf("expected suggestion ID %s, got %s", "test_suggestion_id_2", thread.Suggestions[1].ID)
 	}
-	if thread.Suggestions[1].Accepted != false {
-		t.Fatalf("expected suggestion accepted to be false, got %t", thread.Suggestions[1].Accepted)
+	if thread.Suggestions[1].Accepted != true {
+		t.Fatalf("expected suggestion accepted to be true, got %t", thread.Suggestions[1].Accepted)
+	}
+	if thread.Suggestions[1].Rejected != false {
+		t.Fatalf("expected suggestion rejected to be false, got %t", thread.Suggestions[1].Rejected)
 	}
 	if thread.CurrentRecipe == nil || thread.CurrentRecipe.Title != "test_recipe_2" {
 		t.Fatalf("expected recipe title %s, got %s", "test_recipe_2", thread.CurrentRecipe.Title)

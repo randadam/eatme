@@ -12,6 +12,7 @@ export interface SuggestionCardProps {
 }
 
 export default function SuggestionCard({ suggestion, reject, accept, rejectLoading, acceptLoading }: SuggestionCardProps) {
+    console.log('suggestion', suggestion)
     const recipe = suggestion.suggestion
     const eitherLoading = rejectLoading || acceptLoading
     return (
@@ -24,10 +25,10 @@ export default function SuggestionCard({ suggestion, reject, accept, rejectLoadi
             </CardContent>
             <CardFooter>
                 <div className="flex justify-between space-x-2 w-full">
-                    <LoaderButton variant="outline" onClick={reject} isLoading={eitherLoading}>
+                    <LoaderButton variant="outline" onClick={reject} isLoading={rejectLoading} disabled={eitherLoading}>
                         Next
                     </LoaderButton>
-                    <LoaderButton onClick={accept} isLoading={eitherLoading}>
+                    <LoaderButton onClick={accept} isLoading={acceptLoading} disabled={eitherLoading}>
                         Accept
                     </LoaderButton>
                 </div>

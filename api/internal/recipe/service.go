@@ -28,7 +28,7 @@ func (s *RecipeService) getStore(ctx context.Context) db.Store {
 	return s.db
 }
 
-func (s *RecipeService) NewRecipe(ctx context.Context, userID string, recipeBody models.RecipeBody) (*models.UserRecipe, error) {
+func (s *RecipeService) NewRecipe(ctx context.Context, userID string, threadID string, recipeBody models.RecipeBody) (*models.UserRecipe, error) {
 	store := s.getStore(ctx)
 	recipeID := uuid.New().String()
 	versionID := uuid.New().String()
@@ -38,6 +38,7 @@ func (s *RecipeService) NewRecipe(ctx context.Context, userID string, recipeBody
 		LatestVersionID: versionID,
 		UserID:          userID,
 		RecipeBody:      recipeBody,
+		ThreadID:        threadID,
 	}
 	if err := store.SaveUserRecipe(ctx, recipe); err != nil {
 		return nil, fmt.Errorf("failed to save user recipe: %w", err)

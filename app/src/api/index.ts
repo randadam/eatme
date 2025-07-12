@@ -27,6 +27,7 @@ api.defaults.fetch = async (url, opts = {}) => {
     const res = await fetch(url, opts)
 
     if (!res.ok) {
+        console.error(`HTTP ${res.status}`)
         let parsed: api.ModelsApiError = {
             code: "UNKNOWN_ERROR",
             message: `HTTP ${res.status}`

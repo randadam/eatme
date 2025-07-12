@@ -20,19 +20,8 @@ export function useSignup() {
 }
 
 export function useUser() {
-  const qc = useQueryClient();
-  const token = getToken();
-  if (!token) {
-    return {
-      isAuthenticated: false,
-      profile: null,
-      isLoading: false,
-      isError: false,
-      error: null,
-      logout: () => {},
-      refresh: () => {},
-    }
-  }
+  const qc = useQueryClient()
+  const token = getToken()
 
   const logout = () => {
     clearToken();

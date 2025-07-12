@@ -288,6 +288,8 @@ definitions:
         type: string
       id:
         type: string
+      rejected:
+        type: boolean
       response_text:
         type: string
       suggestion:
@@ -300,6 +302,7 @@ definitions:
     - accepted
     - created_at
     - id
+    - rejected
     - response_text
     - suggestion
     - thread_id
@@ -549,7 +552,7 @@ paths:
       summary: Get all recipes for user
       tags:
       - Recipe
-  /recipes/{recipe_id}:
+  /recipes/{recipeId}:
     delete:
       consumes:
       - application/json
@@ -558,7 +561,7 @@ paths:
       parameters:
       - description: Recipe ID
         in: path
-        name: recipe_id
+        name: recipeId
         required: true
         type: string
       produces:
@@ -595,7 +598,7 @@ paths:
       parameters:
       - description: Recipe ID
         in: path
-        name: recipe_id
+        name: recipeId
         required: true
         type: string
       produces:
@@ -624,6 +627,46 @@ paths:
       summary: Get recipe by ID
       tags:
       - Recipe
+  /recipes/{recipeId}/modify/chat:
+    post:
+      consumes:
+      - application/json
+      description: Modify a recipe via chat
+      operationId: modifyRecipe
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipeId
+        required: true
+        type: string
+      - description: Modify recipe via chat request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ModifyRecipeViaChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserRecipe'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Thread not found
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Modify a recipe via chat
+      tags:
+      - thread
   /signup:
     post:
       consumes:
@@ -734,46 +777,6 @@ paths:
           schema:
             $ref: '#/definitions/models.APIError'
       summary: Accept a suggestion
-      tags:
-      - thread
-  /thread/{threadId}/modify/chat:
-    post:
-      consumes:
-      - application/json
-      description: Modify a recipe via chat
-      operationId: modifyRecipe
-      parameters:
-      - description: Thread ID
-        in: path
-        name: threadId
-        required: true
-        type: string
-      - description: Modify recipe via chat request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/models.ModifyRecipeViaChatRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.UserRecipe'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "404":
-          description: Thread not found
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Modify a recipe via chat
       tags:
       - thread
   /thread/{threadId}/question:

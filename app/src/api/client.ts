@@ -80,6 +80,9 @@ export type ModelsUserRecipe = {
     updated_at: string;
     user_id: string;
 };
+export type ModelsModifyRecipeViaChatRequest = {
+    prompt: string;
+};
 export type ModelsSignupRequest = {
     /** User's email address */
     email: string;
@@ -105,6 +108,7 @@ export type ModelsRecipeSuggestion = {
     accepted: boolean;
     created_at: string;
     id: string;
+    rejected: boolean;
     response_text: string;
     suggestion: ModelsRecipeBody;
     thread_id: string;
@@ -119,9 +123,6 @@ export type ModelsThreadState = {
     recipe_id?: string;
     suggestions: ModelsRecipeSuggestion[];
     updated_at: string;
-};
-export type ModelsModifyRecipeViaChatRequest = {
-    prompt: string;
 };
 export type ModelsAnswerCookingQuestionRequest = {
     question: string;
@@ -242,6 +243,28 @@ export function deleteRecipe(recipeId: string, opts?: Oazapfts.RequestOpts) {
     });
 }
 /**
+ * Modify a recipe via chat
+ */
+export function modifyRecipe(recipeId: string, modelsModifyRecipeViaChatRequest: ModelsModifyRecipeViaChatRequest, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsUserRecipe;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
+    } | {
+        status: 500;
+        data: ModelsApiError;
+    }>(`/recipes/${encodeURIComponent(recipeId)}/modify/chat`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: modelsModifyRecipeViaChatRequest
+    }));
+}
+/**
  * Create a new user account
  */
 export function signup(modelsSignupRequest: ModelsSignupRequest, opts?: Oazapfts.RequestOpts) {
@@ -328,28 +351,6 @@ export function acceptSuggestion(threadId: string, suggestionId: string, opts?: 
         ...opts,
         method: "POST"
     });
-}
-/**
- * Modify a recipe via chat
- */
-export function modifyRecipe(threadId: string, modelsModifyRecipeViaChatRequest: ModelsModifyRecipeViaChatRequest, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.fetchJson<{
-        status: 200;
-        data: ModelsUserRecipe;
-    } | {
-        status: 401;
-        data: ModelsApiError;
-    } | {
-        status: 404;
-        data: ModelsApiError;
-    } | {
-        status: 500;
-        data: ModelsApiError;
-    }>(`/thread/${encodeURIComponent(threadId)}/modify/chat`, oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: modelsModifyRecipeViaChatRequest
-    }));
 }
 /**
  * Answer a cooking question

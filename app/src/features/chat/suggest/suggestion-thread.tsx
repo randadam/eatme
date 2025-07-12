@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 
 interface SuggestionThreadProps {
-    initialThread: api.ModelsSuggestionThread
+    initialThread: api.ModelsThreadState
 }
 
 export default function SuggestionThread({ initialThread }: SuggestionThreadProps) {
@@ -34,7 +34,7 @@ export default function SuggestionThread({ initialThread }: SuggestionThreadProp
         <div className="space-y-6">
             <div className="text-center">
                 <h2 className="font-semibold">Suggestion For:</h2>
-                <p className="text-muted-foreground">{thread.original_prompt}</p>
+                <p className="text-muted-foreground">{thread.current_prompt}</p>
             </div>
             <SuggestionCard
                 suggestion={currentSuggestion}

@@ -30,7 +30,7 @@ export default function AllRecipesPage() {
         startThread(message, {
             onSuccess: (threadData) => {
                 setDrawerOpen(false)
-                nav(`/suggest/${threadData.thread_id}`)
+                nav(`/suggest/${threadData.id}`)
             },
             onError: (error) => {
                 showError(error)

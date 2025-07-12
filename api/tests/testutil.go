@@ -90,8 +90,8 @@ func createUser(store *db.SQLiteStore, email string) (*models.User, error) {
 	return user, nil
 }
 
-func createRecipe(store *db.SQLiteStore, userID string, recipeBody models.RecipeBody) (*models.UserRecipe, error) {
+func createRecipe(store *db.SQLiteStore, userID string, threadID string, recipeBody models.RecipeBody) (*models.UserRecipe, error) {
 	svc := recipe.NewRecipeService(store)
-	newRecipe, err := svc.NewRecipe(context.Background(), userID, recipeBody)
+	newRecipe, err := svc.NewRecipe(context.Background(), userID, threadID, recipeBody)
 	return newRecipe, err
 }

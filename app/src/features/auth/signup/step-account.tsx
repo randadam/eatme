@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import StepInstructions from "./step-instructions";
 import { accountForm } from "../forms/schemas/forms";
 import type { z } from "zod";
-import { useSignup } from "../hooks";
-import { useNavigate } from "react-router-dom";
+import { useSignup, useUser } from "../hooks";
+import { Navigate, useNavigate } from "react-router-dom";
 import WizardButtons from "./wizard-buttons";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ export default function AccountStep() {
     });
 
     const nav = useNavigate()
+    const user = useUser()
     const { signup, isPending } = useSignup()
     const handleFormError = useFormErrorHandler(form)
 
@@ -35,6 +36,10 @@ export default function AccountStep() {
                 handleFormError(err)
             },
         })
+    }
+
+    if (user.isAuthenticated) {
+        return <Navigate to="/" replace />
     }
 
     return (

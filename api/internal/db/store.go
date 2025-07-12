@@ -8,6 +8,7 @@ import (
 
 type Store interface {
 	CreateUser(ctx context.Context, email, password string) (models.User, error)
+	GetUser(ctx context.Context, userID string) (models.User, error)
 
 	GetProfile(ctx context.Context, userID string) (models.Profile, error)
 	SaveProfile(ctx context.Context, userID string, profile models.Profile) error

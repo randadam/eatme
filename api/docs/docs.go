@@ -150,7 +150,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/recipes/{recipe_id}": {
+        "/recipes/{recipeId}": {
             "get": {
                 "description": "Get recipe by ID",
                 "consumes": [
@@ -168,7 +168,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Recipe ID",
-                        "name": "recipe_id",
+                        "name": "recipeId",
                         "in": "path",
                         "required": true
                     }
@@ -223,7 +223,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Recipe ID",
-                        "name": "recipe_id",
+                        "name": "recipeId",
                         "in": "path",
                         "required": true
                     }
@@ -249,6 +249,66 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Recipe not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/recipes/{recipeId}/modify/chat": {
+            "post": {
+                "description": "Modify a recipe via chat",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "thread"
+                ],
+                "summary": "Modify a recipe via chat",
+                "operationId": "modifyRecipe",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Recipe ID",
+                        "name": "recipeId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Modify recipe via chat request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ModifyRecipeViaChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserRecipe"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Thread not found",
                         "schema": {
                             "$ref": "#/definitions/models.APIError"
                         }
@@ -453,66 +513,6 @@ const docTemplate = `{
                         "name": "suggestionId",
                         "in": "path",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.UserRecipe"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "404": {
-                        "description": "Thread not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/thread/{threadId}/modify/chat": {
-            "post": {
-                "description": "Modify a recipe via chat",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "thread"
-                ],
-                "summary": "Modify a recipe via chat",
-                "operationId": "modifyRecipe",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Thread ID",
-                        "name": "threadId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Modify recipe via chat request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.ModifyRecipeViaChatRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -1047,6 +1047,7 @@ const docTemplate = `{
                 "accepted",
                 "created_at",
                 "id",
+                "rejected",
                 "response_text",
                 "suggestion",
                 "thread_id",
@@ -1061,6 +1062,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
+                },
+                "rejected": {
+                    "type": "boolean"
                 },
                 "response_text": {
                     "type": "string"

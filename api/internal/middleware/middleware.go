@@ -21,6 +21,12 @@ func AuthMiddleware(store db.Store) func(next http.Handler) http.Handler {
 				return
 			}
 			userID := strings.TrimPrefix(token, "Bearer ")
+			_, err := store.GetUser(r.Context(), userID)
+			if err != nil {
+				zap.L().Debug("failed to get user", zap.Error(err))
+				api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
+				return
+			}
 			ctx := context.WithValue(r.Context(), api.UserIDKey{}, userID)
 			*r = *r.WithContext(ctx)
 			next.ServeHTTP(w, r)

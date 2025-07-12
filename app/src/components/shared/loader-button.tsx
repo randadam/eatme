@@ -29,8 +29,10 @@ export default function LoaderButton({ children, isLoading, delay = 150, minDura
         return () => clearTimeout(t)
     }, [isLoading, delay, minDuration, visible])
 
+    const disabled = rest.disabled ? rest.disabled : (isLoading || visible)
+
     return (
-        <Button disabled={isLoading || visible} {...rest}>
+        <Button disabled={disabled} {...rest}>
             {visible && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {children}
         </Button>

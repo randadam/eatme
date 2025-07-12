@@ -114,8 +114,6 @@ async def as_json(
         **chat_kwargs,
     )
 
-    print('raw', raw)
-
     try:
         data = json.loads(raw)
         validator = (

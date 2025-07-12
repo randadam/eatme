@@ -38,14 +38,23 @@ func NewRouter(app *App) *chi.Mux {
 		w.Write([]byte("OK"))
 	})
 
+	// Services
+	userService := user.NewUserService(app.store)
+	recipeService := recipe.NewRecipeService(app.store)
+	chatService := chat.NewChatService(app.mlClient)
+	threadService := thread.NewThreadService(app.store, recipeService, chatService)
+
+	// Handlers
+	userHandler := user.NewUserHandler(userService)
+	threadHandler := thread.NewThreadHandler(threadService)
+	recipeHandler := recipe.NewRecipeHandler(recipeService)
+
 	// Swagger UI
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"), // The URL pointing to API definition
 	))
 
 	// User
-	userService := user.NewUserService(app.store)
-	userHandler := user.NewUserHandler(userService)
 	r.Post("/signup", userHandler.Signup)
 	r.Route("/profile", func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware(app.store))
@@ -54,19 +63,15 @@ func NewRouter(app *App) *chi.Mux {
 	})
 
 	// Recipe
-	recipeService := recipe.NewRecipeService(app.store)
-	recipeHandler := recipe.NewRecipeHandler(recipeService)
 	r.Route("/recipes", func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware(app.store))
-		r.Get("/{recipe_id}", recipeHandler.GetRecipe)
 		r.Get("/", recipeHandler.GetAllRecipes)
-		r.Delete("/{recipe_id}", recipeHandler.DeleteRecipe)
+		r.Get("/{recipeId}", recipeHandler.GetRecipe)
+		r.Post("/{recipeId}/modify/chat", threadHandler.ModifyRecipeViaChat)
+		r.Delete("/{recipeId}", recipeHandler.DeleteRecipe)
 	})
 
 	// Thread
-	chatService := chat.NewChatService(app.mlClient)
-	threadService := thread.NewThreadService(app.store, recipeService, chatService)
-	threadHandler := thread.NewThreadHandler(threadService)
 	r.Route("/thread", func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware(app.store))
 		r.Post("/suggest", threadHandler.StartSuggestionThread)

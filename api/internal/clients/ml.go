@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/ajohnston1219/eatme/api/internal/models"
+	"go.uber.org/zap"
 )
 
 type MLClient interface {
@@ -55,6 +56,7 @@ func (c mlClient) SuggestChat(ctx context.Context, req *models.InternalSuggestCh
 		}
 	}
 
+	zap.L().Debug("got raw ml response", zap.Any("response body", resp.Body))
 	var mlResp models.SuggestChatResponse
 	if err := json.NewDecoder(resp.Body).Decode(&mlResp); err != nil {
 		return nil, fmt.Errorf("decode ml resp: %w", ErrMLCallFailed)

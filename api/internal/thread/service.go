@@ -46,6 +46,7 @@ func (s *ThreadService) StartSuggestionThread(ctx context.Context, userID string
 		if err != nil {
 			return fmt.Errorf("failed to get profile: %w", err)
 		}
+		zap.L().Debug("got profile")
 		events := []models.ThreadEvent{
 			{
 				Type:      string(models.ThreadEventTypePromptSet),
@@ -62,15 +63,17 @@ func (s *ThreadService) StartSuggestionThread(ctx context.Context, userID string
 		if err != nil {
 			return fmt.Errorf("failed to generate recipe suggestions: %w", err)
 		}
+		zap.L().Debug("generated recipe suggestions")
 		for _, suggestion := range suggestions.Suggestions {
+			zap.L().Debug("generated recipe suggestion", zap.Any("suggestion", *suggestion))
 			event := models.SuggestionGeneratedEvent{
 				SuggestionID: uuid.New().String(),
 				Recipe:       suggestion.Recipe,
 				ResponseText: suggestion.ResponseText,
 			}
 			payload, err := json.Marshal(event)
+			zap.L().Debug("generated recipe suggestion event", zap.String("payload", string(payload)))
 			if err != nil {
-				zap.L().Error("failed to marshal suggestion generated event", zap.Error(err))
 				return ErrInvalidThreadEventPayload
 			}
 			events = append(events, models.ThreadEvent{
@@ -90,6 +93,7 @@ func (s *ThreadService) StartSuggestionThread(ctx context.Context, userID string
 		if err := tx.CreateThread(ctx, userID, thread); err != nil {
 			return fmt.Errorf("failed to save thread: %w", err)
 		}
+		zap.L().Debug("saved thread")
 		state, err = ReduceThreadEvents(thread.ID, events)
 		if err != nil {
 			return fmt.Errorf("failed to reduce thread events: %w", err)
@@ -110,7 +114,7 @@ func (s *ThreadService) GetNewSuggestions(ctx context.Context, userID string, th
 		if err != nil {
 			return fmt.Errorf("failed to get profile: %w", err)
 		}
-
+		zap.L().Debug("got profile")
 		thread, err := tx.GetThread(ctx, threadID)
 		if err != nil {
 			switch {
@@ -157,7 +161,7 @@ func (s *ThreadService) GetNewSuggestions(ctx context.Context, userID string, th
 		if err != nil {
 			return fmt.Errorf("failed to generate suggestions: %w", err)
 		}
-
+		zap.L().Debug("generated suggestions")
 		suggestionEvents := make([]models.ThreadEvent, len(suggestionsResponse.Suggestions))
 		for i, suggestion := range suggestionsResponse.Suggestions {
 			event := models.SuggestionGeneratedEvent{
@@ -167,7 +171,6 @@ func (s *ThreadService) GetNewSuggestions(ctx context.Context, userID string, th
 			}
 			payload, err := json.Marshal(event)
 			if err != nil {
-				zap.L().Error("failed to marshal suggestion generated event", zap.Error(err))
 				return ErrInvalidThreadEventPayload
 			}
 			suggestionEvents[i] = models.ThreadEvent{
@@ -179,6 +182,7 @@ func (s *ThreadService) GetNewSuggestions(ctx context.Context, userID string, th
 		if err := s.AppendEventsToThread(ctx, threadID, suggestionEvents); err != nil {
 			return fmt.Errorf("failed to append events to thread: %w", err)
 		}
+		zap.L().Debug("appended events to thread")
 
 		suggestions = make([]models.RecipeSuggestion, len(suggestionsResponse.Suggestions))
 		for i, suggestion := range suggestionsResponse.Suggestions {
@@ -192,6 +196,7 @@ func (s *ThreadService) GetNewSuggestions(ctx context.Context, userID string, th
 				UpdatedAt:    time.Now(),
 			}
 		}
+		zap.L().Debug("created suggestions")
 		return nil
 	})
 	if err != nil {
@@ -216,7 +221,7 @@ func (s *ThreadService) AcceptSuggestion(ctx context.Context, userID string, thr
 				if err := json.Unmarshal(payload, &suggestionEvent); err != nil {
 					return fmt.Errorf("failed to unmarshal suggestion generated event: %w", err)
 				}
-				newRecipe, err := s.recipeService.NewRecipe(ctx, userID, suggestionEvent.Recipe)
+				newRecipe, err := s.recipeService.NewRecipe(ctx, userID, threadID, suggestionEvent.Recipe)
 				if err != nil {
 					return fmt.Errorf("failed to create new recipe: %w", err)
 				}
@@ -231,6 +236,7 @@ func (s *ThreadService) AcceptSuggestion(ctx context.Context, userID string, thr
 		if err := tx.AssociateThreadWithRecipe(ctx, threadID, recipe.ID); err != nil {
 			return fmt.Errorf("failed to associate thread with recipe: %w", err)
 		}
+		zap.L().Debug("associated thread with recipe")
 		return nil
 	})
 	if err != nil {
@@ -239,7 +245,7 @@ func (s *ThreadService) AcceptSuggestion(ctx context.Context, userID string, thr
 	return recipe, nil
 }
 
-func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, threadID string, prompt string) (*models.RecipeBody, error) {
+func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, recipeID string, prompt string) (*models.RecipeBody, error) {
 	var recipeBody *models.RecipeBody
 	err := s.store.WithTx(func(tx db.Store) error {
 		ctx = db.ContextWithTx(ctx, tx)
@@ -247,17 +253,13 @@ func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, 
 		if err != nil {
 			return fmt.Errorf("failed to get profile: %w", err)
 		}
-		thread, err := tx.GetThread(ctx, threadID)
+		recipe, err := s.recipeService.GetUserRecipe(ctx, userID, recipeID)
+		if err != nil {
+			return fmt.Errorf("failed to get recipe: %w", err)
+		}
+		thread, err := tx.GetThread(ctx, recipe.ThreadID)
 		if err != nil {
 			return fmt.Errorf("failed to get thread: %w", err)
-		}
-		recipeID := thread.RecipeID
-		if recipeID == nil {
-			return ErrThreadNotAssociatedWithRecipeVersion
-		}
-		recipe, err := s.recipeService.GetUserRecipe(ctx, userID, *recipeID)
-		if err != nil {
-			return fmt.Errorf("failed to get recipe version: %w", err)
 		}
 		modifyRequest := &models.ModifyChatRequest{
 			Message: prompt,
@@ -268,8 +270,8 @@ func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, 
 		if err != nil {
 			return fmt.Errorf("failed to modify recipe: %w", err)
 		}
+		zap.L().Debug("modified recipe")
 		recipeBody = &modifyResponse.NewRecipe
-
 		modifyEvent := models.RecipeModifiedEvent{
 			Recipe: *recipeBody,
 		}
@@ -282,13 +284,13 @@ func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, 
 			Payload:   payload,
 			Timestamp: time.Now(),
 		}
-		if err := s.AppendEventsToThread(ctx, threadID, []models.ThreadEvent{event}); err != nil {
+		if err := s.AppendEventsToThread(ctx, thread.ID, []models.ThreadEvent{event}); err != nil {
 			return fmt.Errorf("failed to append events to thread: %w", err)
 		}
-		if err := s.recipeService.UpdateRecipe(ctx, userID, *recipeID, *recipeBody); err != nil {
+		if err := s.recipeService.UpdateRecipe(ctx, userID, recipeID, *recipeBody); err != nil {
 			return fmt.Errorf("failed to update recipe version: %w", err)
 		}
-
+		zap.L().Debug("updated recipe version")
 		return nil
 	})
 	if err != nil {
@@ -345,7 +347,7 @@ func (s *ThreadService) AnswerCookingQuestion(ctx context.Context, threadID stri
 		response = &models.AnswerCookingQuestionResponse{
 			Answer: generalChatResponse.ResponseText,
 		}
-
+		zap.L().Debug("answered cooking question")
 		return nil
 	})
 	if err != nil {
@@ -361,6 +363,7 @@ func (s *ThreadService) AppendEventsToThread(ctx context.Context, threadID strin
 			return fmt.Errorf("failed to append to thread: %w", err)
 		}
 	}
+	zap.L().Debug("appended events to thread")
 	return nil
 }
 
@@ -374,5 +377,6 @@ func (s *ThreadService) GetThreadState(ctx context.Context, threadID string) (*m
 			return nil, fmt.Errorf("failed to get thread: %w", err)
 		}
 	}
+	zap.L().Debug("got thread")
 	return ReduceThreadEvents(threadID, thread.Events)
 }

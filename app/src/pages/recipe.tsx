@@ -60,7 +60,7 @@ export function Recipe({ recipeId }: Props) {
     const handleSend = (message: string) => {
         switch (drawerState.mode) {
             case "modify":
-                modifyRecipe({ message }, { onSuccess: () => closeDrawer() })
+                modifyRecipe({ prompt: message }, { onSuccess: () => closeDrawer() })
                 break;
         }
     }

@@ -8,6 +8,7 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/api"
 	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/models"
+	"go.uber.org/zap"
 )
 
 type UserHandler struct {
@@ -33,29 +34,32 @@ func NewUserHandler(service *UserService) *UserHandler {
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	var input models.SignupRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		zap.L().Error("failed to decode signup request", zap.Error(err))
 		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
+	var user *models.User
 	err := h.service.store.WithTx(func(tx db.Store) error {
+		var err error
 		ctx := db.ContextWithTx(r.Context(), tx)
-		user, err := h.service.CreateUser(ctx, input.Email, input.Password)
+		user, err = h.service.CreateUser(ctx, input.Email, input.Password)
 		if err != nil {
-			switch {
-			case errors.Is(err, ErrEmailExists):
-				api.ErrorJSON(w, http.StatusConflict, models.ApiErrEmailExists)
-			default:
-				api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
-			}
-			return nil
+			zap.L().Error("failed to create user", zap.Error(err))
+			return err
 		}
-		api.WriteJSON(w, http.StatusCreated, models.SignupResponse{Token: user.ID})
 		return nil
 	})
 	if err != nil {
-		api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+		switch {
+		case errors.Is(err, ErrEmailExists):
+			api.ErrorJSON(w, http.StatusConflict, models.ApiErrEmailExists)
+		default:
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+		}
 		return
 	}
+	api.WriteJSON(w, http.StatusOK, models.SignupResponse{Token: user.ID})
 }
 
 // @Summary Save user profile
@@ -79,6 +83,7 @@ func (h *UserHandler) SaveProfile(w http.ResponseWriter, r *http.Request) {
 
 	var profile models.ProfileUpdateRequest
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
+		zap.L().Error("failed to decode profile update request", zap.Error(err))
 		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
@@ -89,10 +94,9 @@ func (h *UserHandler) SaveProfile(w http.ResponseWriter, r *http.Request) {
 		ctx := db.ContextWithTx(r.Context(), tx)
 		result, err = h.service.SaveProfile(ctx, userID, profile)
 		if err != nil {
-			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
-			return nil
+			zap.L().Error("failed to save profile", zap.Error(err))
+			return err
 		}
-		api.WriteJSON(w, http.StatusOK, result)
 		return nil
 	})
 	if err != nil {
@@ -120,25 +124,15 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var profile *models.Profile
-	err := h.service.store.WithTx(func(tx db.Store) error {
-		var err error
-		ctx := db.ContextWithTx(r.Context(), tx)
-		profile, err = h.service.GetProfile(ctx, userID)
-		if err != nil {
-			switch {
-			case errors.Is(err, ErrProfileNotFound):
-				api.ErrorJSON(w, http.StatusNotFound, models.ApiErrProfileNotFound)
-			default:
-				api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
-			}
-			return nil
-		}
-		api.WriteJSON(w, http.StatusOK, profile)
-		return nil
-	})
+	profile, err := h.service.GetProfile(r.Context(), userID)
 	if err != nil {
-		api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+		zap.L().Error("failed to get profile", zap.Error(err))
+		switch {
+		case errors.Is(err, ErrProfileNotFound):
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrProfileNotFound)
+		default:
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+		}
 		return
 	}
 

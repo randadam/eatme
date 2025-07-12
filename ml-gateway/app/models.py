@@ -24,9 +24,13 @@ class SuggestChatRequest(BaseModel):
 class SuggestionRecipes(BaseModel):
     suggestions: list[Recipe]
 
+class RecipeSuggestion(BaseModel):
+    recipe: Recipe
+    response_text: str
+
 class SuggestChatResponse(BaseModel):
     response_text: str
-    suggestions: list[Recipe]
+    suggestions: list[RecipeSuggestion]
 
 class ModifyChatRequest(BaseModel):
     message: str
@@ -40,6 +44,7 @@ class ModifyChatResponse(BaseModel):
 class GeneralChatRequest(BaseModel):
     message: str
     profile: Profile
+    recipe: Recipe
 
 class GeneralChatResponse(BaseModel):
     response_text: str

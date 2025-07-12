@@ -55,10 +55,10 @@ function CookModeHeader({ stepIdx, total, title, onBack }: CookModeHeaderProps) 
     return (
         <header className="sticky top-0 z-30 bg-background/90 backdrop-blur pb-4">
             <div className="flex items-center justify-between px-2 py-2">
-                <Button size="lg" variant="ghost" onClick={onBack}>
+                <Button size="lg" variant="ghost" onClick={onBack} className="!pl-0">
                     <ArrowLeft />
                 </Button>
-                <h1 className="text-lg font-semibold truncate">{title}</h1>
+                <h1 className="text-lg font-semibold wrap max-w-[calc(100%-6rem)]">{title}</h1>
                 <span className="text-sm tabular-nums">
                     {stepIdx + 1} / {total}
                 </span>

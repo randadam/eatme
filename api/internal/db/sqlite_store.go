@@ -69,6 +69,21 @@ func (s *SQLiteStore) CreateUser(ctx context.Context, email, password string) (m
 	return models.User{ID: id, Email: email}, nil
 }
 
+func (s *SQLiteStore) GetUser(ctx context.Context, userID string) (models.User, error) {
+	var user models.User
+	err := s.run.QueryRowContext(ctx, `
+		SELECT id, email
+		FROM users WHERE id = ?;
+	`, userID).Scan(&user.ID, &user.Email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.User{}, ErrNotFound
+		}
+		return models.User{}, fmt.Errorf("failed to get user: %w", err)
+	}
+	return user, nil
+}
+
 func (s *SQLiteStore) SaveProfile(ctx context.Context, userID string, p models.Profile) error {
 	cuisines, err := json.Marshal(p.Cuisines)
 	if err != nil {
@@ -215,13 +230,11 @@ func (s *SQLiteStore) CreateThread(ctx context.Context, userID string, thread mo
 		return fmt.Errorf("failed to create thread: %w", err)
 	}
 	for _, event := range thread.Events {
+		eventId := uuid.NewString()
 		_, err = s.run.ExecContext(ctx, `
-			INSERT INTO thread_events (thread_id, event_type, payload)
-			VALUES (?, ?, ?)
-			ON CONFLICT(thread_id, event_type) DO UPDATE SET
-				payload = excluded.payload,
-				updated_at = CURRENT_TIMESTAMP;
-		`, thread.ID, event.Type, event.Payload)
+			INSERT INTO thread_events (id, thread_id, event_type, payload)
+			VALUES (?, ?, ?, ?)
+		`, eventId, thread.ID, event.Type, event.Payload)
 		if err != nil {
 			return fmt.Errorf("failed to append to thread: %w", err)
 		}
@@ -231,13 +244,11 @@ func (s *SQLiteStore) CreateThread(ctx context.Context, userID string, thread mo
 
 func (s *SQLiteStore) AppendToThread(ctx context.Context, threadId string, events []models.ThreadEvent) error {
 	for _, event := range events {
+		eventId := uuid.NewString()
 		_, err := s.run.ExecContext(ctx, `
-			INSERT INTO thread_events (thread_id, event_type, payload)
-			VALUES (?, ?, ?)
-			ON CONFLICT(thread_id, event_type) DO UPDATE SET
-				payload = excluded.payload,
-				updated_at = CURRENT_TIMESTAMP;
-		`, threadId, event.Type, event.Payload)
+			INSERT INTO thread_events (id, thread_id, event_type, payload)
+			VALUES (?, ?, ?, ?)
+		`, eventId, threadId, event.Type, event.Payload)
 		if err != nil {
 			return fmt.Errorf("failed to append to thread: %w", err)
 		}
@@ -277,7 +288,7 @@ func (s *SQLiteStore) GetThread(ctx context.Context, threadID string) (models.Th
 	var events []models.ThreadEvent
 	rows, err := s.run.QueryContext(ctx, `
 		SELECT 
-			event_type, payload, timestamp
+			event_type, payload, created_at
 		FROM thread_events WHERE thread_id = ?;
 	`, threadID)
 	if err != nil {
@@ -606,7 +617,7 @@ func migrate(db *sql.DB) error {
 	CREATE TABLE IF NOT EXISTS threads (
 		id                 TEXT PRIMARY KEY,
 		thread_type        TEXT NOT NULL,
-		recipe_version_id  TEXT NULL,
+		recipe_id          TEXT NULL,
 		user_id            TEXT REFERENCES users(id) ON DELETE CASCADE,
 		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
