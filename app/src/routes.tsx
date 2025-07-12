@@ -16,6 +16,7 @@ const Recipe = lazy(() => import("@/pages/recipe"))
 const AllRecipes = lazy(() => import("@/pages/all-recipes"))
 const Suggest = lazy(() => import("@/pages/suggest"))
 const Cook = lazy(() => import("@/pages/cook"))
+const Profile = lazy(() => import("@/pages/profile"))
 
 export const router = createBrowserRouter([
     {
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
             {
                 path: "/",
                 element: <Home/>,
+            },
+            {
+                path: "/profile",
+                element: <Profile/>,
             },
             {
                 path: "/recipes",

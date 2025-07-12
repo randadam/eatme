@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
-import { profileForm } from "./schemas/forms";
+import { profileForm, skillForm } from "./schemas/forms";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { BasicProfileFormValues } from "./types";
+import type { BasicProfileFormValues, SkillFormValues } from "./types";
 
 export const useBasicProfileForm = (initialValues: BasicProfileFormValues) => {
     const form = useForm<BasicProfileFormValues>({
@@ -10,3 +10,12 @@ export const useBasicProfileForm = (initialValues: BasicProfileFormValues) => {
     })
     return form
 }
+
+export const useSkillForm = (initialValues: SkillFormValues) => {
+    const form = useForm<SkillFormValues>({
+        resolver: zodResolver(skillForm),
+        defaultValues: initialValues,
+    })
+    return form
+}
+    

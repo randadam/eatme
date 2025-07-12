@@ -1,5 +1,5 @@
 import type api from "@/api";
-import { Button } from "@/components/ui/button";
+import LoaderButton from "@/components/shared/loader-button";
 import {
   Sheet,
   SheetContent,
@@ -7,7 +7,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
 interface ChatDrawerProps {
@@ -61,10 +60,9 @@ function ChatInput({ onSend, loading }: ChatInputProps) {
     return (
         <div className="flex flex-col space-y-2">
             <Textarea value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
-            <Button onClick={() => onSend(inputValue)} disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <LoaderButton onClick={() => onSend(inputValue)} isLoading={loading}>
                 Send
-            </Button>
+            </LoaderButton>
         </div>
     )
 }

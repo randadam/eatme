@@ -121,7 +121,7 @@ export type ModelsProfileUpdateRequest = {
     /** User's name */
     name?: string;
     /** Setup Step */
-    setup_step: ModelsSetupStep;
+    setup_step?: ModelsSetupStep;
     /** User's skill level */
     skill?: ModelsSkill;
 };

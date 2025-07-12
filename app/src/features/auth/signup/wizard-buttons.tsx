@@ -1,7 +1,7 @@
 import { useLocation, Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { STEPS } from "./constants"
-import { Loader2 } from "lucide-react"
+import LoaderButton from "@/components/shared/loader-button"
 
 interface Props {
   submitLabel?: string
@@ -23,12 +23,9 @@ export default function WizardButtons({ submitLabel = "Next", loading }: Props) 
         <span />
       )}
 
-      <Button type="submit" disabled={loading}>
-        {loading && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        )}
-        {submitLabel}
-      </Button>
+      <LoaderButton type="submit" isLoading={loading ?? false}>
+          {submitLabel}
+      </LoaderButton>
     </div>
   )
 }

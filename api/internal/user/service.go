@@ -74,7 +74,9 @@ func (s *UserService) SaveProfile(ctx context.Context, userID string, profile mo
 		}
 		zap.L().Debug("found profile")
 
-		currentProfile.SetupStep = profile.SetupStep
+		if profile.SetupStep != "" {
+			currentProfile.SetupStep = profile.SetupStep
+		}
 		if profile.Name != "" {
 			currentProfile.Name = profile.Name
 		}

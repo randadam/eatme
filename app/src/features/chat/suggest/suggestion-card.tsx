@@ -1,8 +1,7 @@
 import type api from "@/api";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecipeAccordion } from "@/features/recipe/recipe-accordion";
-import { Loader2 } from "lucide-react";
+import LoaderButton from "@/components/shared/loader-button";
 
 export interface SuggestionCardProps {
     suggestion: api.ModelsRecipeSuggestion
@@ -25,14 +24,12 @@ export default function SuggestionCard({ suggestion, reject, accept, rejectLoadi
             </CardContent>
             <CardFooter>
                 <div className="flex justify-between space-x-2 w-full">
-                    <Button variant="outline" onClick={reject} disabled={eitherLoading}>
-                        {rejectLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <LoaderButton variant="outline" onClick={reject} isLoading={eitherLoading}>
                         Next
-                    </Button>
-                    <Button onClick={accept} disabled={eitherLoading}>
-                        {acceptLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    </LoaderButton>
+                    <LoaderButton onClick={accept} isLoading={eitherLoading}>
                         Accept
-                    </Button>
+                    </LoaderButton>
                 </div>
             </CardFooter>
         </Card>

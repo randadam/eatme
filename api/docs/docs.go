@@ -966,9 +966,6 @@ const docTemplate = `{
         "models.ProfileUpdateRequest": {
             "description": "User profile update request",
             "type": "object",
-            "required": [
-                "setup_step"
-            ],
             "properties": {
                 "allergies": {
                     "description": "User's allergies",

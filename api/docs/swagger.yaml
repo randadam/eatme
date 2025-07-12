@@ -251,8 +251,6 @@ definitions:
         allOf:
         - $ref: '#/definitions/models.Skill'
         description: User's skill level
-    required:
-    - setup_step
     type: object
   models.RecipeBody:
     description: Contents of a recipe

@@ -129,7 +129,7 @@ type Profile struct {
 // @Description User profile update request
 type ProfileUpdateRequest struct {
 	// Setup Step
-	SetupStep SetupStep `json:"setup_step" binding:"required"`
+	SetupStep SetupStep `json:"setup_step"`
 	// User's name
 	Name string `json:"name,omitempty"`
 	// User's skill level

@@ -7,10 +7,11 @@ import { useState } from "react"
 import { useStartSuggestionThread } from "@/features/chat/hooks"
 import { Separator } from "@/components/ui/separator"
 import { RecipeOverview } from "@/features/recipe/recipe-overview"
-import { Loader2, PlusIcon } from "lucide-react"
+import { PlusIcon } from "lucide-react"
 import RecipeSkeleton from "@/features/recipe/recipe-skeleton"
 import { ErrorPage } from "./error"
 import { useErrorHandler } from "@/lib/error/error-provider"
+import LoaderButton from "@/components/shared/loader-button"
 
 export default function AllRecipesPage() { 
     const [drawerOpen, setDrawerOpen] = useState(false)
@@ -91,10 +92,14 @@ function RecipeList({ recipes, isLoading, error, deleteRecipe, deleteRecipePendi
                     <div className="p-2">
                         <RecipeOverview recipe={recipe} />
                         <div className="flex justify-between">
-                            <Button variant="destructive" className="mt-2" onClick={() => deleteRecipe(recipe.id)} disabled={deleteRecipePending}>
-                                {deleteRecipePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            <LoaderButton
+                                variant="destructive"
+                                className="mt-2"
+                                onClick={() => deleteRecipe(recipe.id)}
+                                isLoading={deleteRecipePending}
+                            >
                                 Delete Recipe
-                            </Button>
+                            </LoaderButton>
                             <Button className="mt-2" onClick={() => viewRecipe(recipe.id)}>
                                 View Recipe
                             </Button>
