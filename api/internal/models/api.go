@@ -1,7 +1,6 @@
 package models
 
-// APIError represents an API error response
-// @Description API error response
+// @Description APIError represents an API error response
 type APIError struct {
 	Code    string `json:"code" binding:"required"`
 	Message string `json:"message" binding:"required"`
@@ -52,7 +51,6 @@ var (
 	// Recipe
 	ApiErrRecipeNotFound = NewAPIError("RECIPE_NOT_FOUND", "Recipe not found")
 
-	// Chat
-	ApiErrSuggestionThreadNotFound = NewAPIError("SUGGESTION_THREAD_NOT_FOUND", "Suggestion thread not found")
-	ApiErrSuggestionNotFound       = NewAPIError("SUGGESTION_NOT_FOUND", "Suggestion not found")
+	// Thread
+	ApiErrThreadNotFound = NewAPIError("THREAD_NOT_FOUND", "Thread not found")
 )

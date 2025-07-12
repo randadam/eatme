@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ajohnston1219/eatme/api/internal/api"
+	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/models"
 )
 
@@ -36,18 +37,25 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.CreateUser(r.Context(), input.Email, input.Password)
-	if err != nil {
-		switch {
-		case errors.Is(err, ErrEmailExists):
-			api.ErrorJSON(w, http.StatusConflict, models.ApiErrEmailExists)
-		default:
-			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+	err := h.service.store.WithTx(func(tx db.Store) error {
+		ctx := db.ContextWithTx(r.Context(), tx)
+		user, err := h.service.CreateUser(ctx, input.Email, input.Password)
+		if err != nil {
+			switch {
+			case errors.Is(err, ErrEmailExists):
+				api.ErrorJSON(w, http.StatusConflict, models.ApiErrEmailExists)
+			default:
+				api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+			}
+			return nil
 		}
+		api.WriteJSON(w, http.StatusCreated, models.SignupResponse{Token: user.ID})
+		return nil
+	})
+	if err != nil {
+		api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		return
 	}
-
-	api.WriteJSON(w, http.StatusCreated, models.SignupResponse{Token: user.ID})
 }
 
 // @Summary Save user profile
@@ -75,7 +83,18 @@ func (h *UserHandler) SaveProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.service.SaveProfile(r.Context(), userID, profile)
+	var result *models.Profile
+	err := h.service.store.WithTx(func(tx db.Store) error {
+		var err error
+		ctx := db.ContextWithTx(r.Context(), tx)
+		result, err = h.service.SaveProfile(ctx, userID, profile)
+		if err != nil {
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+			return nil
+		}
+		api.WriteJSON(w, http.StatusOK, result)
+		return nil
+	})
 	if err != nil {
 		api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		return
@@ -101,14 +120,25 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profile, err := h.service.GetProfile(r.Context(), userID)
-	if err != nil {
-		switch {
-		case errors.Is(err, ErrProfileNotFound):
-			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrProfileNotFound)
-		default:
-			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+	var profile *models.Profile
+	err := h.service.store.WithTx(func(tx db.Store) error {
+		var err error
+		ctx := db.ContextWithTx(r.Context(), tx)
+		profile, err = h.service.GetProfile(ctx, userID)
+		if err != nil {
+			switch {
+			case errors.Is(err, ErrProfileNotFound):
+				api.ErrorJSON(w, http.StatusNotFound, models.ApiErrProfileNotFound)
+			default:
+				api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+			}
+			return nil
 		}
+		api.WriteJSON(w, http.StatusOK, profile)
+		return nil
+	})
+	if err != nil {
+		api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		return
 	}
 

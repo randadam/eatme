@@ -1,7 +1,7 @@
 basePath: /
 definitions:
   models.APIError:
-    description: API error response
+    description: APIError represents an API error response
     properties:
       code:
         type: string
@@ -35,6 +35,24 @@ definitions:
     - AllergySoy
     - AllergyTreeNuts
     - AllergyWheat
+  models.AnswerCookingQuestionRequest:
+    description: AnswerCookingQuestionRequest represents a request to answer a cooking
+      question
+    properties:
+      question:
+        type: string
+    required:
+    - question
+    type: object
+  models.AnswerCookingQuestionResponse:
+    description: AnswerCookingQuestionResponse represents a response to an answer
+      cooking question
+    properties:
+      answer:
+        type: string
+    required:
+    - answer
+    type: object
   models.Cuisine:
     enum:
     - american
@@ -101,23 +119,14 @@ definitions:
     - EquipmentSlowCooker
     - EquipmentPressureCooker
     - EquipmentSousVide
-  models.GeneralChatRequest:
-    description: A chat request to the ML backend to answer a question
+  models.GetNewSuggestionsRequest:
+    description: GetNewSuggestionsRequest represents a request to get new suggestions
     properties:
-      message:
+      prompt:
         type: string
-    required:
-    - message
-    type: object
-  models.GeneralChatResponse:
-    description: A chat response to the ML backend to answer a question
-    properties:
-      response_text:
-        type: string
-    required:
-    - response_text
     type: object
   models.Ingredient:
+    description: Ingredient represents an ingredient in a recipe
     properties:
       name:
         example: Flour
@@ -152,30 +161,17 @@ definitions:
     - MeasurementUnitCup
     - MeasurementUnitOunce
     - MeasurementUnitPound
-  models.ModifyChatRequest:
-    description: A chat request to the ML backend to modify a recipe
+  models.ModifyRecipeViaChatRequest:
+    description: ModifyRecipeViaChatRequest represents a request to modify a recipe
+      via chat
     properties:
-      message:
+      prompt:
         type: string
     required:
-    - message
-    type: object
-  models.ModifyChatResponse:
-    description: A chat response to the ML backend to modify a recipe
-    properties:
-      needs_clarification:
-        type: boolean
-      new_recipe:
-        $ref: '#/definitions/models.RecipeBody'
-      response_text:
-        type: string
-    required:
-    - needs_clarification
-    - new_recipe
-    - response_text
+    - prompt
     type: object
   models.Profile:
-    description: User profile information
+    description: Profile represents a user's profile information
     properties:
       allergies:
         description: User's allergies
@@ -218,7 +214,7 @@ definitions:
     - skill
     type: object
   models.ProfileUpdateRequest:
-    description: User profile update request
+    description: ProfileUpdateRequest represents a user's profile update request payload
     properties:
       allergies:
         description: User's allergies
@@ -253,7 +249,7 @@ definitions:
         description: User's skill level
     type: object
   models.RecipeBody:
-    description: Contents of a recipe
+    description: RecipeBody represents the contents of a recipe
     properties:
       description:
         example: A classic Italian dish
@@ -284,7 +280,7 @@ definitions:
     - total_time_minutes
     type: object
   models.RecipeSuggestion:
-    description: A suggestion for a recipe
+    description: RecipeSuggestion represents a suggestion for a recipe
     properties:
       accepted:
         type: boolean
@@ -328,7 +324,7 @@ definitions:
     - SetupStepAllergies
     - SetupStepDone
   models.SignupRequest:
-    description: User signup request
+    description: SignupRequest represents the user signup request payload
     properties:
       email:
         description: User's email address
@@ -343,7 +339,7 @@ definitions:
     - password
     type: object
   models.SignupResponse:
-    description: User signup response containing the new user's ID
+    description: SignupResponse represents the user signup response
     properties:
       token:
         description: Access token for user
@@ -364,36 +360,29 @@ definitions:
     - SkillIntermediate
     - SkillAdvanced
     - SkillChef
-  models.SuggestChatRequest:
-    description: A chat request to the ML backend to suggest a recipe
+  models.StartSuggestionThreadRequest:
+    description: StartSuggestionThreadRequest represents a request to start a suggestion
+      thread
     properties:
-      message:
+      prompt:
         type: string
     required:
-    - message
+    - prompt
     type: object
-  models.SuggestChatResponse:
-    description: A chat response to the ML backend to suggest a recipe
-    properties:
-      new_recipe:
-        $ref: '#/definitions/models.RecipeBody'
-      response_text:
-        type: string
-      thread_id:
-        type: string
-    required:
-    - new_recipe
-    - response_text
-    - thread_id
-    type: object
-  models.SuggestionThread:
+  models.ThreadState:
     description: A thread of suggestions for a recipe
     properties:
       created_at:
         type: string
+      current_prompt:
+        type: string
+      current_recipe:
+        $ref: '#/definitions/models.RecipeBody'
       id:
         type: string
       original_prompt:
+        type: string
+      recipe_id:
         type: string
       suggestions:
         items:
@@ -403,13 +392,14 @@ definitions:
         type: string
     required:
     - created_at
+    - current_prompt
     - id
     - original_prompt
     - suggestions
     - updated_at
     type: object
   models.UserRecipe:
-    description: The user's personal copy (favorites, edits).
+    description: UserRecipe is the user's personal copy (favorites, edits).
     properties:
       created_at:
         type: string
@@ -435,6 +425,8 @@ definitions:
         items:
           type: string
         type: array
+      thread_id:
+        type: string
       title:
         example: Veal Bolognese
         type: string
@@ -454,6 +446,7 @@ definitions:
     - latest_version_id
     - servings
     - steps
+    - thread_id
     - title
     - total_time_minutes
     - updated_at
@@ -466,246 +459,6 @@ info:
   title: EatMe API
   version: "1.0"
 paths:
-  /chat/modify/recipes/{recipeId}:
-    put:
-      consumes:
-      - application/json
-      description: Handle modifying a recipe
-      operationId: modifyRecipe
-      parameters:
-      - description: Recipe ID
-        in: path
-        name: recipeId
-        required: true
-        type: string
-      - description: Modify chat request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/models.ModifyChatRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.ModifyChatResponse'
-        "400":
-          description: Invalid input
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "404":
-          description: Recipe not found
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Handle modifying a recipe
-      tags:
-      - Chat
-  /chat/question/recipes/{recipeId}:
-    post:
-      consumes:
-      - application/json
-      description: Handle general chat request
-      operationId: generalChat
-      parameters:
-      - description: Recipe ID
-        in: path
-        name: recipeId
-        required: true
-        type: string
-      - description: General chat request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/models.GeneralChatRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.GeneralChatResponse'
-        "400":
-          description: Invalid input
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "404":
-          description: Recipe not found
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Handle general chat request
-      tags:
-      - Chat
-  /chat/suggest:
-    post:
-      consumes:
-      - application/json
-      description: Handle starting a recipe suggestion chat
-      operationId: suggestRecipe
-      parameters:
-      - description: Suggest chat request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/models.SuggestChatRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.SuggestChatResponse'
-        "400":
-          description: Invalid input
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Handle starting a recipe suggestion chat
-      tags:
-      - Chat
-  /chat/suggest/{threadId}:
-    get:
-      consumes:
-      - application/json
-      description: Get suggestion thread
-      operationId: getSuggestionThread
-      parameters:
-      - description: Thread ID
-        in: path
-        name: threadId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.SuggestionThread'
-        "400":
-          description: Invalid input
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "404":
-          description: Suggestion thread not found
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Get suggestion thread
-      tags:
-      - Chat
-  /chat/suggest/{threadId}/accept/{suggestionId}:
-    post:
-      description: Handle accepting a recipe suggestion
-      operationId: acceptRecipeSuggestion
-      parameters:
-      - description: Thread ID
-        in: path
-        name: threadId
-        required: true
-        type: string
-      - description: Suggestion ID
-        in: path
-        name: suggestionId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.UserRecipe'
-        "400":
-          description: Invalid input
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "404":
-          description: Suggestion thread not found
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Handle accepting a recipe suggestion
-      tags:
-      - Chat
-  /chat/suggest/{threadId}/next:
-    post:
-      consumes:
-      - application/json
-      description: Handle getting next recipe suggestion
-      operationId: nextRecipeSuggestion
-      parameters:
-      - description: Thread ID
-        in: path
-        name: threadId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.RecipeSuggestion'
-        "400":
-          description: Invalid input
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "404":
-          description: Suggestion thread not found
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Handle getting next recipe suggestion
-      tags:
-      - Chat
   /profile:
     get:
       description: Gets the profile for a user
@@ -906,4 +659,238 @@ paths:
       summary: Create a new user account
       tags:
       - users
+  /thread/{threadId}:
+    get:
+      consumes:
+      - application/json
+      description: Get a thread
+      operationId: getThread
+      parameters:
+      - description: Thread ID
+        in: path
+        name: threadId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ThreadState'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Thread not found
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Get a thread
+      tags:
+      - thread
+  /thread/{threadId}/accept/{suggestionId}:
+    post:
+      consumes:
+      - application/json
+      description: Accept a suggestion
+      operationId: acceptSuggestion
+      parameters:
+      - description: Thread ID
+        in: path
+        name: threadId
+        required: true
+        type: string
+      - description: Suggestion ID
+        in: path
+        name: suggestionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserRecipe'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Thread not found
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Accept a suggestion
+      tags:
+      - thread
+  /thread/{threadId}/modify/chat:
+    post:
+      consumes:
+      - application/json
+      description: Modify a recipe via chat
+      operationId: modifyRecipe
+      parameters:
+      - description: Thread ID
+        in: path
+        name: threadId
+        required: true
+        type: string
+      - description: Modify recipe via chat request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ModifyRecipeViaChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserRecipe'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Thread not found
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Modify a recipe via chat
+      tags:
+      - thread
+  /thread/{threadId}/question:
+    post:
+      consumes:
+      - application/json
+      description: Answer a cooking question
+      operationId: answerCookingQuestion
+      parameters:
+      - description: Thread ID
+        in: path
+        name: threadId
+        required: true
+        type: string
+      - description: Answer cooking question request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.AnswerCookingQuestionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AnswerCookingQuestionResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Answer a cooking question
+      tags:
+      - thread
+  /thread/{threadId}/suggest:
+    post:
+      consumes:
+      - application/json
+      description: Get new recipe suggestions
+      operationId: getNewSuggestions
+      parameters:
+      - description: Thread ID
+        in: path
+        name: threadId
+        required: true
+        type: string
+      - description: Get new suggestions request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.GetNewSuggestionsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.RecipeSuggestion'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Thread not found
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Get new suggestions
+      tags:
+      - thread
+  /thread/suggest:
+    post:
+      consumes:
+      - application/json
+      description: Start a new suggestion thread
+      operationId: startSuggestionThread
+      parameters:
+      - description: Suggestion thread request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.StartSuggestionThreadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ThreadState'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Start a new suggestion thread
+      tags:
+      - thread
 swagger: "2.0"

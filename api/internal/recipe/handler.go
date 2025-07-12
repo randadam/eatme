@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/ajohnston1219/eatme/api/internal/api"
+	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/models"
 	"github.com/go-chi/chi/v5"
 )
@@ -45,17 +46,25 @@ func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	recipe, err := h.recipeService.GetUserRecipe(r.Context(), userID, recipeId)
-	if err != nil {
-		switch {
-		case errors.Is(err, ErrRecipeNotFound):
-			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrRecipeNotFound)
-		default:
-			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+	err := h.recipeService.db.WithTx(func(tx db.Store) error {
+		ctx := db.ContextWithTx(r.Context(), tx)
+		recipe, err := h.recipeService.GetUserRecipe(ctx, userID, recipeId)
+		if err != nil {
+			switch {
+			case errors.Is(err, ErrRecipeNotFound):
+				api.ErrorJSON(w, http.StatusNotFound, models.ApiErrRecipeNotFound)
+			default:
+				api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+			}
+			return nil
 		}
+		api.WriteJSON(w, http.StatusOK, recipe)
+		return nil
+	})
+	if err != nil {
+		api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		return
 	}
-	api.WriteJSON(w, http.StatusOK, recipe)
 }
 
 // @Summary Get all recipes for user
@@ -76,12 +85,20 @@ func (h *RecipeHandler) GetAllRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	recipes, err := h.recipeService.GetAllUserRecipes(r.Context(), userID)
+	err := h.recipeService.db.WithTx(func(tx db.Store) error {
+		ctx := db.ContextWithTx(r.Context(), tx)
+		recipes, err := h.recipeService.GetAllUserRecipes(ctx, userID)
+		if err != nil {
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+			return nil
+		}
+		api.WriteJSON(w, http.StatusOK, recipes)
+		return nil
+	})
 	if err != nil {
 		api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
 		return
 	}
-	api.WriteJSON(w, http.StatusOK, recipes)
 }
 
 // @Summary Delete recipe
@@ -110,7 +127,10 @@ func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.recipeService.DeleteUserRecipe(r.Context(), userID, recipeId)
+	err := h.recipeService.db.WithTx(func(tx db.Store) error {
+		ctx := db.ContextWithTx(r.Context(), tx)
+		return h.recipeService.DeleteUserRecipe(ctx, userID, recipeId)
+	})
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrRecipeNotFound):

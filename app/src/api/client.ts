@@ -14,79 +14,6 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "//localhost:8080"
 };
-export type ModelsModifyChatRequest = {
-    message: string;
-};
-export type ModelsMeasurementUnit = "g" | "ml" | "tsp" | "tbsp" | "cup" | "oz" | "lb";
-export type ModelsIngredient = {
-    name: string;
-    quantity: number;
-    unit: ModelsMeasurementUnit;
-};
-export type ModelsRecipeBody = {
-    description: string;
-    ingredients: ModelsIngredient[];
-    servings: number;
-    steps: string[];
-    title: string;
-    total_time_minutes: number;
-};
-export type ModelsModifyChatResponse = {
-    needs_clarification: boolean;
-    new_recipe: ModelsRecipeBody;
-    response_text: string;
-};
-export type ModelsApiError = {
-    code: string;
-    details?: string;
-    field?: string;
-    message: string;
-};
-export type ModelsGeneralChatRequest = {
-    message: string;
-};
-export type ModelsGeneralChatResponse = {
-    response_text: string;
-};
-export type ModelsSuggestChatRequest = {
-    message: string;
-};
-export type ModelsSuggestChatResponse = {
-    new_recipe: ModelsRecipeBody;
-    response_text: string;
-    thread_id: string;
-};
-export type ModelsRecipeSuggestion = {
-    accepted: boolean;
-    created_at: string;
-    id: string;
-    response_text: string;
-    suggestion: ModelsRecipeBody;
-    thread_id: string;
-    updated_at: string;
-};
-export type ModelsSuggestionThread = {
-    created_at: string;
-    id: string;
-    original_prompt: string;
-    suggestions: ModelsRecipeSuggestion[];
-    updated_at: string;
-};
-export type ModelsUserRecipe = {
-    created_at: string;
-    description: string;
-    global_recipe_id?: string;
-    id: string;
-    ingredients: ModelsIngredient[];
-    is_favorite: boolean;
-    latest_version_id: string;
-    servings: number;
-    steps: string[];
-    title: string;
-    total_time_minutes: number;
-    updated_at: string;
-    user_id: string;
-};
 export type ModelsAllergy = "dairy" | "eggs" | "fish" | "gluten" | "peanuts" | "soy" | "tree_nuts" | "wheat";
 export type ModelsCuisine = "american" | "british" | "chinese" | "french" | "german" | "indian" | "italian" | "japanese" | "mexican" | "spanish" | "thai" | "vietnamese";
 export type ModelsDiet = "vegetarian" | "vegan" | "keto" | "paleo" | "low_carb" | "high_protein";
@@ -109,6 +36,12 @@ export type ModelsProfile = {
     /** User's skill level */
     skill: ModelsSkill;
 };
+export type ModelsApiError = {
+    code: string;
+    details?: string;
+    field?: string;
+    message: string;
+};
 export type ModelsProfileUpdateRequest = {
     /** User's allergies */
     allergies?: ModelsAllergy[];
@@ -125,6 +58,28 @@ export type ModelsProfileUpdateRequest = {
     /** User's skill level */
     skill?: ModelsSkill;
 };
+export type ModelsMeasurementUnit = "g" | "ml" | "tsp" | "tbsp" | "cup" | "oz" | "lb";
+export type ModelsIngredient = {
+    name: string;
+    quantity: number;
+    unit: ModelsMeasurementUnit;
+};
+export type ModelsUserRecipe = {
+    created_at: string;
+    description: string;
+    global_recipe_id?: string;
+    id: string;
+    ingredients: ModelsIngredient[];
+    is_favorite: boolean;
+    latest_version_id: string;
+    servings: number;
+    steps: string[];
+    thread_id: string;
+    title: string;
+    total_time_minutes: number;
+    updated_at: string;
+    user_id: string;
+};
 export type ModelsSignupRequest = {
     /** User's email address */
     email: string;
@@ -135,149 +90,48 @@ export type ModelsSignupResponse = {
     /** Access token for user */
     token: string;
 };
-/**
- * Handle modifying a recipe
- */
-export function modifyRecipe(recipeId: string, modelsModifyChatRequest: ModelsModifyChatRequest, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.fetchJson<{
-        status: 200;
-        data: ModelsModifyChatResponse;
-    } | {
-        status: 400;
-        data: ModelsApiError;
-    } | {
-        status: 401;
-        data: ModelsApiError;
-    } | {
-        status: 404;
-        data: ModelsApiError;
-    } | {
-        status: 500;
-        data: ModelsApiError;
-    }>(`/chat/modify/recipes/${encodeURIComponent(recipeId)}`, oazapfts.json({
-        ...opts,
-        method: "PUT",
-        body: modelsModifyChatRequest
-    }));
-}
-/**
- * Handle general chat request
- */
-export function generalChat(recipeId: string, modelsGeneralChatRequest: ModelsGeneralChatRequest, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.fetchJson<{
-        status: 200;
-        data: ModelsGeneralChatResponse;
-    } | {
-        status: 400;
-        data: ModelsApiError;
-    } | {
-        status: 401;
-        data: ModelsApiError;
-    } | {
-        status: 404;
-        data: ModelsApiError;
-    } | {
-        status: 500;
-        data: ModelsApiError;
-    }>(`/chat/question/recipes/${encodeURIComponent(recipeId)}`, oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: modelsGeneralChatRequest
-    }));
-}
-/**
- * Handle starting a recipe suggestion chat
- */
-export function suggestRecipe(modelsSuggestChatRequest: ModelsSuggestChatRequest, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.fetchJson<{
-        status: 200;
-        data: ModelsSuggestChatResponse;
-    } | {
-        status: 400;
-        data: ModelsApiError;
-    } | {
-        status: 401;
-        data: ModelsApiError;
-    } | {
-        status: 500;
-        data: ModelsApiError;
-    }>("/chat/suggest", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: modelsSuggestChatRequest
-    }));
-}
-/**
- * Get suggestion thread
- */
-export function getSuggestionThread(threadId: string, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.fetchJson<{
-        status: 200;
-        data: ModelsSuggestionThread;
-    } | {
-        status: 400;
-        data: ModelsApiError;
-    } | {
-        status: 401;
-        data: ModelsApiError;
-    } | {
-        status: 404;
-        data: ModelsApiError;
-    } | {
-        status: 500;
-        data: ModelsApiError;
-    }>(`/chat/suggest/${encodeURIComponent(threadId)}`, {
-        ...opts
-    });
-}
-/**
- * Handle accepting a recipe suggestion
- */
-export function acceptRecipeSuggestion(threadId: string, suggestionId: string, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.fetchJson<{
-        status: 200;
-        data: ModelsUserRecipe;
-    } | {
-        status: 400;
-        data: ModelsApiError;
-    } | {
-        status: 401;
-        data: ModelsApiError;
-    } | {
-        status: 404;
-        data: ModelsApiError;
-    } | {
-        status: 500;
-        data: ModelsApiError;
-    }>(`/chat/suggest/${encodeURIComponent(threadId)}/accept/${encodeURIComponent(suggestionId)}`, {
-        ...opts,
-        method: "POST"
-    });
-}
-/**
- * Handle getting next recipe suggestion
- */
-export function nextRecipeSuggestion(threadId: string, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.fetchJson<{
-        status: 200;
-        data: ModelsRecipeSuggestion;
-    } | {
-        status: 400;
-        data: ModelsApiError;
-    } | {
-        status: 401;
-        data: ModelsApiError;
-    } | {
-        status: 404;
-        data: ModelsApiError;
-    } | {
-        status: 500;
-        data: ModelsApiError;
-    }>(`/chat/suggest/${encodeURIComponent(threadId)}/next`, {
-        ...opts,
-        method: "POST"
-    });
-}
+export type ModelsStartSuggestionThreadRequest = {
+    prompt: string;
+};
+export type ModelsRecipeBody = {
+    description: string;
+    ingredients: ModelsIngredient[];
+    servings: number;
+    steps: string[];
+    title: string;
+    total_time_minutes: number;
+};
+export type ModelsRecipeSuggestion = {
+    accepted: boolean;
+    created_at: string;
+    id: string;
+    response_text: string;
+    suggestion: ModelsRecipeBody;
+    thread_id: string;
+    updated_at: string;
+};
+export type ModelsThreadState = {
+    created_at: string;
+    current_prompt: string;
+    current_recipe?: ModelsRecipeBody;
+    id: string;
+    original_prompt: string;
+    recipe_id?: string;
+    suggestions: ModelsRecipeSuggestion[];
+    updated_at: string;
+};
+export type ModelsModifyRecipeViaChatRequest = {
+    prompt: string;
+};
+export type ModelsAnswerCookingQuestionRequest = {
+    question: string;
+};
+export type ModelsAnswerCookingQuestionResponse = {
+    answer: string;
+};
+export type ModelsGetNewSuggestionsRequest = {
+    prompt?: string;
+};
 /**
  * Get user profile
  */
@@ -407,5 +261,137 @@ export function signup(modelsSignupRequest: ModelsSignupRequest, opts?: Oazapfts
         ...opts,
         method: "POST",
         body: modelsSignupRequest
+    }));
+}
+/**
+ * Start a new suggestion thread
+ */
+export function startSuggestionThread(modelsStartSuggestionThreadRequest: ModelsStartSuggestionThreadRequest, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsThreadState;
+    } | {
+        status: 400;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 500;
+        data: ModelsApiError;
+    }>("/thread/suggest", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: modelsStartSuggestionThreadRequest
+    }));
+}
+/**
+ * Get a thread
+ */
+export function getThread(threadId: string, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsThreadState;
+    } | {
+        status: 400;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
+    } | {
+        status: 500;
+        data: ModelsApiError;
+    }>(`/thread/${encodeURIComponent(threadId)}`, {
+        ...opts
+    });
+}
+/**
+ * Accept a suggestion
+ */
+export function acceptSuggestion(threadId: string, suggestionId: string, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsUserRecipe;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
+    } | {
+        status: 500;
+        data: ModelsApiError;
+    }>(`/thread/${encodeURIComponent(threadId)}/accept/${encodeURIComponent(suggestionId)}`, {
+        ...opts,
+        method: "POST"
+    });
+}
+/**
+ * Modify a recipe via chat
+ */
+export function modifyRecipe(threadId: string, modelsModifyRecipeViaChatRequest: ModelsModifyRecipeViaChatRequest, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsUserRecipe;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
+    } | {
+        status: 500;
+        data: ModelsApiError;
+    }>(`/thread/${encodeURIComponent(threadId)}/modify/chat`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: modelsModifyRecipeViaChatRequest
+    }));
+}
+/**
+ * Answer a cooking question
+ */
+export function answerCookingQuestion(threadId: string, modelsAnswerCookingQuestionRequest: ModelsAnswerCookingQuestionRequest, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsAnswerCookingQuestionResponse;
+    } | {
+        status: 400;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 500;
+        data: ModelsApiError;
+    }>(`/thread/${encodeURIComponent(threadId)}/question`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: modelsAnswerCookingQuestionRequest
+    }));
+}
+/**
+ * Get new suggestions
+ */
+export function getNewSuggestions(threadId: string, modelsGetNewSuggestionsRequest: ModelsGetNewSuggestionsRequest, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsRecipeSuggestion[];
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
+    } | {
+        status: 500;
+        data: ModelsApiError;
+    }>(`/thread/${encodeURIComponent(threadId)}/suggest`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: modelsGetNewSuggestionsRequest
     }));
 }

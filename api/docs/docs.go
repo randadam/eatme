@@ -15,366 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/chat/modify/recipes/{recipeId}": {
-            "put": {
-                "description": "Handle modifying a recipe",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Chat"
-                ],
-                "summary": "Handle modifying a recipe",
-                "operationId": "modifyRecipe",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Recipe ID",
-                        "name": "recipeId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Modify chat request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.ModifyChatRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.ModifyChatResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "404": {
-                        "description": "Recipe not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/chat/question/recipes/{recipeId}": {
-            "post": {
-                "description": "Handle general chat request",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Chat"
-                ],
-                "summary": "Handle general chat request",
-                "operationId": "generalChat",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Recipe ID",
-                        "name": "recipeId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "General chat request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.GeneralChatRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.GeneralChatResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "404": {
-                        "description": "Recipe not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/chat/suggest": {
-            "post": {
-                "description": "Handle starting a recipe suggestion chat",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Chat"
-                ],
-                "summary": "Handle starting a recipe suggestion chat",
-                "operationId": "suggestRecipe",
-                "parameters": [
-                    {
-                        "description": "Suggest chat request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.SuggestChatRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.SuggestChatResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/chat/suggest/{threadId}": {
-            "get": {
-                "description": "Get suggestion thread",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Chat"
-                ],
-                "summary": "Get suggestion thread",
-                "operationId": "getSuggestionThread",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Thread ID",
-                        "name": "threadId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.SuggestionThread"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "404": {
-                        "description": "Suggestion thread not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/chat/suggest/{threadId}/accept/{suggestionId}": {
-            "post": {
-                "description": "Handle accepting a recipe suggestion",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Chat"
-                ],
-                "summary": "Handle accepting a recipe suggestion",
-                "operationId": "acceptRecipeSuggestion",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Thread ID",
-                        "name": "threadId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Suggestion ID",
-                        "name": "suggestionId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.UserRecipe"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "404": {
-                        "description": "Suggestion thread not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/chat/suggest/{threadId}/next": {
-            "post": {
-                "description": "Handle getting next recipe suggestion",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Chat"
-                ],
-                "summary": "Handle getting next recipe suggestion",
-                "operationId": "nextRecipeSuggestion",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Thread ID",
-                        "name": "threadId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.RecipeSuggestion"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "404": {
-                        "description": "Suggestion thread not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
         "/profile": {
             "get": {
                 "description": "Gets the profile for a user",
@@ -674,11 +314,362 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/thread/suggest": {
+            "post": {
+                "description": "Start a new suggestion thread",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "thread"
+                ],
+                "summary": "Start a new suggestion thread",
+                "operationId": "startSuggestionThread",
+                "parameters": [
+                    {
+                        "description": "Suggestion thread request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.StartSuggestionThreadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ThreadState"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/thread/{threadId}": {
+            "get": {
+                "description": "Get a thread",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "thread"
+                ],
+                "summary": "Get a thread",
+                "operationId": "getThread",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thread ID",
+                        "name": "threadId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ThreadState"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Thread not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/thread/{threadId}/accept/{suggestionId}": {
+            "post": {
+                "description": "Accept a suggestion",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "thread"
+                ],
+                "summary": "Accept a suggestion",
+                "operationId": "acceptSuggestion",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thread ID",
+                        "name": "threadId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Suggestion ID",
+                        "name": "suggestionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserRecipe"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Thread not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/thread/{threadId}/modify/chat": {
+            "post": {
+                "description": "Modify a recipe via chat",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "thread"
+                ],
+                "summary": "Modify a recipe via chat",
+                "operationId": "modifyRecipe",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thread ID",
+                        "name": "threadId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Modify recipe via chat request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ModifyRecipeViaChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserRecipe"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Thread not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/thread/{threadId}/question": {
+            "post": {
+                "description": "Answer a cooking question",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "thread"
+                ],
+                "summary": "Answer a cooking question",
+                "operationId": "answerCookingQuestion",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thread ID",
+                        "name": "threadId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Answer cooking question request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AnswerCookingQuestionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AnswerCookingQuestionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/thread/{threadId}/suggest": {
+            "post": {
+                "description": "Get new recipe suggestions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "thread"
+                ],
+                "summary": "Get new suggestions",
+                "operationId": "getNewSuggestions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thread ID",
+                        "name": "threadId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Get new suggestions request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.GetNewSuggestionsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.RecipeSuggestion"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Thread not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
         "models.APIError": {
-            "description": "API error response",
+            "description": "APIError represents an API error response",
             "type": "object",
             "required": [
                 "code",
@@ -721,6 +712,30 @@ const docTemplate = `{
                 "AllergyTreeNuts",
                 "AllergyWheat"
             ]
+        },
+        "models.AnswerCookingQuestionRequest": {
+            "description": "AnswerCookingQuestionRequest represents a request to answer a cooking question",
+            "type": "object",
+            "required": [
+                "question"
+            ],
+            "properties": {
+                "question": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AnswerCookingQuestionResponse": {
+            "description": "AnswerCookingQuestionResponse represents a response to an answer cooking question",
+            "type": "object",
+            "required": [
+                "answer"
+            ],
+            "properties": {
+                "answer": {
+                    "type": "string"
+                }
+            }
         },
         "models.Cuisine": {
             "type": "string",
@@ -797,31 +812,17 @@ const docTemplate = `{
                 "EquipmentSousVide"
             ]
         },
-        "models.GeneralChatRequest": {
-            "description": "A chat request to the ML backend to answer a question",
+        "models.GetNewSuggestionsRequest": {
+            "description": "GetNewSuggestionsRequest represents a request to get new suggestions",
             "type": "object",
-            "required": [
-                "message"
-            ],
             "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.GeneralChatResponse": {
-            "description": "A chat response to the ML backend to answer a question",
-            "type": "object",
-            "required": [
-                "response_text"
-            ],
-            "properties": {
-                "response_text": {
+                "prompt": {
                     "type": "string"
                 }
             }
         },
         "models.Ingredient": {
+            "description": "Ingredient represents an ingredient in a recipe",
             "type": "object",
             "required": [
                 "name",
@@ -868,40 +869,20 @@ const docTemplate = `{
                 "MeasurementUnitPound"
             ]
         },
-        "models.ModifyChatRequest": {
-            "description": "A chat request to the ML backend to modify a recipe",
+        "models.ModifyRecipeViaChatRequest": {
+            "description": "ModifyRecipeViaChatRequest represents a request to modify a recipe via chat",
             "type": "object",
             "required": [
-                "message"
+                "prompt"
             ],
             "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.ModifyChatResponse": {
-            "description": "A chat response to the ML backend to modify a recipe",
-            "type": "object",
-            "required": [
-                "needs_clarification",
-                "new_recipe",
-                "response_text"
-            ],
-            "properties": {
-                "needs_clarification": {
-                    "type": "boolean"
-                },
-                "new_recipe": {
-                    "$ref": "#/definitions/models.RecipeBody"
-                },
-                "response_text": {
+                "prompt": {
                     "type": "string"
                 }
             }
         },
         "models.Profile": {
-            "description": "User profile information",
+            "description": "Profile represents a user's profile information",
             "type": "object",
             "required": [
                 "allergies",
@@ -964,7 +945,7 @@ const docTemplate = `{
             }
         },
         "models.ProfileUpdateRequest": {
-            "description": "User profile update request",
+            "description": "ProfileUpdateRequest represents a user's profile update request payload",
             "type": "object",
             "properties": {
                 "allergies": {
@@ -1018,7 +999,7 @@ const docTemplate = `{
             }
         },
         "models.RecipeBody": {
-            "description": "Contents of a recipe",
+            "description": "RecipeBody represents the contents of a recipe",
             "type": "object",
             "required": [
                 "description",
@@ -1060,7 +1041,7 @@ const docTemplate = `{
             }
         },
         "models.RecipeSuggestion": {
-            "description": "A suggestion for a recipe",
+            "description": "RecipeSuggestion represents a suggestion for a recipe",
             "type": "object",
             "required": [
                 "accepted",
@@ -1117,7 +1098,7 @@ const docTemplate = `{
             ]
         },
         "models.SignupRequest": {
-            "description": "User signup request",
+            "description": "SignupRequest represents the user signup request payload",
             "type": "object",
             "required": [
                 "email",
@@ -1137,7 +1118,7 @@ const docTemplate = `{
             }
         },
         "models.SignupResponse": {
-            "description": "User signup response containing the new user's ID",
+            "description": "SignupResponse represents the user signup response",
             "type": "object",
             "required": [
                 "token"
@@ -1165,43 +1146,24 @@ const docTemplate = `{
                 "SkillChef"
             ]
         },
-        "models.SuggestChatRequest": {
-            "description": "A chat request to the ML backend to suggest a recipe",
+        "models.StartSuggestionThreadRequest": {
+            "description": "StartSuggestionThreadRequest represents a request to start a suggestion thread",
             "type": "object",
             "required": [
-                "message"
+                "prompt"
             ],
             "properties": {
-                "message": {
+                "prompt": {
                     "type": "string"
                 }
             }
         },
-        "models.SuggestChatResponse": {
-            "description": "A chat response to the ML backend to suggest a recipe",
-            "type": "object",
-            "required": [
-                "new_recipe",
-                "response_text",
-                "thread_id"
-            ],
-            "properties": {
-                "new_recipe": {
-                    "$ref": "#/definitions/models.RecipeBody"
-                },
-                "response_text": {
-                    "type": "string"
-                },
-                "thread_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.SuggestionThread": {
+        "models.ThreadState": {
             "description": "A thread of suggestions for a recipe",
             "type": "object",
             "required": [
                 "created_at",
+                "current_prompt",
                 "id",
                 "original_prompt",
                 "suggestions",
@@ -1211,10 +1173,19 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "current_prompt": {
+                    "type": "string"
+                },
+                "current_recipe": {
+                    "$ref": "#/definitions/models.RecipeBody"
+                },
                 "id": {
                     "type": "string"
                 },
                 "original_prompt": {
+                    "type": "string"
+                },
+                "recipe_id": {
                     "type": "string"
                 },
                 "suggestions": {
@@ -1229,7 +1200,7 @@ const docTemplate = `{
             }
         },
         "models.UserRecipe": {
-            "description": "The user's personal copy (favorites, edits).",
+            "description": "UserRecipe is the user's personal copy (favorites, edits).",
             "type": "object",
             "required": [
                 "created_at",
@@ -1240,6 +1211,7 @@ const docTemplate = `{
                 "latest_version_id",
                 "servings",
                 "steps",
+                "thread_id",
                 "title",
                 "total_time_minutes",
                 "updated_at",
@@ -1280,6 +1252,9 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "thread_id": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string",

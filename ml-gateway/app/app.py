@@ -7,10 +7,10 @@ app = FastAPI()
 @app.post("/chat/suggest", response_model=SuggestChatResponse)
 async def chat(req: SuggestChatRequest):
     print("Incoming suggest request:", req)
-    recipe = await suggest(req.profile, req.history, req.message)
+    recipes = await suggest(req.profile, req.history, req.message)
     text  = "Here is an idea ↓"
     return SuggestChatResponse(response_text=text,
-                               new_recipe=recipe)
+                               suggestions=recipes)
 
 @app.post("/chat/modify", response_model=ModifyChatResponse)
 async def chat(req: ModifyChatRequest):

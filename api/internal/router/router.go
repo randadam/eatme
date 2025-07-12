@@ -8,6 +8,7 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/middleware"
 	"github.com/ajohnston1219/eatme/api/internal/recipe"
+	"github.com/ajohnston1219/eatme/api/internal/thread"
 	"github.com/ajohnston1219/eatme/api/internal/user"
 	"github.com/ajohnston1219/eatme/api/internal/utils"
 	"github.com/go-chi/chi/v5"
@@ -62,17 +63,18 @@ func NewRouter(app *App) *chi.Mux {
 		r.Delete("/{recipe_id}", recipeHandler.DeleteRecipe)
 	})
 
-	// Chat
-	chatService := chat.NewChatService(app.mlClient, userService, recipeService)
-	chatHandler := chat.NewChatHandler(chatService)
-	r.Route("/chat", func(r chi.Router) {
+	// Thread
+	chatService := chat.NewChatService(app.mlClient)
+	threadService := thread.NewThreadService(app.store, recipeService, chatService)
+	threadHandler := thread.NewThreadHandler(threadService)
+	r.Route("/thread", func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware(app.store))
-		r.Post("/suggest", chatHandler.StartSuggestChat)
-		r.Get("/suggest/{threadId}", chatHandler.GetSuggestionThread)
-		r.Post("/suggest/{threadId}/next", chatHandler.NextRecipeSuggestion)
-		r.Post("/suggest/{threadId}/accept/{suggestionId}", chatHandler.AcceptRecipeSuggestion)
-		r.Put("/modify/recipes/{recipeId}", chatHandler.ModifyRecipeChat)
-		r.Post("/question/recipes/{recipeId}", chatHandler.GeneralRecipeChat)
+		r.Post("/suggest", threadHandler.StartSuggestionThread)
+		r.Post("/{threadId}/suggest", threadHandler.GetNewSuggestions)
+		r.Post("/{threadId}/accept/{suggestionId}", threadHandler.AcceptSuggestion)
+		r.Post("/{threadId}/modify/chat", threadHandler.ModifyRecipeViaChat)
+		r.Post("/{threadId}/question", threadHandler.AnswerCookingQuestion)
+		r.Get("/{threadId}", threadHandler.GetThread)
 	})
 
 	return r

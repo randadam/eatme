@@ -13,9 +13,6 @@ class Recipe(BaseModel):
     ingredients: list[Ingredient]
     steps: list[str]
 
-class MealPlan(BaseModel):
-    recipes: list[Recipe]
-
 class Profile(BaseModel):
     allergies: list[str]
 
@@ -24,9 +21,12 @@ class SuggestChatRequest(BaseModel):
     history: list[str]
     profile: Profile
 
+class SuggestionRecipes(BaseModel):
+    suggestions: list[Recipe]
+
 class SuggestChatResponse(BaseModel):
     response_text: str
-    new_recipe: Recipe | None = None
+    suggestions: list[Recipe]
 
 class ModifyChatRequest(BaseModel):
     message: str
@@ -40,7 +40,6 @@ class ModifyChatResponse(BaseModel):
 class GeneralChatRequest(BaseModel):
     message: str
     profile: Profile
-    meal_plan: MealPlan
 
 class GeneralChatResponse(BaseModel):
     response_text: str

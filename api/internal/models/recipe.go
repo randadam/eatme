@@ -18,7 +18,7 @@ const (
 	MeasurementUnitPound      MeasurementUnit = "lb"
 )
 
-// Ingredient represents an ingredient in a recipe
+// @Description Ingredient represents an ingredient in a recipe
 type Ingredient struct {
 	Name     string          `json:"name" example:"Flour" binding:"required"`
 	Quantity float64         `json:"quantity" example:"1" binding:"required"`
@@ -45,8 +45,7 @@ func (s *Steps) Scan(value interface{}) error {
 	return json.Unmarshal(b, s)
 }
 
-// RecipeBody represents the contents of a recipe
-// @Description Contents of a recipe
+// @Description RecipeBody represents the contents of a recipe
 type RecipeBody struct {
 	Title            string      `json:"title" example:"Veal Bolognese" binding:"required"`
 	Description      string      `json:"description" example:"A classic Italian dish" binding:"required"`
@@ -63,8 +62,7 @@ const (
 	RecipeSourceGenerated RecipeSource = "generated"
 )
 
-// GlobalRecipe represents a global recipe that can be "forked" into a user's recipe book
-// @Description A global recipe that can be "forked" into a user's recipe book
+// @Description GlobalRecipe represents a global recipe that can be "forked" into a user's recipe book
 type GlobalRecipe struct {
 	ID         string       `json:"id" binding:"required"`
 	SourceType RecipeSource `json:"source_type" binding:"required"`
@@ -73,34 +71,12 @@ type GlobalRecipe struct {
 	RecipeBody
 }
 
-// RecipeSuggestion represents a suggestion for a recipe
-// @Description A suggestion for a recipe
-type RecipeSuggestion struct {
-	ID           string     `json:"id" binding:"required"`
-	ThreadID     string     `json:"thread_id" binding:"required"`
-	Suggestion   RecipeBody `json:"suggestion" binding:"required"`
-	ResponseText string     `json:"response_text" binding:"required"`
-	Accepted     bool       `json:"accepted" binding:"required"`
-	CreatedAt    time.Time  `json:"created_at" binding:"required"`
-	UpdatedAt    time.Time  `json:"updated_at" binding:"required"`
-}
-
-// SuggestionThread represents a thread of suggestions for a recipe
-// @Description A thread of suggestions for a recipe
-type SuggestionThread struct {
-	ID             string             `json:"id" binding:"required"`
-	OriginalPrompt string             `json:"original_prompt" binding:"required"`
-	Suggestions    []RecipeSuggestion `json:"suggestions" binding:"required"`
-	CreatedAt      time.Time          `json:"created_at" binding:"required"`
-	UpdatedAt      time.Time          `json:"updated_at" binding:"required"`
-}
-
-// UserRecipe is the user's personal copy (favorites, edits).
-// @Description The user's personal copy (favorites, edits).
+// @Description UserRecipe is the user's personal copy (favorites, edits).
 type UserRecipe struct {
 	ID              string    `json:"id" binding:"required"`
 	UserID          string    `json:"user_id" binding:"required"`
 	GlobalRecipeID  *string   `json:"global_recipe_id,omitempty"`
+	ThreadID        string    `json:"thread_id" binding:"required"`
 	IsFavorite      bool      `json:"is_favorite" binding:"required"`
 	LatestVersionID string    `json:"latest_version_id" binding:"required"`
 	CreatedAt       time.Time `json:"created_at" binding:"required"`
@@ -108,8 +84,7 @@ type UserRecipe struct {
 	RecipeBody
 }
 
-// RecipeVersion is an immutable snapshot used inside meal plans.
-// @Description An immutable snapshot used inside meal plans.
+// @Description RecipeVersion is an immutable snapshot used inside meal plans.
 type RecipeVersion struct {
 	ID           string    `json:"id" binding:"required"`
 	UserRecipeID string    `json:"user_recipe_id" binding:"required"`
@@ -119,16 +94,14 @@ type RecipeVersion struct {
 	RecipeBody
 }
 
-// MealPlanRecipe is a recipe in a meal plan
-// @Description A recipe in a meal plan
+// @Description MealPlanRecipe is a recipe in a meal plan
 type MealPlanRecipe struct {
 	PlanID string `json:"plan_id" binding:"required"`
 	Day    int    `json:"day,omitempty"`
 	RecipeBody
 }
 
-// MealPlan represents a meal plan
-// @Description A meal plan
+// @Description MealPlan represents a meal plan
 type MealPlan struct {
 	ID      string            `json:"id" example:"12345678-1234-1234-1234-123456789012" binding:"required"`
 	UserID  string            `json:"user_id" example:"12345678-1234-1234-1234-123456789012" binding:"required"`

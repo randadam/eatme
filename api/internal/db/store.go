@@ -15,10 +15,10 @@ type Store interface {
 	GetGlobalRecipe(ctx context.Context, id string) (models.GlobalRecipe, error)
 	SaveGlobalRecipe(ctx context.Context, recipe models.GlobalRecipe) error
 
-	CreateSuggestionThread(ctx context.Context, userID string, thread models.SuggestionThread) error
-	GetSuggestionThread(ctx context.Context, threadID string) (models.SuggestionThread, error)
-	AppendToSuggestionThread(ctx context.Context, threadID string, suggestion models.RecipeSuggestion) error
-	AcceptSuggestion(ctx context.Context, threadID string, suggestion models.RecipeSuggestion) error
+	CreateThread(ctx context.Context, userID string, thread models.Thread) error
+	GetThread(ctx context.Context, threadID string) (models.Thread, error)
+	AppendToThread(ctx context.Context, threadID string, events []models.ThreadEvent) error
+	AssociateThreadWithRecipe(ctx context.Context, threadID string, recipeID string) error
 
 	GetUserRecipe(ctx context.Context, userID string, recipeID string) (models.UserRecipe, error)
 	GetAllUserRecipes(ctx context.Context, userID string) ([]models.UserRecipe, error)

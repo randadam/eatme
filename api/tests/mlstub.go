@@ -16,19 +16,13 @@ type MLStub struct {
 func (m *MLStub) SuggestChat(_ context.Context, _ *models.InternalSuggestChatRequest) (*models.SuggestChatResponse, error) {
 	resp := m.SuggestResponses[m.suggestCall]
 	m.suggestCall++
-	return &models.SuggestChatResponse{
-		ResponseText: resp.ResponseText,
-		NewRecipe:    resp.NewRecipe,
-	}, nil
+	return &resp, nil
 }
 
 func (m *MLStub) ModifyChat(_ context.Context, _ *models.InternalModifyChatRequest) (*models.ModifyChatResponse, error) {
 	resp := m.ModifyResponses[m.modifyCall]
 	m.modifyCall++
-	return &models.ModifyChatResponse{
-		ResponseText: resp.ResponseText,
-		NewRecipe:    resp.NewRecipe,
-	}, nil
+	return &resp, nil
 }
 
 func (m *MLStub) GeneralChat(_ context.Context, _ *models.InternalGeneralChatRequest) (*models.GeneralChatResponse, error) {

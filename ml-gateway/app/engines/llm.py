@@ -69,7 +69,7 @@ async def chat(
         try:
             resp = client.messages.create(
                 model=model,
-                max_tokens=max_tokens or 4096,
+                max_tokens=max_tokens or 8192,
                 temperature=temperature,
                 messages=[{"role": "user", "content": prompt}],
             )

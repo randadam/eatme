@@ -81,16 +81,16 @@ func makeFakeRecipe(title string, opts ...FakeRecipeOpt) models.RecipeBody {
 	return recipe
 }
 
-func createUser(store *db.SQLiteStore, email string) (models.User, error) {
+func createUser(store *db.SQLiteStore, email string) (*models.User, error) {
 	svc := user.NewUserService(store)
 	user, err := svc.CreateUser(context.Background(), email, "password")
 	if err != nil {
-		return models.User{}, err
+		return nil, err
 	}
 	return user, nil
 }
 
-func createRecipe(store *db.SQLiteStore, userID string, recipeBody models.RecipeBody) (models.UserRecipe, error) {
+func createRecipe(store *db.SQLiteStore, userID string, recipeBody models.RecipeBody) (*models.UserRecipe, error) {
 	svc := recipe.NewRecipeService(store)
 	newRecipe, err := svc.NewRecipe(context.Background(), userID, recipeBody)
 	return newRecipe, err

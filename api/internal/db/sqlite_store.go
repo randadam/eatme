@@ -202,104 +202,103 @@ func (s *SQLiteStore) SaveGlobalRecipe(ctx context.Context, recipe models.Global
 	return nil
 }
 
-func (s *SQLiteStore) CreateSuggestionThread(ctx context.Context, userID string, thread models.SuggestionThread) error {
+func (s *SQLiteStore) CreateThread(ctx context.Context, userID string, thread models.Thread) error {
 	_, err := s.run.ExecContext(ctx, `
-		INSERT INTO recipe_suggestion_threads (id, user_id, original_prompt)
+		INSERT INTO threads (id, user_id, thread_type)
 		VALUES (?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			user_id            = excluded.user_id,
-			original_prompt    = excluded.original_prompt,
+			thread_type        = excluded.thread_type,
 			updated_at         = CURRENT_TIMESTAMP;
-	`, thread.ID, userID, thread.OriginalPrompt)
+	`, thread.ID, userID, thread.Type)
 	if err != nil {
-		return fmt.Errorf("failed to create suggestion thread: %w", err)
+		return fmt.Errorf("failed to create thread: %w", err)
+	}
+	for _, event := range thread.Events {
+		_, err = s.run.ExecContext(ctx, `
+			INSERT INTO thread_events (thread_id, event_type, payload)
+			VALUES (?, ?, ?)
+			ON CONFLICT(thread_id, event_type) DO UPDATE SET
+				payload = excluded.payload,
+				updated_at = CURRENT_TIMESTAMP;
+		`, thread.ID, event.Type, event.Payload)
+		if err != nil {
+			return fmt.Errorf("failed to append to thread: %w", err)
+		}
 	}
 	return nil
 }
 
-func (s *SQLiteStore) AppendToSuggestionThread(ctx context.Context, threadID string, suggestion models.RecipeSuggestion) error {
-	recipeJson, err := json.Marshal(suggestion.Suggestion)
-	if err != nil {
-		return fmt.Errorf("failed to marshal recipe: %w", err)
-	}
-	_, err = s.run.ExecContext(ctx, `
-		INSERT INTO recipe_suggestions (id, thread_id, recipe_json, response_text, accepted)
-		VALUES (?, ?, ?, ?, ?)
-		ON CONFLICT(id) DO UPDATE SET
-			thread_id          = excluded.thread_id,
-			recipe_json        = excluded.recipe_json,
-			response_text      = excluded.response_text,
-			accepted           = excluded.accepted,
-			updated_at         = CURRENT_TIMESTAMP;
-	`, suggestion.ID, threadID, recipeJson, suggestion.ResponseText, suggestion.Accepted)
-	if err != nil {
-		return fmt.Errorf("failed to append to suggestion thread: %w", err)
+func (s *SQLiteStore) AppendToThread(ctx context.Context, threadId string, events []models.ThreadEvent) error {
+	for _, event := range events {
+		_, err := s.run.ExecContext(ctx, `
+			INSERT INTO thread_events (thread_id, event_type, payload)
+			VALUES (?, ?, ?)
+			ON CONFLICT(thread_id, event_type) DO UPDATE SET
+				payload = excluded.payload,
+				updated_at = CURRENT_TIMESTAMP;
+		`, threadId, event.Type, event.Payload)
+		if err != nil {
+			return fmt.Errorf("failed to append to thread: %w", err)
+		}
 	}
 	return nil
 }
 
-func (s *SQLiteStore) AcceptSuggestion(ctx context.Context, threadID string, suggestion models.RecipeSuggestion) error {
+func (s *SQLiteStore) AssociateThreadWithRecipe(ctx context.Context, threadID string, recipeID string) error {
 	_, err := s.run.ExecContext(ctx, `
-		UPDATE recipe_suggestions
-		SET accepted = true
-		WHERE id = ?;
-	`, suggestion.ID)
+		UPDATE threads SET recipe_id = ? WHERE id = ?;
+	`, recipeID, threadID)
 	if err != nil {
-		return fmt.Errorf("failed to accept suggestion: %w", err)
+		return fmt.Errorf("failed to associate recipe with thread: %w", err)
 	}
 	return nil
 }
 
-func (s *SQLiteStore) GetSuggestionThread(ctx context.Context, threadID string) (models.SuggestionThread, error) {
-	var thread models.SuggestionThread
+func (s *SQLiteStore) GetThread(ctx context.Context, threadID string) (models.Thread, error) {
+	var thread models.Thread
 	err := s.run.QueryRowContext(ctx, `
 		SELECT 
-			id, original_prompt,
-			created_at, updated_at
-		FROM recipe_suggestion_threads WHERE id = ?;
+			id,
+			thread_type,
+			created_at,
+			updated_at
+		FROM threads WHERE id = ?;
 	`, threadID).Scan(
-		&thread.ID, &thread.OriginalPrompt,
-		&thread.CreatedAt, &thread.UpdatedAt,
+		&thread.ID, &thread.Type, &thread.CreatedAt, &thread.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return thread, ErrNotFound
 		}
-		return thread, fmt.Errorf("failed to get suggestion thread: %w", err)
+		return thread, fmt.Errorf("failed to get thread: %w", err)
 	}
 
-	var suggestions []models.RecipeSuggestion
+	var events []models.ThreadEvent
 	rows, err := s.run.QueryContext(ctx, `
 		SELECT 
-			id, thread_id, recipe_json, response_text, accepted,
-			created_at, updated_at
-		FROM recipe_suggestions WHERE thread_id = ?;
+			event_type, payload, timestamp
+		FROM thread_events WHERE thread_id = ?;
 	`, threadID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return thread, ErrNotFound
 		}
-		return thread, fmt.Errorf("failed to get suggestion thread: %w", err)
+		return thread, fmt.Errorf("failed to get thread: %w", err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var suggestion models.RecipeSuggestion
-		var recipeJson []byte
+		var event models.ThreadEvent
 		err := rows.Scan(
-			&suggestion.ID, &suggestion.ThreadID, &recipeJson, &suggestion.ResponseText, &suggestion.Accepted,
-			&suggestion.CreatedAt, &suggestion.UpdatedAt,
+			&event.Type, &event.Payload, &event.Timestamp,
 		)
 		if err != nil {
-			return thread, fmt.Errorf("failed to scan recipe suggestion: %w", err)
+			return thread, fmt.Errorf("failed to scan thread event: %w", err)
 		}
-		err = json.Unmarshal(recipeJson, &suggestion.Suggestion)
-		if err != nil {
-			return thread, fmt.Errorf("failed to unmarshal recipe suggestion: %w", err)
-		}
-		suggestions = append(suggestions, suggestion)
+		events = append(events, event)
 	}
-	thread.Suggestions = suggestions
+	thread.Events = events
 
 	return thread, nil
 }
@@ -308,7 +307,7 @@ func (s *SQLiteStore) GetUserRecipe(ctx context.Context, userID string, recipeID
 	var recipe models.UserRecipe
 	err := s.run.QueryRowContext(ctx, `
 		SELECT 
-			ur.id, ur.user_id, ur.global_recipe_id,
+			ur.id, ur.user_id, ur.thread_id, ur.global_recipe_id,
 			ur.title, ur.description, ur.is_favorite,
 			ur.latest_version_id, ur.created_at, ur.updated_at,
 			rv.total_time_minutes, rv.servings,
@@ -318,7 +317,7 @@ func (s *SQLiteStore) GetUserRecipe(ctx context.Context, userID string, recipeID
 		JOIN recipe_versions rv ON ur.latest_version_id = rv.id
 		WHERE ur.id = ? AND ur.user_id = ?;
 	`, recipeID, userID).Scan(
-		&recipe.ID, &recipe.UserID, &recipe.GlobalRecipeID, &recipe.Title, &recipe.Description, &recipe.IsFavorite,
+		&recipe.ID, &recipe.UserID, &recipe.ThreadID, &recipe.GlobalRecipeID, &recipe.Title, &recipe.Description, &recipe.IsFavorite,
 		&recipe.LatestVersionID, &recipe.CreatedAt, &recipe.UpdatedAt,
 		&recipe.RecipeBody.TotalTimeMinutes, &recipe.RecipeBody.Servings, &recipe.RecipeBody.Ingredients, &recipe.RecipeBody.Steps,
 	)
@@ -336,7 +335,7 @@ func (s *SQLiteStore) GetAllUserRecipes(ctx context.Context, userID string) ([]m
 	var recipes []models.UserRecipe
 	rows, err := s.run.QueryContext(ctx, `
 		SELECT 
-			ur.id, ur.user_id, ur.global_recipe_id,
+			ur.id, ur.user_id, ur.thread_id, ur.global_recipe_id,
 			ur.title, ur.description, ur.is_favorite,
 			ur.latest_version_id, ur.created_at, ur.updated_at,
 			rv.total_time_minutes, rv.servings,
@@ -357,7 +356,7 @@ func (s *SQLiteStore) GetAllUserRecipes(ctx context.Context, userID string) ([]m
 	for rows.Next() {
 		var recipe models.UserRecipe
 		err := rows.Scan(
-			&recipe.ID, &recipe.UserID, &recipe.GlobalRecipeID, &recipe.Title, &recipe.Description, &recipe.IsFavorite,
+			&recipe.ID, &recipe.UserID, &recipe.ThreadID, &recipe.GlobalRecipeID, &recipe.Title, &recipe.Description, &recipe.IsFavorite,
 			&recipe.LatestVersionID, &recipe.CreatedAt, &recipe.UpdatedAt,
 			&recipe.RecipeBody.TotalTimeMinutes, &recipe.RecipeBody.Servings, &recipe.RecipeBody.Ingredients, &recipe.RecipeBody.Steps,
 		)
@@ -371,11 +370,12 @@ func (s *SQLiteStore) GetAllUserRecipes(ctx context.Context, userID string) ([]m
 
 func (s *SQLiteStore) SaveUserRecipe(ctx context.Context, recipe models.UserRecipe) error {
 	_, err := s.run.ExecContext(ctx, `
-		INSERT INTO user_recipes (id, user_id, global_recipe_id, title, description, total_time_minutes, servings, is_favorite, latest_version_id)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO user_recipes (id, user_id, global_recipe_id, thread_id, title, description, total_time_minutes, servings, is_favorite, latest_version_id)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			user_id            = excluded.user_id,
 			global_recipe_id   = excluded.global_recipe_id,
+			thread_id          = excluded.thread_id,
 			title              = excluded.title,
 			description        = excluded.description,
 			total_time_minutes = excluded.total_time_minutes,
@@ -383,7 +383,7 @@ func (s *SQLiteStore) SaveUserRecipe(ctx context.Context, recipe models.UserReci
 			is_favorite        = excluded.is_favorite,
 			latest_version_id  = excluded.latest_version_id,
 			updated_at         = CURRENT_TIMESTAMP;
-	`, recipe.ID, recipe.UserID, recipe.GlobalRecipeID, recipe.Title, recipe.Description,
+	`, recipe.ID, recipe.UserID, recipe.GlobalRecipeID, recipe.ThreadID, recipe.Title, recipe.Description,
 		recipe.RecipeBody.TotalTimeMinutes, recipe.RecipeBody.Servings, recipe.IsFavorite,
 		recipe.LatestVersionID)
 	if err != nil {
@@ -469,6 +469,26 @@ func (s *SQLiteStore) AddRecipeVersion(ctx context.Context, recipeVersion models
 		recipeVersion.TotalTimeMinutes, recipeVersion.Servings, ingredients, steps, recipeVersion.Notes, recipeVersion.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to save recipe version: %w", err)
+	}
+	return nil
+}
+
+func (s *SQLiteStore) UpdateRecipeVersion(ctx context.Context, newVersion models.RecipeVersion) error {
+	_, err := s.run.ExecContext(ctx, `
+		UPDATE recipe_versions SET
+		    user_recipe_id     = ?,
+		    parent_id          = ?,
+		    total_time_minutes = ?,
+		    servings           = ?,
+		    ingredients        = ?,
+		    steps              = ?,
+		    notes              = ?
+		WHERE id = ? AND user_recipe_id = ?;
+	`, newVersion.UserRecipeID, newVersion.ParentID,
+		newVersion.TotalTimeMinutes, newVersion.Servings, newVersion.Ingredients, newVersion.Steps,
+		newVersion.Notes, newVersion.ID, newVersion.UserRecipeID)
+	if err != nil {
+		return fmt.Errorf("failed to update recipe version: %w", err)
 	}
 	return nil
 }
@@ -582,30 +602,30 @@ func migrate(db *sql.DB) error {
 		updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);`
 
-	const recipeSuggestionThreads = `
-	CREATE TABLE IF NOT EXISTS recipe_suggestion_threads (
+	const threads = `
+	CREATE TABLE IF NOT EXISTS threads (
 		id                 TEXT PRIMARY KEY,
+		thread_type        TEXT NOT NULL,
+		recipe_version_id  TEXT NULL,
 		user_id            TEXT REFERENCES users(id) ON DELETE CASCADE,
-		original_prompt    TEXT NOT NULL,
 		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);`
 
-	const recipeSuggestions = `
-	CREATE TABLE IF NOT EXISTS recipe_suggestions (
+	const threadEvents = `
+	CREATE TABLE IF NOT EXISTS thread_events (
 		id                 TEXT PRIMARY KEY,
-		thread_id          TEXT REFERENCES recipe_suggestion_threads(id) ON DELETE CASCADE,
-		recipe_json        JSON NOT NULL DEFAULT '{}',
-		response_text      TEXT NOT NULL,
-		accepted           BOOLEAN NOT NULL DEFAULT FALSE,
-		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+		thread_id          TEXT REFERENCES threads(id) ON DELETE CASCADE,
+		event_type         TEXT NOT NULL,
+		payload            JSON NOT NULL,
+		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);`
 
 	const userRecipes = `
 	CREATE TABLE IF NOT EXISTS user_recipes (
 		id                 TEXT PRIMARY KEY,
 		user_id            TEXT REFERENCES users(id) ON DELETE CASCADE,
+		thread_id          TEXT REFERENCES threads(id) ON DELETE CASCADE,
 		global_recipe_id   TEXT NULL REFERENCES global_recipes(id) ON DELETE SET NULL,
 		title              TEXT NOT NULL,
 		description        TEXT NOT NULL,
@@ -647,11 +667,11 @@ func migrate(db *sql.DB) error {
 	if _, err := db.Exec(globalRecipes); err != nil {
 		return fmt.Errorf("failed to create global_recipes table: %w", err)
 	}
-	if _, err := db.Exec(recipeSuggestionThreads); err != nil {
-		return fmt.Errorf("failed to create recipe_suggestion_threads table: %w", err)
+	if _, err := db.Exec(threads); err != nil {
+		return fmt.Errorf("failed to create threads table: %w", err)
 	}
-	if _, err := db.Exec(recipeSuggestions); err != nil {
-		return fmt.Errorf("failed to create recipe_suggestions table: %w", err)
+	if _, err := db.Exec(threadEvents); err != nil {
+		return fmt.Errorf("failed to create thread_events table: %w", err)
 	}
 	if _, err := db.Exec(userRecipes); err != nil {
 		return fmt.Errorf("failed to create user_recipes table: %w", err)

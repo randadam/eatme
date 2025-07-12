@@ -1,8 +1,6 @@
 package models
 
-// User represents a user in the system
-// @Name User
-// @Description User information
+// @Description User represents a user in the system
 type User struct {
 	// User's unique identifier
 	ID string `json:"id" example:"usr_123456789"`
@@ -86,9 +84,7 @@ const (
 	AllergyWheat    Allergy = "wheat"
 )
 
-// SignupRequest represents the user signup request payload
-// @Name SignupRequest
-// @Description User signup request
+// @Description SignupRequest represents the user signup request payload
 type SignupRequest struct {
 	// User's email address
 	Email string `json:"email" example:"john.doe@example.com" binding:"required"`
@@ -96,17 +92,13 @@ type SignupRequest struct {
 	Password string `json:"password" example:"Password123!" binding:"required"`
 }
 
-// SignupResponse represents the user signup response
-// @Name SignupResponse
-// @Description User signup response containing the new user's ID
+// @Description SignupResponse represents the user signup response
 type SignupResponse struct {
 	// Access token for user
 	Token string `json:"token" example:"<JWT_TOKEN>" binding:"required"`
 }
 
-// Profile represents a user's profile information
-// @Name Profile
-// @Description User profile information
+// @Description Profile represents a user's profile information
 type Profile struct {
 	// Setup Step
 	SetupStep SetupStep `json:"setup_step" binding:"required"`
@@ -124,9 +116,7 @@ type Profile struct {
 	Allergies []Allergy `json:"allergies" binding:"required"`
 }
 
-// ProfileUpdateRequest represents a user's profile update request payload
-// @Name ProfileUpdateRequest
-// @Description User profile update request
+// @Description ProfileUpdateRequest represents a user's profile update request payload
 type ProfileUpdateRequest struct {
 	// Setup Step
 	SetupStep SetupStep `json:"setup_step"`
