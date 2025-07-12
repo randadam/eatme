@@ -1,25 +1,14 @@
 import StepInstructions from "./step-instructions";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { dietForm } from "../forms/schemas/forms";
-import type { z } from "zod";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useSaveProfile, useUser } from "../hooks";
 import WizardButtons from "./wizard-buttons";
 import type { ModelsDiet } from "@/api/client";
 import { toast } from "sonner";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
-import { MultiSelectBadges } from "@/components/shared/multi-select-badge";
-
-const diets = [
-    { name: "Vegetarian", value: "vegetarian" },
-    { name: "Vegan", value: "vegan" },
-    { name: "Keto", value: "keto" },
-    { name: "Paleo", value: "paleo" },
-    { name: "Low Carb", value: "low_carb" },
-    { name: "High Protein", value: "high_protein" },
-]
+import { useDietForm } from "../forms/hooks";
+import type { DietFormValues } from "../forms/types";
+import DietForm from "../forms/diet-form";
+import { Form } from "@/components/ui/form";
 
 export default function DietStep() {
     const nav = useNavigate()
@@ -30,15 +19,12 @@ export default function DietStep() {
 
     const { saveProfile, isPending } = useSaveProfile()
 
-    const form = useForm<z.infer<typeof dietForm>>({
-        resolver: zodResolver(dietForm),
-        defaultValues: {
-            diet: profile?.diet ?? [],
-        },
+    const form = useDietForm({
+        diet: profile?.diet ?? [],
     })
     const handleFormError = useFormErrorHandler(form)
 
-    function onSubmit(values: z.infer<typeof dietForm>) {
+    function onSubmit(values: DietFormValues) {
         const req = {
             setup_step: "allergies" as const,
             diet: values.diet.map((diet) => diet) as ModelsDiet[],
@@ -57,26 +43,7 @@ export default function DietStep() {
             <StepInstructions>Do you have any dietary restrictions?</StepInstructions>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    <FormField
-                        control={form.control}
-                        name="diet"
-                        render={() => (
-                            <FormItem>
-                                <FormLabel>Diet</FormLabel>
-                                <FormDescription className="text-left">
-                                    Select any diets you follow.
-                                </FormDescription>
-                                <div className="pt-4">
-                                    <MultiSelectBadges
-                                        name="diet"
-                                        control={form.control}
-                                        options={diets}
-                                    />
-                                </div>
-                                <FormMessage/>
-                            </FormItem>
-                        )}
-                    />
+                    <DietForm control={form.control}/>
                     <FormErrorMessage form={form}/>
                     <WizardButtons loading={isPending}/>
                 </form>

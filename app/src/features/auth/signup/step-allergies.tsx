@@ -1,27 +1,14 @@
 import StepInstructions from "./step-instructions";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { allergiesForm } from "../forms/schemas/forms";
-import type { z } from "zod";
+import { Form } from "@/components/ui/form";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useSaveProfile, useUser } from "../hooks";
 import type { ModelsAllergy } from "@/api/client";
 import WizardButtons from "./wizard-buttons";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 import { toast } from "sonner";
-import { MultiSelectBadges } from "@/components/shared/multi-select-badge";
-
-const allergies = [
-    { name: "Dairy", value: "dairy" },
-    { name: "Eggs", value: "eggs" },
-    { name: "Fish", value: "fish" },
-    { name: "Gluten", value: "gluten" },
-    { name: "Peanuts", value: "peanuts" },
-    { name: "Soy", value: "soy" },
-    { name: "Tree Nuts", value: "tree_nuts" },
-    { name: "Wheat", value: "wheat" },
-]
+import { useAllergiesForm } from "../forms/hooks";
+import type { AllergiesFormValues } from "../forms/types";
+import AllergiesForm from "../forms/allergies-form";
 
 export default function AllergiesStep() {
     const nav = useNavigate()
@@ -32,16 +19,12 @@ export default function AllergiesStep() {
 
     const { saveProfile, isPending } = useSaveProfile()
 
-    const form = useForm<z.infer<typeof allergiesForm>>({
-        resolver: zodResolver(allergiesForm),
-        defaultValues: {
-            allergies: profile?.allergies ?? [],
-        },
+    const form = useAllergiesForm({
+        allergies: profile?.allergies ?? [],
     })
-
     const handleFormError = useFormErrorHandler(form)
 
-    function onSubmit(values: z.infer<typeof allergiesForm>) {
+    function onSubmit(values: AllergiesFormValues) {
         const req = {
             setup_step: "equipment" as const,
             allergies: values.allergies.map((allergy) => allergy) as ModelsAllergy[],
@@ -61,26 +44,7 @@ export default function AllergiesStep() {
             <StepInstructions>Allergies</StepInstructions>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    <FormField
-                        control={form.control}
-                        name="allergies"
-                        render={() => (
-                            <FormItem>
-                                <FormLabel>Do you have any allergies?</FormLabel>
-                                <FormDescription className="text-left">
-                                    Select any allergies you have.
-                                </FormDescription>
-                                <div className="pt-4">
-                                    <MultiSelectBadges
-                                        name="allergies"
-                                        control={form.control}
-                                        options={allergies}
-                                    />
-                                </div>
-                                <FormMessage/>
-                            </FormItem>
-                        )}
-                    />
+                    <AllergiesForm control={form.control}/>
                     <FormErrorMessage form={form}/>
                     <WizardButtons loading={isPending}/>
                 </form>

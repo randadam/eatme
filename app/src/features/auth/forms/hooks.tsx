@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
-import { profileForm, skillForm } from "./schemas/forms";
+import { allergiesForm, cuisinesForm, dietForm, equipmentForm, profileForm, skillForm } from "./schemas/forms";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { BasicProfileFormValues, SkillFormValues } from "./types";
+import type { AllergiesFormValues, BasicProfileFormValues, CuisinesFormValues, DietFormValues, EquipmentFormValues, SkillFormValues } from "./types";
 
 export const useBasicProfileForm = (initialValues: BasicProfileFormValues) => {
     const form = useForm<BasicProfileFormValues>({
@@ -19,3 +19,34 @@ export const useSkillForm = (initialValues: SkillFormValues) => {
     return form
 }
     
+export const useCuisinesForm = (initialValues: CuisinesFormValues) => {
+    const form = useForm<CuisinesFormValues>({
+        resolver: zodResolver(cuisinesForm),
+        defaultValues: initialValues,
+    })
+    return form
+}
+
+export const useDietForm = (initialValues: DietFormValues) => {
+    const form = useForm<DietFormValues>({
+        resolver: zodResolver(dietForm),
+        defaultValues: initialValues,
+    })
+    return form
+}
+    
+export const useAllergiesForm = (initialValues: AllergiesFormValues) => {
+    const form = useForm<AllergiesFormValues>({
+        resolver: zodResolver(allergiesForm),
+        defaultValues: initialValues,
+    })
+    return form
+}
+
+export const useEquipmentForm = (initialValues: EquipmentFormValues) => {
+    const form = useForm<EquipmentFormValues>({
+        resolver: zodResolver(equipmentForm),
+        defaultValues: initialValues,
+    })
+    return form
+}
