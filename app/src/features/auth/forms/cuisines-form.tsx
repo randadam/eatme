@@ -22,16 +22,17 @@ const cuisines = [
 
 export interface CuisinesFormProps {
     control: Control<CuisinesFormValues>
+    showTitle?: boolean
 }
 
-export default function CuisinesForm({ control }: CuisinesFormProps) {
+export default function CuisinesForm({ control, showTitle = true }: CuisinesFormProps) {
     return (
         <FormField
             control={control}
             name="cuisines"
             render={() => (
                 <FormItem>
-                    <FormLabel>Cuisines</FormLabel>
+                    {showTitle && <FormLabel>Cuisines</FormLabel>}
                     <FormDescription className="text-left">
                         Select your favorite cuisines.
                     </FormDescription>

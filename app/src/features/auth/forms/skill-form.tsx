@@ -29,16 +29,17 @@ const skills: SkillLevelProps[] = [
 
 export interface SkillFormProps {
     control: Control<SkillFormValues>
+    showTitle?: boolean
 }
 
-export default function SkillForm({ control }: SkillFormProps) {
+export default function SkillForm({ control, showTitle = true }: SkillFormProps) {
     return (
         <FormField
             control={control}
             name="skill"
             render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Current Skill Level</FormLabel>
+                    {showTitle && <FormLabel>Current Skill Level</FormLabel>}
                     <FormDescription className="text-left">
                         How experienced are you in the kitchen? Don't worry, no matter your current skill level,
                         we'll help you level up.

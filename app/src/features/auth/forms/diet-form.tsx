@@ -15,16 +15,17 @@ const diets = [
 
 export interface DietFormProps {
     control: Control<DietFormValues>
+    showTitle?: boolean
 }
 
-export default function DietForm({ control }: DietFormProps) {
+export default function DietForm({ control, showTitle = true }: DietFormProps) {
     return (
         <FormField
             control={control}
             name="diet"
             render={() => (
                 <FormItem>
-                    <FormLabel>Diet</FormLabel>
+                    {showTitle && <FormLabel>Diet</FormLabel>}
                     <FormDescription className="text-left">
                         Select any diets you follow.
                     </FormDescription>

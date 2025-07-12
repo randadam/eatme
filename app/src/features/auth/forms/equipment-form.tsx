@@ -17,16 +17,17 @@ const equipmentList = [
 
 export interface EquipmentFormProps {
     control: Control<EquipmentFormValues>
+    showTitle?: boolean
 }
 
-export default function EquipmentForm({ control }: EquipmentFormProps) {
+export default function EquipmentForm({ control, showTitle = true }: EquipmentFormProps) {
     return (
         <FormField
             control={control}
             name="equipment"
             render={() => (
                 <FormItem>
-                    <FormLabel>Equipment</FormLabel>
+                    {showTitle && <FormLabel>Equipment</FormLabel>}
                     <FormDescription className="text-left">
                         Select any equipment you have.
                     </FormDescription>

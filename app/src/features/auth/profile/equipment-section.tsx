@@ -40,7 +40,7 @@ export default function EquipmentSection({ profile, onSave, isPending }: Equipme
             <AccordionContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        <EquipmentForm control={form.control} />
+                        <EquipmentForm control={form.control} showTitle={false}/>
                         <FormErrorMessage form={form} />
                         <div className="flex justify-end gap-2">
                             <Button type="button" variant="ghost" onClick={() => form.reset()}>

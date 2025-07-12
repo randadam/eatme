@@ -40,7 +40,7 @@ export default function AllergiesSection({ profile, onSave, isPending }: Allergi
             <AccordionContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        <AllergiesForm control={form.control} />
+                        <AllergiesForm control={form.control} showTitle={false}/>
                         <FormErrorMessage form={form} />
                         <div className="flex justify-end gap-2">
                             <Button type="button" variant="ghost" onClick={() => form.reset()}>

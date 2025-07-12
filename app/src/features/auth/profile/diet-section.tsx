@@ -39,7 +39,7 @@ export default function DietSection({ profile, onSave, isPending }: DietSectionP
             <AccordionContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        <DietForm control={form.control}/>
+                        <DietForm control={form.control} showTitle={false}/>
                         <FormErrorMessage form={form}/>
                         <div className="flex justify-end gap-2">
                             <Button type="button" variant="ghost" onClick={() => form.reset()}>

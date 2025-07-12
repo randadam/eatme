@@ -17,16 +17,17 @@ const allergies = [
 
 export interface AllergiesFormProps {
     control: Control<AllergiesFormValues>
+    showTitle?: boolean
 }
 
-export default function AllergiesForm({ control }: AllergiesFormProps) {
+export default function AllergiesForm({ control, showTitle = true }: AllergiesFormProps) {
     return (
         <FormField
             control={control}
             name="allergies"
             render={() => (
                 <FormItem>
-                    <FormLabel>Do you have any allergies?</FormLabel>
+                    {showTitle && <FormLabel>Do you have any allergies?</FormLabel>}
                     <FormDescription className="text-left">
                         Select any allergies you have.
                     </FormDescription>
