@@ -34,6 +34,7 @@ export function MultiSelectBadges({ name, control, options }: MultiSelectBadgesP
           role="checkbox"
           aria-checked={selected.includes(option.value)}
           aria-label={option.name}
+          data-testid={option.value}
           className={cn(
             "p-2 rounded-full cursor-pointer select-none transition-colors",
             selected.includes(option.value)

@@ -2,7 +2,7 @@ import StepInstructions from "./step-instructions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { cuisinesForm } from "./schemas/forms";
+import { cuisinesForm } from "../forms/schemas/forms";
 import type { z } from "zod";
 import WizardButtons from "./wizard-buttons";
 import { useSaveProfile, useUser } from "../hooks";

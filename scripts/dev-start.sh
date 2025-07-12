@@ -21,7 +21,6 @@ docker compose up --build -d
 echo "✅ Dev environment is up and running!"
 echo "🌐 Go API running at: http://localhost:8080"
 echo "🧠 ML Gateway at: http://localhost:8000"
-echo "🤖 Ollama API at: http://localhost:11434"
 echo "📦 Chroma DB at: http://localhost:8002"
 echo "📈 OTEL Collector at: http://localhost:4317"
 echo "📊 SQLite DB at: http://localhost:8081"

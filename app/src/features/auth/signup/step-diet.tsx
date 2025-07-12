@@ -2,7 +2,7 @@ import StepInstructions from "./step-instructions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { dietForm } from "./schemas/forms";
+import { dietForm } from "../forms/schemas/forms";
 import type { z } from "zod";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useSaveProfile, useUser } from "../hooks";
@@ -40,13 +40,13 @@ export default function DietStep() {
 
     function onSubmit(values: z.infer<typeof dietForm>) {
         const req = {
-            setup_step: "equipment" as const,
+            setup_step: "allergies" as const,
             diet: values.diet.map((diet) => diet) as ModelsDiet[],
         }
         saveProfile(req, {
             onSuccess: (profile) => {
                 toast.success(profile.diet.length > 0 ? "We can work with that!" : "Endless possibilities await!")
-                nav("/signup/equipment")
+                nav("/signup/allergies")
             },
             onError: (err) => handleFormError(err),
         })

@@ -1,18 +1,18 @@
 import { expect, Page } from "@playwright/test";
 
-export class SignupCuisinesPage {
+export class SignupEquipmentPage {
     constructor(private page: Page) {}
 
     async expectToBeHere() {
-        await expect(this.page).toHaveURL(/\/signup\/cuisines/i)
+        await expect(this.page).toHaveURL(/\/signup\/equipment/i)
     }
 
     async goto() {
-        await this.page.goto("/signup/cuisines")
+        await this.page.goto("/signup/equipment")
     }
 
-    async selectCuisine(cuisine: string) {
-        await this.page.getByTestId(cuisine).click()
+    async selectEquipment(equipment: string) {
+        await this.page.getByTestId(equipment).click()
     }
 
     async submit() {

@@ -39,7 +39,8 @@ done
 
 # Start dev app
 echo "Starting dev app..."
-$SCRIPT_DIR/app-start.sh &
+setsid $SCRIPT_DIR/app-start.sh > /tmp/eatmeapp.log 2>&1 &
+echo "Dev app started."
 APP_PID=$!
 APP_PGID=$(ps -o pgid= $APP_PID | tr -d ' ')
 
@@ -47,5 +48,8 @@ APP_PGID=$(ps -o pgid= $APP_PID | tr -d ' ')
 echo "Running tests..."
 cd "$APP_DIR" && pnpm test:e2e
 TEST_EXIT_CODE=$?
+
+# Let PNPM finish flushing logs
+sleep 0.1
 
 exit $TEST_EXIT_CODE

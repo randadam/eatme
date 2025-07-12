@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import StepInstructions from "./step-instructions";
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { equipmentForm } from "./schemas/forms";
+import { equipmentForm } from "../forms/schemas/forms";
 import type { z } from "zod";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useSaveProfile, useUser } from "../hooks";

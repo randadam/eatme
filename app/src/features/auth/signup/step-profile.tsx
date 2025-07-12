@@ -1,15 +1,13 @@
 import StepInstructions from "./step-instructions";
-import { useForm } from "react-hook-form";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { profileForm } from "./schemas/forms";
-import type { z } from "zod";
+import { Form } from "@/components/ui/form";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useSaveProfile, useUser } from "../hooks";
 import WizardButtons from "./wizard-buttons";
 import { toast } from "sonner";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
+import { BasicProfileForm } from "../forms/basic-profile-form";
+import { useBasicProfileForm } from "../forms/hooks";
+import type { BasicProfileFormValues } from "../forms/types";
 
 export default function ProfileStep() {
     const nav = useNavigate()
@@ -18,17 +16,14 @@ export default function ProfileStep() {
         return <Navigate to="/" replace />
     }
 
-    const form = useForm<z.infer<typeof profileForm>>({
-        resolver: zodResolver(profileForm),
-        defaultValues: {
-            name: user.profile?.name ?? "",
-        },
+    const form = useBasicProfileForm({
+        name: user.profile?.name ?? "",
     })
 
     const { saveProfile, isPending } = useSaveProfile()
     const handleFormError = useFormErrorHandler(form)
 
-    function onSubmit(values: z.infer<typeof profileForm>) {
+    function onSubmit(values: BasicProfileFormValues) {
         saveProfile({ ...values, setup_step: "skill" }, {
             onSuccess: (profile) => {
                 toast.success(`Welcome aboard ${profile.name}!`)
@@ -43,23 +38,7 @@ export default function ProfileStep() {
             <StepInstructions>Tell us about yourself</StepInstructions>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({field}) => (
-                            <FormItem>
-                                <FormLabel>Name</FormLabel>
-                                <FormDescription className="text-left">
-                                    What should we call you?
-                                    This can be anything you want, we're not the IRS.
-                                </FormDescription>
-                                <FormControl>
-                                    <Input placeholder="Name" autoComplete="nickname" {...field}/>
-                                </FormControl>
-                                <FormMessage/>
-                            </FormItem>
-                        )}
-                    />
+                    <BasicProfileForm control={form.control}/>
                     <FormErrorMessage form={form}/>
                     <WizardButtons loading={isPending}/>
                 </form>

@@ -1,9 +1,8 @@
 import StepInstructions from "./step-instructions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
-import { allergiesForm } from "./schemas/forms";
+import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { allergiesForm } from "../forms/schemas/forms";
 import type { z } from "zod";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useSaveProfile, useUser } from "../hooks";
@@ -11,6 +10,7 @@ import type { ModelsAllergy } from "@/api/client";
 import WizardButtons from "./wizard-buttons";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 import { toast } from "sonner";
+import { MultiSelectBadges } from "@/components/shared/multi-select-badge";
 
 const allergies = [
     { name: "Dairy", value: "dairy" },
@@ -64,29 +64,19 @@ export default function AllergiesStep() {
                     <FormField
                         control={form.control}
                         name="allergies"
-                        render={({field}) => (
+                        render={() => (
                             <FormItem>
                                 <FormLabel>Do you have any allergies?</FormLabel>
                                 <FormDescription className="text-left">
                                     Select any allergies you have.
                                 </FormDescription>
-                                {allergies.map((allergy) => (
-                                    <FormItem key={allergy.value} className="flex">
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value.includes(allergy.value)}
-                                                onCheckedChange={(checked) => (
-                                                    field.onChange(
-                                                        checked
-                                                            ? [...field.value, allergy.value]
-                                                            : field.value.filter((value) => value !== allergy.value)
-                                                        )
-                                                )}
-                                            />
-                                        </FormControl>
-                                        <FormLabel>{allergy.name}</FormLabel>
-                                    </FormItem>
-                                ))}
+                                <div className="pt-4">
+                                    <MultiSelectBadges
+                                        name="allergies"
+                                        control={form.control}
+                                        options={allergies}
+                                    />
+                                </div>
                                 <FormMessage/>
                             </FormItem>
                         )}

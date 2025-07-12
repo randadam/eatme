@@ -4,7 +4,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { skillForm } from "./schemas/forms";
+import { skillForm } from "../forms/schemas/forms";
 import type { z } from "zod";
 import WizardButtons from "./wizard-buttons";
 import { useSaveProfile, useUser } from "../hooks";
