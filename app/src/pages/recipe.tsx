@@ -13,7 +13,6 @@ export default function RecipePage() {
     const recipeId = useParams().id
     return (
         <div>
-            <h2 className="text-2xl font-bold pb-6">Recipe Details</h2>
             <Recipe recipeId={recipeId!}/>
         </div>
     )

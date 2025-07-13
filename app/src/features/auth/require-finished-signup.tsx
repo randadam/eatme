@@ -1,5 +1,5 @@
 // src/auth/RequireFinishedSignup.tsx
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useUser } from "@/features/auth/hooks"
 
 interface Props {
@@ -9,15 +9,12 @@ interface Props {
 export default function RequireFinishedSignup({
   children,
 }: Props) {
-  const { isAuthenticated, profile, isLoading } = useUser();
+  const { isAuthenticated } = useUser();
+  const { pathname } = useLocation()
 
-  if (isLoading) return null;
+  if (pathname.includes("/login")) return children;
 
-  if (!isAuthenticated) return <Navigate to="/signup" replace />;
-
-  if (profile?.setup_step !== "done") {
-    return <Navigate to={`/signup/${profile?.setup_step}`} replace />;
-  }
+  if (!isAuthenticated && !pathname.startsWith("/signup")) return <Navigate to="/signup" replace />;
 
   return children;
 }

@@ -1,14 +1,17 @@
-import { Notebook } from "lucide-react"
+import { Notebook, User } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 
 const items = [
   { to: "/recipes", icon: Notebook, label: "Recipes" },
+  { to: "/profile", icon: User, label: "Profile" },
 ]
 
 const hiddenRoutes: RegExp[] = [
     new RegExp("^/signup"),
     new RegExp("^/cook/.*"),
+    new RegExp("^/$"),
+    new RegExp("^/login"),
 ]
 
 export default function BottomNav() {

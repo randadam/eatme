@@ -1,18 +1,24 @@
 import { Outlet } from "react-router-dom"
 import BottomNav from "@/components/shared/bottom-nav"
+import RequireFinishedSignup from "@/features/auth/require-finished-signup"
+import AppBar from "@/components/shared/app-bar"
+import { Suspense } from "react"
+import { Loader2 } from "lucide-react"
 
 export default function RootLayout() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="hidden sm:flex h-14 items-center px-4 border-b">
-        <h1 className="font-semibold text-lg">My Recipes</h1>
-      </header>
+    <RequireFinishedSignup>
+      <AppBar />
 
       <main className="flex-1 container mx-auto p-4 pb-24">
-        <Outlet />
+        <Suspense fallback={
+          <Loader2 className="w-6 h-6 animate-spin" />
+        }>
+          <Outlet />
+        </Suspense>
       </main>
 
       <BottomNav />
-    </div>
+    </RequireFinishedSignup>
   )
 }

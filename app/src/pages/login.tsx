@@ -1,0 +1,84 @@
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+import { APP_NAME } from "@/constants"
+import { Helmet } from "react-helmet-async"
+import { Input } from "@/components/ui/input"
+import { useForm } from "react-hook-form"
+import LoaderButton from "@/components/shared/loader-button"
+import { Link } from "react-router-dom"
+
+interface LoginValues {
+    email: string
+    password: string
+}
+
+export default function LoginPage() {
+    const form = useForm<LoginValues>()
+
+    const handleLogin = (values: LoginValues) => {
+        console.log(values)
+    }
+
+    return (
+        <>
+            <Helmet>
+                <title>{APP_NAME} - Login</title>
+                <meta name="description" content="Login to your account" />
+            </Helmet>
+
+            <div className="flex flex-col pt-16">
+                <div className="space-y-6 p-6 border rounded">
+                    <h2 className="text-xl font-semibold">Login</h2>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem
+                                        className="space-y-2"
+                                        {...field}
+                                    >
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="Email" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem
+                                        className="space-y-2"
+                                        {...field}
+                                    >
+                                        <FormLabel>Password</FormLabel>
+                                        <FormControl>
+                                            <Input type="password" placeholder="Password" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <LoaderButton type="submit" className="w-full" isLoading={false}>
+                                Login
+                            </LoaderButton>
+                        </form>
+                    </Form>
+                </div>
+
+                <div className="h-16 flex items-center justify-center">
+                    <p className="mt-4 text-sm text-muted-foreground">
+                        Don't have an account?{" "}
+                        <Link to="/signup" className="underline text-primary">
+                            Sign up
+                        </Link>
+                    </p>
+                </div>
+
+            </div>
+        </>
+    )
+}

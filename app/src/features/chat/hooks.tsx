@@ -62,8 +62,6 @@ export function useSuggestionThread(initialThread: api.ModelsThreadState) {
     })
     const reject = () => {
         const nextIndex = threadState.currentIndex + 1;
-        console.log('nextIndex', nextIndex)
-        console.log('threadState.thread.suggestions.length', threadState.thread.suggestions.length)
         if (nextIndex < threadState.thread.suggestions.length) {
             setThreadState(prev => ({
                 ...prev,

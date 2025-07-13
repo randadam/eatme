@@ -24,7 +24,6 @@ export default function ProfilePage() {
 
     return (
         <div>
-            <h1>Profile</h1>
             {profile && (
                 <Accordion type="single" collapsible className="w-full">
                     <BasicProfileSection profile={profile} onSave={saveProfile} isPending={isPending} />

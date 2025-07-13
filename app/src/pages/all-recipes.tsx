@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom"
 import { ChatDrawer } from "@/features/chat/chat-drawer"
 import { useState } from "react"
 import { useStartSuggestionThread } from "@/features/chat/hooks"
-import { Separator } from "@/components/ui/separator"
 import { RecipeOverview } from "@/features/recipe/recipe-overview"
 import { PlusIcon } from "lucide-react"
 import RecipeSkeleton from "@/features/recipe/recipe-skeleton"
@@ -40,7 +39,6 @@ export default function AllRecipesPage() {
 
     return (
         <div>
-            <h1 className="text-2xl font-bold pb-6">Recipe Book</h1>
             <RecipeList 
                 recipes={recipes} 
                 isLoading={isLoading} 
@@ -74,9 +72,12 @@ function RecipeList({ recipes, isLoading, error, deleteRecipe, deleteRecipePendi
     if (isLoading) {
         return (
             <div className="space-y-2">
-                <RecipeSkeleton />
-                <Separator />
-                <RecipeSkeleton />
+                <div className="p-2 border rounded-md">
+                    <RecipeSkeleton />
+                </div>
+                <div className="p-2 border rounded-md">
+                    <RecipeSkeleton />
+                </div>
             </div>
         )
     }
@@ -88,10 +89,9 @@ function RecipeList({ recipes, isLoading, error, deleteRecipe, deleteRecipePendi
         <ul className="space-y-2 pb-2">
             {(recipes ?? []).map(recipe => (
                 <li key={recipe.id}>
-                    <Separator />
-                    <div className="p-2">
+                    <div className="p-2 border rounded-md">
                         <RecipeOverview recipe={recipe} />
-                        <div className="flex justify-between">
+                        <div className="flex justify-between pt-4">
                             <LoaderButton
                                 variant="destructive"
                                 className="mt-2"

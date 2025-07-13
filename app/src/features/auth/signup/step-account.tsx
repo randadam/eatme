@@ -6,7 +6,7 @@ import StepInstructions from "./step-instructions";
 import { accountForm } from "../forms/schemas/forms";
 import type { z } from "zod";
 import { useSignup, useUser } from "../hooks";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import WizardButtons from "./wizard-buttons";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 import { toast } from "sonner";
@@ -90,6 +90,14 @@ export default function AccountStep() {
                     <WizardButtons loading={isPending}/>
                 </form>
             </Form>
+            <div className="mt-4">
+                <p className="mt-4 text-sm text-muted-foreground">
+                    Already have an account?{" "}
+                    <Link to="/login" className="underline text-primary">
+                        Log in
+                    </Link>
+                </p>
+            </div>
         </>
     );
 }
