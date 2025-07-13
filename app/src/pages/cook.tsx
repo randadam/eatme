@@ -3,19 +3,21 @@ import CookMode from "@/features/cook/cook-mode";
 import { useParams } from "react-router-dom";
 import RecipeSkeleton from "@/features/recipe/recipe-skeleton";
 import { ErrorPage } from "@/pages/error"
+import { useAnswerQuestion } from "@/features/chat/hooks";
 
 export default function CookPage() {
     const recipeId = useParams().recipeId
-    const { recipe, isLoading, error } = useRecipe(recipeId!)
+    const { recipe, isLoading: recipeLoading, error: recipeError } = useRecipe(recipeId!)
+    const { answerQuestion, answerQuestionPending, answerQuestionError, history } = useAnswerQuestion(recipe?.thread_id ?? "")
 
-    if (error) {
+    if (recipeError) {
         return (
             <CookPageLayout>
-                <ErrorPage title="Error loading recipe" description={error.message} />
+                <ErrorPage title="Error loading recipe" description={recipeError?.message} />
             </CookPageLayout>
         )
     }
-    if (isLoading || !recipe) {
+    if (recipeLoading || !recipe) {
         return (
             <CookPageLayout>
                 <RecipeSkeleton/>
@@ -25,7 +27,14 @@ export default function CookPage() {
 
     return (
         <CookPageLayout>
-            <CookMode id={recipeId!} recipe={recipe}/>
+            <CookMode
+                id={recipeId!}
+                recipe={recipe}
+                chatHistory={history}
+                askQuestion={answerQuestion}
+                askQuestionPending={answerQuestionPending}
+                askQuestionError={answerQuestionError?.message}
+            />
         </CookPageLayout>
     )
 }

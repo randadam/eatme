@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom"
-import { useGetSuggestionThread } from "@/features/chat/hooks"
+import { useGetThread } from "@/features/chat/hooks"
 import SuggestionThread from "@/features/chat/suggest/suggestion-thread"
 
 export default function Suggest() {
@@ -8,7 +8,7 @@ export default function Suggest() {
         return <div>Missing thread ID</div>
     }
 
-    const { thread: initialThread, fetchLoading, fetchError } = useGetSuggestionThread(threadId)
+    const { thread: initialThread, fetchLoading, fetchError } = useGetThread(threadId)
 
     if (fetchLoading) {
         return <div>Loading...</div>

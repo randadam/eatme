@@ -5,21 +5,40 @@ import { ArrowLeft, ChevronLeft, ChevronRight, CircleQuestionMark, List } from "
 import { Progress } from "@/components/ui/progress"
 import { useNavigate } from "react-router-dom"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ChatDrawer, type ChatItem } from "../chat/chat-drawer";
+import { useState } from "react";
 
 interface CookModeProps {
     id: string
     recipe: api.ModelsRecipeBody
+    chatHistory: ChatItem[]
+    askQuestion: (message: string) => void
+    askQuestionPending: boolean
+    askQuestionError?: string
 }
 
-export default function CookMode({ id, recipe }: CookModeProps) {
+export default function CookMode({ id, recipe, chatHistory, askQuestion, askQuestionPending, askQuestionError }: CookModeProps) {
     const nav = useNavigate()
     const { currentStep, stepIdx, goNext, goPrev, ingredients, ingredientsOpen, toggleIngredients } = useCookMode(recipe)
+    const [chatOpen, setChatOpen] = useState(false);
 
     return (
         <div className="flex flex-col h-screen bg-background">
-            <CookModeHeader stepIdx={stepIdx} total={recipe.steps.length} title={recipe.title} onBack={() => nav(`/recipes/${id}`)} />
+            <CookModeHeader
+                stepIdx={stepIdx} 
+                total={recipe.steps.length} 
+                title={recipe.title} 
+                onBack={() => nav(`/recipes/${id}`)} 
+            />
             <CookModeInstructions currentStep={currentStep} stepIdx={stepIdx}/>
-            <CookModeControls stepIdx={stepIdx} total={recipe.steps.length} onBack={goPrev} onNext={goNext} toggleIngredients={toggleIngredients}/>
+            <CookModeControls 
+                stepIdx={stepIdx} 
+                total={recipe.steps.length} 
+                onBack={goPrev} 
+                onNext={goNext} 
+                toggleIngredients={toggleIngredients}
+                openChat={() => setChatOpen(true)}
+            />
             <Sheet open={ingredientsOpen} onOpenChange={toggleIngredients}>
                 <SheetContent>
                     <SheetHeader>
@@ -38,6 +57,15 @@ export default function CookMode({ id, recipe }: CookModeProps) {
                     </SheetHeader>
                 </SheetContent>
             </Sheet>
+            <ChatDrawer
+                open={chatOpen}
+                onOpenChange={setChatOpen}
+                mode="question"
+                history={chatHistory}
+                onSend={m => askQuestion(m)}
+                loading={askQuestionPending}
+                error={askQuestionError}
+            />
         </div>
     )
 }
@@ -90,9 +118,10 @@ interface CookModeControlsProps {
     onBack: () => void
     onNext: () => void
     toggleIngredients: () => void
+    openChat: () => void
 }
 
-function CookModeControls({ stepIdx, total, onBack, onNext, toggleIngredients }: CookModeControlsProps) {
+function CookModeControls({ stepIdx, total, onBack, onNext, toggleIngredients, openChat }: CookModeControlsProps) {
     return (
         <div className="fixed bottom-2 inset-x-0 px-4 flex flex-col justify-between space-y-4 pb-4">
             <div className="flex justify-center gap-2">
@@ -110,7 +139,7 @@ function CookModeControls({ stepIdx, total, onBack, onNext, toggleIngredients }:
                     <List/>
                     Ingredients
                 </Button>
-                <Button size="lg" variant="outline" className="flex items-center gap-2 w-1/2">
+                <Button size="lg" variant="outline" onClick={openChat} className="flex items-center gap-2 w-1/2">
                     <CircleQuestionMark/>
                     Help
                 </Button>

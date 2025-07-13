@@ -737,6 +737,22 @@ const docTemplate = `{
                 }
             }
         },
+        "models.ChatMessage": {
+            "description": "ChatMessage represents a message in the chat history",
+            "type": "object",
+            "required": [
+                "message",
+                "source"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Cuisine": {
             "type": "string",
             "enum": [
@@ -1166,6 +1182,7 @@ const docTemplate = `{
             "description": "A thread of suggestions for a recipe",
             "type": "object",
             "required": [
+                "chat_history",
                 "created_at",
                 "current_prompt",
                 "id",
@@ -1174,6 +1191,12 @@ const docTemplate = `{
                 "updated_at"
             ],
             "properties": {
+                "chat_history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ChatMessage"
+                    }
+                },
                 "created_at": {
                     "type": "string"
                 },

@@ -272,11 +272,12 @@ func (s *SQLiteStore) GetThread(ctx context.Context, threadID string) (models.Th
 		SELECT 
 			id,
 			thread_type,
+			recipe_id,
 			created_at,
 			updated_at
 		FROM threads WHERE id = ?;
 	`, threadID).Scan(
-		&thread.ID, &thread.Type, &thread.CreatedAt, &thread.UpdatedAt,
+		&thread.ID, &thread.Type, &thread.RecipeID, &thread.CreatedAt, &thread.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

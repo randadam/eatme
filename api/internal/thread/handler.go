@@ -221,6 +221,12 @@ func (h *ThreadHandler) AnswerCookingQuestion(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	threadID := chi.URLParam(r, "threadId")
+	if threadID == "" {
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
+		return
+	}
+
 	var input models.AnswerCookingQuestionRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		zap.L().Error("failed to decode answer cooking question request", zap.Error(err))
@@ -228,7 +234,7 @@ func (h *ThreadHandler) AnswerCookingQuestion(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	response, err := h.threadService.AnswerCookingQuestion(r.Context(), userID, input.Question)
+	response, err := h.threadService.AnswerCookingQuestion(r.Context(), userID, threadID, input.Question)
 	if err != nil {
 		zap.L().Error("failed to answer cooking question", zap.Error(err))
 		switch {

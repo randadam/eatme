@@ -299,11 +299,11 @@ func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, 
 	return recipeBody, nil
 }
 
-func (s *ThreadService) AnswerCookingQuestion(ctx context.Context, threadID string, question string) (*models.AnswerCookingQuestionResponse, error) {
+func (s *ThreadService) AnswerCookingQuestion(ctx context.Context, userID string, threadID string, question string) (*models.AnswerCookingQuestionResponse, error) {
 	var response *models.AnswerCookingQuestionResponse
 	err := s.store.WithTx(func(tx db.Store) error {
 		ctx = db.ContextWithTx(ctx, tx)
-		profile, err := s.userService.GetProfile(ctx, threadID)
+		profile, err := s.userService.GetProfile(ctx, userID)
 		if err != nil {
 			return fmt.Errorf("failed to get profile: %w", err)
 		}
@@ -315,9 +315,9 @@ func (s *ThreadService) AnswerCookingQuestion(ctx context.Context, threadID stri
 		if recipeID == nil {
 			return ErrThreadNotAssociatedWithRecipeVersion
 		}
-		recipe, err := s.recipeService.GetUserRecipe(ctx, threadID, *recipeID)
+		recipe, err := s.recipeService.GetUserRecipe(ctx, userID, *recipeID)
 		if err != nil {
-			return fmt.Errorf("failed to get recipe version: %w", err)
+			return fmt.Errorf("failed to get recipe: %w", err)
 		}
 		generalChatRequest := &models.GeneralChatRequest{
 			Message: question,

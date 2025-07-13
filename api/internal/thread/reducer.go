@@ -99,6 +99,21 @@ func ReduceThreadEvents(threadID string, events []models.ThreadEvent) (*models.T
 				return nil, ErrInvalidThreadEventPayload
 			}
 			thread.CurrentRecipe = &recipeEvent.Recipe
+		case string(models.ThreadEventTypeQuestionAnswered):
+			questionEvent := models.QuestionAnsweredEvent{}
+			err := json.Unmarshal(event.Payload, &questionEvent)
+			if err != nil {
+				zap.L().Error("failed to unmarshal question answered event", zap.Error(err))
+				return nil, ErrInvalidThreadEventPayload
+			}
+			thread.ChatHistory = append(thread.ChatHistory, &models.ChatMessage{
+				Source:  "user",
+				Message: questionEvent.Question,
+			})
+			thread.ChatHistory = append(thread.ChatHistory, &models.ChatMessage{
+				Source:  "assistant",
+				Message: questionEvent.Answer,
+			})
 		default:
 			err := fmt.Errorf("%w: invalid thread event type: %s", ErrInvalidThreadEventType, event.Type)
 			zap.L().Error("failed to reduce thread events", zap.Error(err))

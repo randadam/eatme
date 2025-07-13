@@ -18,6 +18,7 @@ func TestReduceThreadEvents(t *testing.T) {
 		withEvent(models.ThreadEventTypeSuggestionRejected, models.SuggestionRejectedEvent{SuggestionID: "test_suggestion_id_1"}),
 		withEvent(models.ThreadEventTypeSuggestionAccepted, models.SuggestionAcceptedEvent{SuggestionID: "test_suggestion_id_2"}),
 		withEvent(models.ThreadEventTypeRecipeModified, models.RecipeModifiedEvent{Recipe: models.RecipeBody{Title: "test_recipe_2", Description: "test_recipe_2_description", Ingredients: []models.Ingredient{{Name: "test_ingredient_2"}}, Steps: []string{"test_step_2"}}}),
+		withEvent(models.ThreadEventTypeQuestionAnswered, models.QuestionAnsweredEvent{Question: "test_question", Answer: "test_answer"}),
 	)
 	thread, err := ReduceThreadEvents(threadID, events)
 	if err != nil {
@@ -64,6 +65,15 @@ func TestReduceThreadEvents(t *testing.T) {
 	}
 	if thread.CurrentRecipe.Steps[0] != "test_step_2" {
 		t.Fatalf("expected recipe step %s, got %s", "test_step_2", thread.CurrentRecipe.Steps[0])
+	}
+	if len(thread.ChatHistory) != 2 {
+		t.Fatalf("expected 2 chat history entries, got %d", len(thread.ChatHistory))
+	}
+	if thread.ChatHistory[0].Source != "user" || thread.ChatHistory[0].Message != "test_question" {
+		t.Fatalf("expected chat history entry source %s and message %s, got %s and %s", "user", "test_question", thread.ChatHistory[0].Source, thread.ChatHistory[0].Message)
+	}
+	if thread.ChatHistory[1].Source != "assistant" || thread.ChatHistory[1].Message != "test_answer" {
+		t.Fatalf("expected chat history entry source %s and message %s, got %s and %s", "assistant", "test_answer", thread.ChatHistory[1].Source, thread.ChatHistory[1].Message)
 	}
 }
 

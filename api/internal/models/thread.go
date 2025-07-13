@@ -91,6 +91,12 @@ type QuestionAnsweredEvent struct {
 	Answer   string `json:"answer" binding:"required"`
 }
 
+// @Description ChatMessage represents a message in the chat history
+type ChatMessage struct {
+	Source  string `json:"source" binding:"required"`
+	Message string `json:"message" binding:"required"`
+}
+
 // @Description A thread of suggestions for a recipe
 type ThreadState struct {
 	ID             string              `json:"id" binding:"required"`
@@ -98,6 +104,7 @@ type ThreadState struct {
 	OriginalPrompt string              `json:"original_prompt" binding:"required"`
 	CurrentPrompt  string              `json:"current_prompt" binding:"required"`
 	Suggestions    []*RecipeSuggestion `json:"suggestions" binding:"required"`
+	ChatHistory    []*ChatMessage      `json:"chat_history" binding:"required"`
 	CurrentRecipe  *RecipeBody         `json:"current_recipe"`
 	CreatedAt      time.Time           `json:"created_at" binding:"required"`
 	UpdatedAt      time.Time           `json:"updated_at" binding:"required"`

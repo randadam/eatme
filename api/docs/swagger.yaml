@@ -53,6 +53,17 @@ definitions:
     required:
     - answer
     type: object
+  models.ChatMessage:
+    description: ChatMessage represents a message in the chat history
+    properties:
+      message:
+        type: string
+      source:
+        type: string
+    required:
+    - message
+    - source
+    type: object
   models.Cuisine:
     enum:
     - american
@@ -375,6 +386,10 @@ definitions:
   models.ThreadState:
     description: A thread of suggestions for a recipe
     properties:
+      chat_history:
+        items:
+          $ref: '#/definitions/models.ChatMessage'
+        type: array
       created_at:
         type: string
       current_prompt:
@@ -394,6 +409,7 @@ definitions:
       updated_at:
         type: string
     required:
+    - chat_history
     - created_at
     - current_prompt
     - id

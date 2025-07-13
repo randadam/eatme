@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
 import api from "@/api"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import type { ChatItem } from "./chat-drawer"
 
 export const suggestionThreadKeys = {
     byId: (id: string) => ["suggestion-thread", id] as const,
@@ -17,18 +18,18 @@ export function useStartSuggestionThread() {
     return { startThread, startThreadPending }
 }
 
-export function useGetSuggestionThread(threadId: string) {
+export function useGetThread(threadId?: string) {
     const { data: thread, isLoading: fetchLoading, error: fetchError } = useQuery({
-        queryKey: suggestionThreadKeys.byId(threadId),
+        queryKey: suggestionThreadKeys.byId(threadId!),
         queryFn: async () => {
-            const resp = await api.getThread(threadId)
+            const resp = await api.getThread(threadId!)
             return resp.data as api.ModelsThreadState
         },
+        enabled: !!threadId,
     })
 
     return { thread, fetchLoading, fetchError }
 }
-
 
 export function useSuggestionThread(initialThread: api.ModelsThreadState) {
     let firstNotSeen = initialThread.suggestions.findIndex(s => !s.accepted && !s.rejected)
@@ -116,5 +117,38 @@ export function useSuggestionThread(initialThread: api.ModelsThreadState) {
         error,
         back,
         forward,
+    }
+}
+
+export function useAnswerQuestion(threadId: string) {
+    const [history, setHistory] = useState<ChatItem[]>([])
+
+    const { thread } = useGetThread(threadId)
+
+    useEffect(() => {
+        if (thread) {
+            setHistory(thread.chat_history as ChatItem[])
+        }
+    }, [thread])
+
+    const { mutate: answerQuestion, isPending: answerQuestionPending, error: answerQuestionError } = useMutation({
+        mutationFn: async (question: string) => {
+            setHistory(prev => [...prev, { source: 'user', message: question }])
+            const req: api.ModelsAnswerCookingQuestionRequest = {
+                question,
+            }
+            const resp = await api.answerCookingQuestion(threadId, req)
+            return resp.data as api.ModelsAnswerCookingQuestionResponse
+        },
+        onSuccess: (data) => {
+            setHistory(prev => [...prev, { source: 'assistant', message: data.answer }])
+        },
+    })
+
+    return {
+        answerQuestion,
+        answerQuestionPending,
+        answerQuestionError,
+        history,
     }
 }

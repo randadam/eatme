@@ -96,6 +96,10 @@ export type ModelsSignupResponse = {
 export type ModelsStartSuggestionThreadRequest = {
     prompt: string;
 };
+export type ModelsChatMessage = {
+    message: string;
+    source: string;
+};
 export type ModelsRecipeBody = {
     description: string;
     ingredients: ModelsIngredient[];
@@ -115,6 +119,7 @@ export type ModelsRecipeSuggestion = {
     updated_at: string;
 };
 export type ModelsThreadState = {
+    chat_history: ModelsChatMessage[];
     created_at: string;
     current_prompt: string;
     current_recipe?: ModelsRecipeBody;
