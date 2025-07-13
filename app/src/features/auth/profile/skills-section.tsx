@@ -32,7 +32,7 @@ export default function SkillsSection({ profile, onSave, isPending }: SkillsSect
 
     return (
         <AccordionItem value="skills">
-            <AccordionTrigger>Skills</AccordionTrigger>
+            <AccordionTrigger data-testid="skills-trigger">Skills</AccordionTrigger>
             <AccordionContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

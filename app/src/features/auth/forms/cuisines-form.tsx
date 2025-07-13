@@ -4,7 +4,7 @@ import { FormLabel, FormDescription, FormItem, FormMessage } from "@/components/
 import { MultiSelectBadges } from "@/components/shared/multi-select-badge"
 import type { Control } from "react-hook-form"
 
-const cuisineOptions = [
+export const cuisineOptions = [
     { name: "American", value: "american" },
     { name: "British", value: "british" },
     { name: "Cajun", value: "cajun" },

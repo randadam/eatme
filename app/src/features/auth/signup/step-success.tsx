@@ -10,7 +10,7 @@ export default function SignupSuccess() {
       <p className="text-muted-foreground pt-4">
         Well done! Now we're ready to get cooking!
       </p>
-      <Button onClick={() => nav("/")} className="mt-4">Let's Get Started!</Button>
+      <Button data-testid="get-started" onClick={() => nav("/")} className="mt-4">Let's Get Started!</Button>
     </div>
   )
 }

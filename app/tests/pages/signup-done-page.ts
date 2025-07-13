@@ -6,4 +6,8 @@ export class SignupDonePage {
     async expectToBeHere() {
         await expect(this.page).toHaveURL(/\/signup\/done/i)
     }
+
+    async clickGetStarted() {
+        await this.page.getByTestId("get-started").click()
+    }
 }

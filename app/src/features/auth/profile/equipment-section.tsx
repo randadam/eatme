@@ -8,7 +8,6 @@ import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provide
 import { Button } from "@/components/ui/button";
 import type { SaveProfileFn } from "../forms/types";
 import LoaderButton from "@/components/shared/loader-button";
-import type { ModelsEquipment } from "@/api/client";
 
 interface EquipmentSectionProps {
     profile: EquipmentFormValues
@@ -24,7 +23,7 @@ export default function EquipmentSection({ profile, onSave, isPending }: Equipme
 
     const onSubmit = (values: EquipmentFormValues) => {
         const req = {
-            equipment: values.equipment as ModelsEquipment[],
+            equipment: values.equipment,
         }
         onSave(req, {
             onSuccess: () => {
@@ -36,7 +35,7 @@ export default function EquipmentSection({ profile, onSave, isPending }: Equipme
 
     return (
         <AccordionItem value="equipment">
-            <AccordionTrigger>Equipment</AccordionTrigger>
+            <AccordionTrigger data-testid="equipment-trigger">Equipment</AccordionTrigger>
             <AccordionContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

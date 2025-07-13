@@ -8,8 +8,12 @@ import { SignupEquipmentPage } from "./pages/signup-equipment-page"
 import { SignupDonePage } from "./pages/signup-done-page"
 import { SignupAllergiesPage } from "./pages/signup-allergies-page"
 import { ProfilePage } from "./pages/profile-page"
+import { RecipesPage } from "./pages/recipes-page"
+
+test.use({ viewport: { width: 390, height: 844 } }) // iPhone 11
 
 test("full signup flow", async ({ page }) => {
+
     const randomSuffix = Math.random().toString(36).substring(2, 8)
 
     const accountPage = new SignupAccountPage(page)
@@ -46,7 +50,7 @@ test("full signup flow", async ({ page }) => {
     }
     await dietPage.submit()
 
-    const allergies = ["dairy", "eggs"]
+    const allergies = ["milk", "eggs"]
     const allergiesPage = new SignupAllergiesPage(page)
     await allergiesPage.expectToBeHere()
     for (const allergy of allergies) {
@@ -64,9 +68,16 @@ test("full signup flow", async ({ page }) => {
 
     const donePage = new SignupDonePage(page)
     await donePage.expectToBeHere()
+    await donePage.clickGetStarted()
+
+    const recipesPage = new RecipesPage(page)
+    await recipesPage.expectToBeHere()
+
+    const profileNavButton = await page.getByTestId("nav-profile")
+    await profileNavButton.click()
 
     const profilePage = new ProfilePage(page)
-    await profilePage.goto()
+    await profilePage.expectToBeHere()
     await profilePage.expectName(name)
     await profilePage.expectSkill("chef")
     await profilePage.expectCuisines(cuisines)

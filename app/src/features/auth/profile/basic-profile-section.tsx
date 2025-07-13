@@ -32,7 +32,7 @@ export default function BasicProfileSection({ profile, onSave, isPending }: Basi
 
     return (
         <AccordionItem value="basic-profile">
-            <AccordionTrigger>Basic Profile</AccordionTrigger>
+            <AccordionTrigger data-testid="basic-profile-trigger">Basic Profile</AccordionTrigger>
             <AccordionContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

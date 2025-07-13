@@ -11,8 +11,12 @@ export class ProfilePage {
         await this.page.goto("/profile");
     }
 
+    async expectToBeHere() {
+        await expect(this.page).toHaveURL(/\/profile/i)
+    }
+
     async openBasicProfileSection() {
-        await this.page.getByRole("button", { name: /basic profile/i }).click();
+        await this.page.getByTestId("basic-profile-trigger").click();
     }
 
     async expectName(name: string) {
@@ -21,7 +25,7 @@ export class ProfilePage {
     }
 
     async openSkillSection() {
-        await this.page.getByRole("button", { name: /skill/i }).click();
+        await this.page.getByTestId("skills-trigger").click();
     }
 
     async expectSkill(skill: string) {
@@ -30,7 +34,7 @@ export class ProfilePage {
     }
 
     async openCuisinesSection() {
-        await this.page.getByRole("button", { name: /cuisines/i }).click();
+        await this.page.getByTestId("cuisines-trigger").click();
     }
 
     async expectCuisines(cuisines: string[]) {
@@ -46,7 +50,7 @@ export class ProfilePage {
     }
 
     async openDietSection() {
-        await this.page.getByRole("button", { name: /diet/i }).click();
+        await this.page.getByTestId("diets-trigger").click();
     }
 
     async expectDiets(diets: string[]) {
@@ -62,7 +66,7 @@ export class ProfilePage {
     }
 
     async openAllergiesSection() {
-        await this.page.getByRole("button", { name: /allergies/i }).click();
+        await this.page.getByTestId("allergies-trigger").click();
     }
 
     async expectAllergies(allergies: string[]) {
@@ -78,7 +82,7 @@ export class ProfilePage {
     }
 
     async openEquipmentSection() {
-        await this.page.getByRole("button", { name: /equipment/i }).click();
+        await this.page.getByTestId("equipment-trigger").click();
     }
 
     async expectEquipment(equipments: string[]) {

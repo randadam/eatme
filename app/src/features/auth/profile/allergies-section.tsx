@@ -8,7 +8,6 @@ import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provide
 import { Button } from "@/components/ui/button";
 import type { SaveProfileFn } from "../forms/types";
 import LoaderButton from "@/components/shared/loader-button";
-import type { ModelsAllergy } from "@/api/client";
 
 interface AllergiesSectionProps {
     profile: AllergiesFormValues
@@ -24,7 +23,7 @@ export default function AllergiesSection({ profile, onSave, isPending }: Allergi
 
     const onSubmit = (values: AllergiesFormValues) => {
         const req = {
-            allergies: values.allergies as ModelsAllergy[],
+            allergies: values.allergies,
         }
         onSave(req, {
             onSuccess: () => {
@@ -36,7 +35,7 @@ export default function AllergiesSection({ profile, onSave, isPending }: Allergi
 
     return (
         <AccordionItem value="allergies">
-            <AccordionTrigger>Allergies</AccordionTrigger>
+            <AccordionTrigger data-testid="allergies-trigger">Allergies</AccordionTrigger>
             <AccordionContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

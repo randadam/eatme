@@ -8,7 +8,6 @@ import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provide
 import { Button } from "@/components/ui/button";
 import type { SaveProfileFn } from "../forms/types";
 import LoaderButton from "@/components/shared/loader-button";
-import type { ModelsCuisine } from "@/api/client";
 
 interface CuisinesSectionProps {
     profile: CuisinesFormValues
@@ -24,7 +23,7 @@ export default function CuisinesSection({ profile, onSave, isPending }: Cuisines
 
     const onSubmit = (values: CuisinesFormValues) => {
         const req = {
-            cuisines: values.cuisines as ModelsCuisine[],
+            cuisines: values.cuisines,
         }
         onSave(req, {
             onSuccess: () => {
@@ -36,7 +35,7 @@ export default function CuisinesSection({ profile, onSave, isPending }: Cuisines
 
     return (
         <AccordionItem value="cuisines">
-            <AccordionTrigger>Cuisines</AccordionTrigger>
+            <AccordionTrigger data-testid="cuisines-trigger">Cuisines</AccordionTrigger>
             <AccordionContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

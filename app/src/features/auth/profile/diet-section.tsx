@@ -34,7 +34,7 @@ export default function DietSection({ profile, onSave, isPending }: DietSectionP
 
     return (
         <AccordionItem value="diets">
-            <AccordionTrigger>Diets</AccordionTrigger>
+            <AccordionTrigger data-testid="diets-trigger">Diets</AccordionTrigger>
             <AccordionContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
