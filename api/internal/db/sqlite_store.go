@@ -119,9 +119,9 @@ func (s *SQLiteStore) SaveProfile(ctx context.Context, userID string, p models.P
 	if err != nil {
 		return fmt.Errorf("failed to marshal cuisines: %w", err)
 	}
-	diet, err := json.Marshal(p.Diet)
+	diets, err := json.Marshal(p.Diets)
 	if err != nil {
-		return fmt.Errorf("failed to marshal diet: %w", err)
+		return fmt.Errorf("failed to marshal diets: %w", err)
 	}
 	equipment, err := json.Marshal(p.Equipment)
 	if err != nil {
@@ -135,17 +135,17 @@ func (s *SQLiteStore) SaveProfile(ctx context.Context, userID string, p models.P
 	_, err = s.run.ExecContext(ctx, `
 		INSERT INTO profiles (
 		  user_id, setup_step, name, skill,
-		  cuisines, diet, equipment, allergies
+		  cuisines, diets, equipment, allergies
 		) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(user_id) DO UPDATE SET
 		  setup_step = excluded.setup_step,
 		  name       = excluded.name,
 		  skill      = excluded.skill,
 		  cuisines   = excluded.cuisines,
-		  diet       = excluded.diet,
+		  diets      = excluded.diets,
 		  equipment  = excluded.equipment,
 		  allergies  = excluded.allergies
-	`, userID, p.SetupStep, p.Name, p.Skill, cuisines, diet, equipment, allergies)
+	`, userID, p.SetupStep, p.Name, p.Skill, cuisines, diets, equipment, allergies)
 	if err != nil {
 		return fmt.Errorf("failed to save profile: %w", err)
 	}
@@ -154,18 +154,18 @@ func (s *SQLiteStore) SaveProfile(ctx context.Context, userID string, p models.P
 
 func (s *SQLiteStore) GetProfile(ctx context.Context, userID string) (models.Profile, error) {
 	var p models.Profile
-	var cuisines, diet, equipment, allergies []byte
+	var cuisines, diets, equipment, allergies []byte
 
 	err := s.run.QueryRowContext(ctx, `
 		SELECT setup_step, name, skill,
 			COALESCE(cuisines, '[]'),
-			COALESCE(diet, '[]'),
+			COALESCE(diets, '[]'),
 			COALESCE(equipment, '[]'),
 			COALESCE(allergies, '[]')
 		FROM profiles WHERE user_id = ?;
 	`, userID).Scan(
 		&p.SetupStep, &p.Name, &p.Skill,
-		&cuisines, &diet, &equipment, &allergies,
+		&cuisines, &diets, &equipment, &allergies,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -177,8 +177,8 @@ func (s *SQLiteStore) GetProfile(ctx context.Context, userID string) (models.Pro
 	if err := json.Unmarshal(cuisines, &p.Cuisines); err != nil {
 		return p, fmt.Errorf("failed to unmarshal cuisines: %w", err)
 	}
-	if err := json.Unmarshal(diet, &p.Diet); err != nil {
-		return p, fmt.Errorf("failed to unmarshal diet: %w", err)
+	if err := json.Unmarshal(diets, &p.Diets); err != nil {
+		return p, fmt.Errorf("failed to unmarshal diets: %w", err)
 	}
 	if err := json.Unmarshal(equipment, &p.Equipment); err != nil {
 		return p, fmt.Errorf("failed to unmarshal equipment: %w", err)
@@ -625,7 +625,7 @@ func migrate(db *sql.DB) error {
 		name       TEXT NOT NULL DEFAULT '',
 		skill      TEXT NOT NULL DEFAULT 'beginner',
 		cuisines   JSON NOT NULL DEFAULT '[]',
-		diet       JSON NOT NULL DEFAULT '[]',
+		diets      JSON NOT NULL DEFAULT '[]',
 		equipment  JSON NOT NULL DEFAULT '[]',
 		allergies  JSON NOT NULL DEFAULT '[]'
 	);`

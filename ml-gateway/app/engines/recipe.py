@@ -1,9 +1,9 @@
 from .llm import as_json, sys, usr
-from models import Recipe, Profile, SuggestionRecipes
+from models import ModifyChatResponse, Recipe, Profile, SuggestionRecipes
 
 def suggest_template(profile: Profile, history: list[str], message: str, num_suggestions: int) -> str:
     return f"""
-    Preferences: {profile}
+    Profile: {profile}
     Previously Rejected: {", ".join(history)}
     User request: "{message}"
     Return {num_suggestions} recipes in JSON format. Do not repeat any of the previously rejected recipes.
@@ -12,10 +12,13 @@ def suggest_template(profile: Profile, history: list[str], message: str, num_sug
 
 def modify_template(recipe: Recipe, profile: Profile, message: str) -> str:
     return f"""
-    Preferences: {profile}
+    Profile: {profile}
     User request: "{message}"
     Current recipe: {recipe}
-    Return the modified recipe in JSON format.
+    Return the modified recipe in JSON format following the given schema, which will have `new_recipe`,
+    `response_text`, and an optional `error` field.  If the recipe modification violates a rule from
+    the user's profile (e.g. allergies), return the original recipe with a description of the violation
+    in the `error` field.
     """
 
 async def suggest(profile: Profile, history: list[str], message: str, num_suggestions: int = 3) -> list[Recipe]:
@@ -23,13 +26,15 @@ async def suggest(profile: Profile, history: list[str], message: str, num_sugges
         sys("You are a recipe suggestion assistant."),
         usr(suggest_template(profile, history, message, num_suggestions))
     ]
+    print(f"Suggest messages: {messages}")
     result = await as_json(messages, schema=SuggestionRecipes)
     return result.suggestions
 
 
-async def modify(recipe: Recipe, profile: Profile, message: str) -> Recipe:
+async def modify(recipe: Recipe, profile: Profile, message: str) -> ModifyChatResponse:
     messages = [
         sys("You are a recipe modifier."),
         usr(modify_template(recipe, profile, message))
     ]
-    return await as_json(messages, schema=Recipe)
+    print(f"Modify messages: {messages}")
+    return await as_json(messages, schema=ModifyChatResponse)

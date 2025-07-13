@@ -79,7 +79,7 @@ export function Recipe({ recipeId }: Props) {
     return (
         <>
             <div className="border rounded p-2">
-                <RecipeAccordion id={recipe.id} recipe={recipe} />
+                <RecipeAccordion id={recipe.id} recipe={recipe} defaultOpen={true} />
                 <div className="flex justify-between">
                     <Button variant="outline"onClick={() => openModify(recipe)}>Modify</Button>
                     <Button onClick={() => nav(`/cook/${recipe.id}`)}>Start Cooking</Button>

@@ -33,7 +33,7 @@ export type CuisinesFormValues = z.infer<typeof cuisinesForm>
 
 // STEP 5 – diet
 export const dietForm = z.object({
-  diet: a.diets,
+  diets: a.diets,
 })
 export type DietFormValues = z.infer<typeof dietForm>
 

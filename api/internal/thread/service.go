@@ -245,8 +245,8 @@ func (s *ThreadService) AcceptSuggestion(ctx context.Context, userID string, thr
 	return recipe, nil
 }
 
-func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, recipeID string, prompt string) (*models.RecipeBody, error) {
-	var recipeBody *models.RecipeBody
+func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, recipeID string, prompt string) (*models.ModifyChatResponse, error) {
+	var modifyResponse *models.ModifyChatResponse
 	err := s.store.WithTx(func(tx db.Store) error {
 		ctx = db.ContextWithTx(ctx, tx)
 		profile, err := s.userService.GetProfile(ctx, userID)
@@ -266,14 +266,13 @@ func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, 
 			Recipe:  recipe.RecipeBody,
 			Profile: *profile,
 		}
-		modifyResponse, err := s.chatService.ModifyRecipeViaChat(ctx, modifyRequest)
+		modifyResponse, err = s.chatService.ModifyRecipeViaChat(ctx, modifyRequest)
 		if err != nil {
 			return fmt.Errorf("failed to modify recipe: %w", err)
 		}
 		zap.L().Debug("modified recipe")
-		recipeBody = &modifyResponse.NewRecipe
 		modifyEvent := models.RecipeModifiedEvent{
-			Recipe: *recipeBody,
+			Recipe: modifyResponse.NewRecipe,
 		}
 		payload, err := json.Marshal(modifyEvent)
 		if err != nil {
@@ -287,7 +286,7 @@ func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, 
 		if err := s.AppendEventsToThread(ctx, thread.ID, []models.ThreadEvent{event}); err != nil {
 			return fmt.Errorf("failed to append events to thread: %w", err)
 		}
-		if err := s.recipeService.UpdateRecipe(ctx, userID, recipeID, *recipeBody); err != nil {
+		if err := s.recipeService.UpdateRecipe(ctx, userID, recipeID, modifyResponse.NewRecipe); err != nil {
 			return fmt.Errorf("failed to update recipe version: %w", err)
 		}
 		zap.L().Debug("updated recipe version")
@@ -296,7 +295,7 @@ func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, 
 	if err != nil {
 		return nil, fmt.Errorf("failed to modify recipe via chat: %w", err)
 	}
-	return recipeBody, nil
+	return modifyResponse, nil
 }
 
 func (s *ThreadService) AnswerCookingQuestion(ctx context.Context, userID string, threadID string, question string) (*models.AnswerCookingQuestionResponse, error) {

@@ -30,21 +30,17 @@ export type ModelsApiError = {
     field?: string;
     message: string;
 };
-export type ModelsAllergy = "dairy" | "eggs" | "fish" | "gluten" | "peanuts" | "soy" | "tree_nuts" | "wheat";
-export type ModelsCuisine = "american" | "british" | "chinese" | "french" | "german" | "indian" | "italian" | "japanese" | "mexican" | "spanish" | "thai" | "vietnamese";
-export type ModelsDiet = "vegetarian" | "vegan" | "keto" | "paleo" | "low_carb" | "high_protein";
-export type ModelsEquipment = "stove" | "oven" | "microwave" | "toaster" | "grill" | "smoker" | "slow_cooker" | "pressure_cooker" | "sous_vide";
 export type ModelsSetupStep = "profile" | "skill" | "cuisines" | "diet" | "equipment" | "allergies" | "done";
 export type ModelsSkill = "beginner" | "intermediate" | "advanced" | "chef";
 export type ModelsProfile = {
     /** User's allergies */
-    allergies: ModelsAllergy[];
+    allergies: string[];
     /** User's cuisines */
-    cuisines: ModelsCuisine[];
+    cuisines: string[];
     /** User's diet restrictions */
-    diet: ModelsDiet[];
+    diets: string[];
     /** User's equipment */
-    equipment: ModelsEquipment[];
+    equipment: string[];
     /** User's name */
     name: string;
     /** Setup Step */
@@ -54,13 +50,13 @@ export type ModelsProfile = {
 };
 export type ModelsProfileUpdateRequest = {
     /** User's allergies */
-    allergies?: ModelsAllergy[];
+    allergies?: string[];
     /** User's cuisines */
-    cuisines?: ModelsCuisine[];
+    cuisines?: string[];
     /** User's diet restrictions */
-    diet?: ModelsDiet[];
+    diets?: string[];
     /** User's equipment */
-    equipment?: ModelsEquipment[];
+    equipment?: string[];
     /** User's name */
     name?: string;
     /** Setup Step */
@@ -93,6 +89,19 @@ export type ModelsUserRecipe = {
 export type ModelsModifyRecipeViaChatRequest = {
     prompt: string;
 };
+export type ModelsRecipeBody = {
+    description: string;
+    ingredients: ModelsIngredient[];
+    servings: number;
+    steps: string[];
+    title: string;
+    total_time_minutes: number;
+};
+export type ModelsModifyChatResponse = {
+    error: string;
+    new_recipe: ModelsRecipeBody;
+    response_text: string;
+};
 export type ModelsSignupRequest = {
     /** User's email address */
     email: string;
@@ -109,14 +118,6 @@ export type ModelsStartSuggestionThreadRequest = {
 export type ModelsChatMessage = {
     message: string;
     source: string;
-};
-export type ModelsRecipeBody = {
-    description: string;
-    ingredients: ModelsIngredient[];
-    servings: number;
-    steps: string[];
-    title: string;
-    total_time_minutes: number;
 };
 export type ModelsRecipeSuggestion = {
     accepted: boolean;
@@ -285,7 +286,7 @@ export function deleteRecipe(recipeId: string, opts?: Oazapfts.RequestOpts) {
 export function modifyRecipe(recipeId: string, modelsModifyRecipeViaChatRequest: ModelsModifyRecipeViaChatRequest, opts?: Oazapfts.RequestOpts) {
     return oazapfts.fetchJson<{
         status: 200;
-        data: ModelsUserRecipe;
+        data: ModelsModifyChatResponse;
     } | {
         status: 401;
         data: ModelsApiError;

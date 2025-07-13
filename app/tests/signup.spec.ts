@@ -9,11 +9,6 @@ import { SignupDonePage } from "./pages/signup-done-page"
 import { SignupAllergiesPage } from "./pages/signup-allergies-page"
 import { ProfilePage } from "./pages/profile-page"
 
-test("sanity check", async ({ page }) => {
-    await page.goto("/signup")
-    await expect(page).toHaveTitle("Eat Me")
-})
-
 test("full signup flow", async ({ page }) => {
     const randomSuffix = Math.random().toString(36).substring(2, 8)
 

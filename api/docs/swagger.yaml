@@ -15,26 +15,6 @@ definitions:
     - code
     - message
     type: object
-  models.Allergy:
-    enum:
-    - dairy
-    - eggs
-    - fish
-    - gluten
-    - peanuts
-    - soy
-    - tree_nuts
-    - wheat
-    type: string
-    x-enum-varnames:
-    - AllergyDairy
-    - AllergyEggs
-    - AllergyFish
-    - AllergyGluten
-    - AllergyPeanuts
-    - AllergySoy
-    - AllergyTreeNuts
-    - AllergyWheat
   models.AnswerCookingQuestionRequest:
     description: AnswerCookingQuestionRequest represents a request to answer a cooking
       question
@@ -64,72 +44,6 @@ definitions:
     - message
     - source
     type: object
-  models.Cuisine:
-    enum:
-    - american
-    - british
-    - chinese
-    - french
-    - german
-    - indian
-    - italian
-    - japanese
-    - mexican
-    - spanish
-    - thai
-    - vietnamese
-    type: string
-    x-enum-varnames:
-    - CuisineAmerican
-    - CuisineBritish
-    - CuisineChinese
-    - CuisineFrench
-    - CuisineGerman
-    - CuisineIndian
-    - CuisineItalian
-    - CuisineJapanese
-    - CuisineMexican
-    - CuisineSpanish
-    - CuisineThai
-    - CuisineVietnamese
-  models.Diet:
-    enum:
-    - vegetarian
-    - vegan
-    - keto
-    - paleo
-    - low_carb
-    - high_protein
-    type: string
-    x-enum-varnames:
-    - DietVegetarian
-    - DietVegan
-    - DietKeto
-    - DietPaleo
-    - DietLowCarb
-    - DietHighProtein
-  models.Equipment:
-    enum:
-    - stove
-    - oven
-    - microwave
-    - toaster
-    - grill
-    - smoker
-    - slow_cooker
-    - pressure_cooker
-    - sous_vide
-    type: string
-    x-enum-varnames:
-    - EquipmentStove
-    - EquipmentOven
-    - EquipmentMicrowave
-    - EquipmentToaster
-    - EquipmentGrill
-    - EquipmentSmoker
-    - EquipmentSlowCooker
-    - EquipmentPressureCooker
-    - EquipmentSousVide
   models.GetNewSuggestionsRequest:
     description: GetNewSuggestionsRequest represents a request to get new suggestions
     properties:
@@ -197,6 +111,21 @@ definitions:
     - MeasurementUnitCup
     - MeasurementUnitOunce
     - MeasurementUnitPound
+  models.ModifyChatResponse:
+    description: ModifyChatResponse represents a chat response to the ML backend to
+      modify a recipe
+    properties:
+      error:
+        type: string
+      new_recipe:
+        $ref: '#/definitions/models.RecipeBody'
+      response_text:
+        type: string
+    required:
+    - error
+    - new_recipe
+    - response_text
+    type: object
   models.ModifyRecipeViaChatRequest:
     description: ModifyRecipeViaChatRequest represents a request to modify a recipe
       via chat
@@ -212,22 +141,22 @@ definitions:
       allergies:
         description: User's allergies
         items:
-          $ref: '#/definitions/models.Allergy'
+          type: string
         type: array
       cuisines:
         description: User's cuisines
         items:
-          $ref: '#/definitions/models.Cuisine'
+          type: string
         type: array
-      diet:
+      diets:
         description: User's diet restrictions
         items:
-          $ref: '#/definitions/models.Diet'
+          type: string
         type: array
       equipment:
         description: User's equipment
         items:
-          $ref: '#/definitions/models.Equipment'
+          type: string
         type: array
       name:
         description: User's name
@@ -243,7 +172,7 @@ definitions:
     required:
     - allergies
     - cuisines
-    - diet
+    - diets
     - equipment
     - name
     - setup_step
@@ -255,22 +184,22 @@ definitions:
       allergies:
         description: User's allergies
         items:
-          $ref: '#/definitions/models.Allergy'
+          type: string
         type: array
       cuisines:
         description: User's cuisines
         items:
-          $ref: '#/definitions/models.Cuisine'
+          type: string
         type: array
-      diet:
+      diets:
         description: User's diet restrictions
         items:
-          $ref: '#/definitions/models.Diet'
+          type: string
         type: array
       equipment:
         description: User's equipment
         items:
-          $ref: '#/definitions/models.Equipment'
+          type: string
         type: array
       name:
         description: User's name
@@ -727,7 +656,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserRecipe'
+            $ref: '#/definitions/models.ModifyChatResponse'
         "401":
           description: Unauthorized
           schema:

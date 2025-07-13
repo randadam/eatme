@@ -6,11 +6,12 @@ import { RecipeOverview } from "./recipe-overview"
 export interface RecipeAccordianProps {
     id: string
     recipe: api.ModelsRecipeBody
+    defaultOpen?: boolean
 }
 
-export function RecipeAccordion({ id, recipe }: RecipeAccordianProps) {
+export function RecipeAccordion({ id, recipe, defaultOpen }: RecipeAccordianProps) {
     return (
-        <Accordion type="single" collapsible>
+        <Accordion type="single" collapsible defaultValue={defaultOpen ? id : undefined}>
             <AccordionItem value={id}>
                 <AccordionTrigger>
                     <RecipeOverview recipe={recipe} />

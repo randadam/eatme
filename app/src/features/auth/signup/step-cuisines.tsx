@@ -3,7 +3,6 @@ import { Form } from "@/components/ui/form";
 import WizardButtons from "./wizard-buttons";
 import { useSaveProfile, useUser } from "../hooks";
 import { Navigate, useNavigate } from "react-router-dom";
-import type { ModelsCuisine } from "@/api/client";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 import { toast } from "sonner";
 import CuisinesForm from "../forms/cuisines-form";
@@ -27,7 +26,7 @@ export default function CuisinesStep() {
     function onSubmit(values: CuisinesFormValues) {
         const req = {
             setup_step: "diet" as const,
-            cuisines: values.cuisines.map((cuisine) => cuisine) as ModelsCuisine[],
+            cuisines: values.cuisines,
         }
         saveProfile(req, {
             onSuccess: () => {

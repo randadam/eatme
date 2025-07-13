@@ -10,7 +10,7 @@ export default function RootLayout() {
     <RequireFinishedSignup>
       <AppBar />
 
-      <main className="flex-1 container mx-auto p-4 pb-24">
+      <main className="flex-1 container mx-auto p-4 pb-24 min-h-screen">
         <Suspense fallback={
           <Loader2 className="w-6 h-6 animate-spin" />
         }>

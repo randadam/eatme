@@ -4,6 +4,6 @@ export const STEPS = {
   skill: "/signup/skill",
   cuisines: "/signup/cuisines",
   diet: "/signup/diet",
-  equipment: "/signup/equipment",
   allergies: "/signup/allergies",
+  equipment: "/signup/equipment",
 }

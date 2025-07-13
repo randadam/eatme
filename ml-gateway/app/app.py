@@ -21,11 +21,9 @@ async def chat(req: SuggestChatRequest):
 async def chat(req: ModifyChatRequest):
     print("Incoming modify request:", req)
     try:
-        updated = await modify(req.recipe, req.profile, req.message)
-        print("Got updated recipe:", updated)
-        text  = "Got it—modified recipe below."
-        return ModifyChatResponse(response_text=text,
-                                  new_recipe=updated)
+        resp = await modify(req.recipe, req.profile, req.message)
+        print("Got updated recipe:", resp)
+        return resp
     except Exception as e:
         print("Error in modify:", e)
         raise e

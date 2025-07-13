@@ -162,7 +162,7 @@ func (h *ThreadHandler) AcceptSuggestion(w http.ResponseWriter, r *http.Request)
 // @Produce json
 // @Param recipeId path string true "Recipe ID"
 // @Param request body models.ModifyRecipeViaChatRequest true "Modify recipe via chat request"
-// @Success 200 {object} models.UserRecipe
+// @Success 200 {object} models.ModifyChatResponse
 // @Failure 401 {object} models.APIError "Unauthorized"
 // @Failure 404 {object} models.APIError "Thread not found"
 // @Failure 500 {object} models.APIError "Internal server error"

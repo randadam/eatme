@@ -43,10 +43,10 @@ func (s *UserService) CreateUser(ctx context.Context, email string, password str
 		SetupStep: models.SetupStepProfile,
 		Name:      "",
 		Skill:     models.SkillBeginner,
-		Cuisines:  []models.Cuisine{},
-		Diet:      []models.Diet{},
-		Equipment: []models.Equipment{},
-		Allergies: []models.Allergy{},
+		Cuisines:  []string{},
+		Diets:     []string{},
+		Equipment: []string{},
+		Allergies: []string{},
 	}
 
 	err = store.SaveProfile(ctx, user.ID, defaultProfile)
@@ -105,8 +105,8 @@ func (s *UserService) SaveProfile(ctx context.Context, userID string, profile mo
 	if profile.Cuisines != nil {
 		currentProfile.Cuisines = profile.Cuisines
 	}
-	if profile.Diet != nil {
-		currentProfile.Diet = profile.Diet
+	if profile.Diets != nil {
+		currentProfile.Diets = profile.Diets
 	}
 	if profile.Equipment != nil {
 		currentProfile.Equipment = profile.Equipment

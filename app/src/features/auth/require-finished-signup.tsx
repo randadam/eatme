@@ -9,12 +9,18 @@ interface Props {
 export default function RequireFinishedSignup({
   children,
 }: Props) {
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated, profile } = useUser();
   const { pathname } = useLocation()
 
   if (pathname === "/" || pathname.includes("/login")) return children;
 
-  if (!isAuthenticated && !pathname.startsWith("/signup")) return <Navigate to="/signup" replace />;
+  if (isAuthenticated && profile?.setup_step !== "done" && !pathname.startsWith("/signup")) {
+    return <Navigate to="/signup" replace />
+  }
+
+  if (pathname.startsWith("/signup")) {
+    return children;
+  }
 
   return children;
 }

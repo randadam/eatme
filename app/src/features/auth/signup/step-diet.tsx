@@ -2,7 +2,6 @@ import StepInstructions from "./step-instructions";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useSaveProfile, useUser } from "../hooks";
 import WizardButtons from "./wizard-buttons";
-import type { ModelsDiet } from "@/api/client";
 import { toast } from "sonner";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 import { useDietForm } from "../forms/hooks";
@@ -20,18 +19,18 @@ export default function DietStep() {
     const { saveProfile, isPending } = useSaveProfile()
 
     const form = useDietForm({
-        diet: profile?.diet ?? [],
+        diets: profile?.diets ?? [],
     })
     const handleFormError = useFormErrorHandler(form)
 
     function onSubmit(values: DietFormValues) {
         const req = {
             setup_step: "allergies" as const,
-            diet: values.diet.map((diet) => diet) as ModelsDiet[],
+            diets: values.diets,
         }
         saveProfile(req, {
             onSuccess: (profile) => {
-                toast.success(profile.diet.length > 0 ? "We can work with that!" : "Endless possibilities await!")
+                toast.success(profile.diets.length > 0 ? "We can work with that!" : "Endless possibilities await!")
                 nav("/signup/allergies")
             },
             onError: (err) => handleFormError(err),

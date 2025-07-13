@@ -5,14 +5,19 @@ import type { Control } from "react-hook-form"
 import type { AllergiesFormValues } from "./types"
 
 export const allergyOptions = [
-    { name: "Dairy", value: "dairy" },
-    { name: "Eggs", value: "eggs" },
-    { name: "Fish", value: "fish" },
-    { name: "Gluten", value: "gluten" },
     { name: "Peanuts", value: "peanuts" },
-    { name: "Soy", value: "soy" },
     { name: "Tree Nuts", value: "tree_nuts" },
-    { name: "Wheat", value: "wheat" },
+    { name: "Milk / Dairy", value: "milk" },
+    { name: "Eggs", value: "eggs" },
+    { name: "Wheat / Gluten", value: "wheat" },
+    { name: "Soy", value: "soy" },
+    { name: "Fish", value: "fish" },
+    { name: "Shellfish", value: "shellfish" },
+    { name: "Sesame", value: "sesame" },
+    { name: "Sulfites", value: "sulfites" },
+    { name: "Mustard", value: "mustard" },
+    { name: "Celery", value: "celery" },
+    { name: "Lupin", value: "lupin" },
 ]
 
 export interface AllergiesFormProps {
@@ -27,7 +32,7 @@ export default function AllergiesForm({ control, showTitle = true }: AllergiesFo
             name="allergies"
             render={() => (
                 <FormItem>
-                    {showTitle && <FormLabel>Do you have any allergies?</FormLabel>}
+                    {showTitle && <FormLabel>Allergies</FormLabel>}
                     <FormDescription className="text-left">
                         Select any allergies you have.
                     </FormDescription>

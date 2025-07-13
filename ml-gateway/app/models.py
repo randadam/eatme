@@ -14,7 +14,15 @@ class Recipe(BaseModel):
     steps: list[str]
 
 class Profile(BaseModel):
+    name: str
+    skill: str
+    cuisines: list[str]
+    diets: list[str]
     allergies: list[str]
+    equipment: list[str]
+
+    def __str__(self):
+        return f"Profile(name={self.name}, skill_level={self.skill}, cuisines={', '.join(self.cuisines)}, diets={', '.join(self.diets)}, allergies={', '.join(self.allergies)}, equipment={', '.join(self.equipment)})"
 
 class SuggestChatRequest(BaseModel):
     message: str
@@ -40,6 +48,7 @@ class ModifyChatRequest(BaseModel):
 class ModifyChatResponse(BaseModel):
     response_text: str
     new_recipe: Recipe | None = None
+    error: str | None = None
 
 class GeneralChatRequest(BaseModel):
     message: str

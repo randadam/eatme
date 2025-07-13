@@ -39,7 +39,7 @@ export default function SkillForm({ control, showTitle = true }: SkillFormProps)
             name="skill"
             render={({ field }) => (
                 <FormItem>
-                    {showTitle && <FormLabel>Current Skill Level</FormLabel>}
+                    {showTitle && <FormLabel>Skill Level</FormLabel>}
                     <FormDescription className="text-left">
                         How experienced are you in the kitchen? Don't worry, no matter your current skill level,
                         we'll help you level up.

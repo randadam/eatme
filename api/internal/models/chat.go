@@ -45,9 +45,9 @@ type InternalModifyChatRequest struct {
 
 // @Description ModifyChatResponse represents a chat response to the ML backend to modify a recipe
 type ModifyChatResponse struct {
-	ResponseText       string     `json:"response_text" binding:"required"`
-	NewRecipe          RecipeBody `json:"new_recipe" binding:"required"`
-	NeedsClarification bool       `json:"needs_clarification" binding:"required"`
+	ResponseText string     `json:"response_text" binding:"required"`
+	NewRecipe    RecipeBody `json:"new_recipe" binding:"required"`
+	Error        string     `json:"error" binding:"required"`
 }
 
 // @Description GeneralChatRequest represents a chat request to the ML backend to answer a question

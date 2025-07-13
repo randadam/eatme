@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 import { Button } from "@/components/ui/button";
 import LoaderButton from "@/components/shared/loader-button";
-import type { ModelsDiet } from "@/api/client";
 
 export interface DietSectionProps {
     profile: DietFormValues
@@ -17,25 +16,25 @@ export interface DietSectionProps {
 
 export default function DietSection({ profile, onSave, isPending }: DietSectionProps) {
     const form = useDietForm({
-        diet: profile?.diet ?? [],
+        diets: profile?.diets ?? [],
     })
     const handleFormError = useFormErrorHandler(form)
 
     const onSubmit = (values: DietFormValues) => {
         const req = {
-            diet: values.diet.map((diet) => diet) as ModelsDiet[],
+            diets: values.diets,
         }
         onSave(req, {
             onSuccess: () => {
-                toast.success('Diet saved')
+                toast.success('Diets saved')
             },
             onError: (err) => handleFormError(err),
         })
     }
 
     return (
-        <AccordionItem value="diet">
-            <AccordionTrigger>Diet</AccordionTrigger>
+        <AccordionItem value="diets">
+            <AccordionTrigger>Diets</AccordionTrigger>
             <AccordionContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

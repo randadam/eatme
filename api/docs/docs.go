@@ -351,7 +351,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.UserRecipe"
+                            "$ref": "#/definitions/models.ModifyChatResponse"
                         }
                     },
                     "401": {
@@ -743,29 +743,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Allergy": {
-            "type": "string",
-            "enum": [
-                "dairy",
-                "eggs",
-                "fish",
-                "gluten",
-                "peanuts",
-                "soy",
-                "tree_nuts",
-                "wheat"
-            ],
-            "x-enum-varnames": [
-                "AllergyDairy",
-                "AllergyEggs",
-                "AllergyFish",
-                "AllergyGluten",
-                "AllergyPeanuts",
-                "AllergySoy",
-                "AllergyTreeNuts",
-                "AllergyWheat"
-            ]
-        },
         "models.AnswerCookingQuestionRequest": {
             "description": "AnswerCookingQuestionRequest represents a request to answer a cooking question",
             "type": "object",
@@ -805,81 +782,6 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "models.Cuisine": {
-            "type": "string",
-            "enum": [
-                "american",
-                "british",
-                "chinese",
-                "french",
-                "german",
-                "indian",
-                "italian",
-                "japanese",
-                "mexican",
-                "spanish",
-                "thai",
-                "vietnamese"
-            ],
-            "x-enum-varnames": [
-                "CuisineAmerican",
-                "CuisineBritish",
-                "CuisineChinese",
-                "CuisineFrench",
-                "CuisineGerman",
-                "CuisineIndian",
-                "CuisineItalian",
-                "CuisineJapanese",
-                "CuisineMexican",
-                "CuisineSpanish",
-                "CuisineThai",
-                "CuisineVietnamese"
-            ]
-        },
-        "models.Diet": {
-            "type": "string",
-            "enum": [
-                "vegetarian",
-                "vegan",
-                "keto",
-                "paleo",
-                "low_carb",
-                "high_protein"
-            ],
-            "x-enum-varnames": [
-                "DietVegetarian",
-                "DietVegan",
-                "DietKeto",
-                "DietPaleo",
-                "DietLowCarb",
-                "DietHighProtein"
-            ]
-        },
-        "models.Equipment": {
-            "type": "string",
-            "enum": [
-                "stove",
-                "oven",
-                "microwave",
-                "toaster",
-                "grill",
-                "smoker",
-                "slow_cooker",
-                "pressure_cooker",
-                "sous_vide"
-            ],
-            "x-enum-varnames": [
-                "EquipmentStove",
-                "EquipmentOven",
-                "EquipmentMicrowave",
-                "EquipmentToaster",
-                "EquipmentGrill",
-                "EquipmentSmoker",
-                "EquipmentSlowCooker",
-                "EquipmentPressureCooker",
-                "EquipmentSousVide"
-            ]
         },
         "models.GetNewSuggestionsRequest": {
             "description": "GetNewSuggestionsRequest represents a request to get new suggestions",
@@ -972,6 +874,26 @@ const docTemplate = `{
                 "MeasurementUnitPound"
             ]
         },
+        "models.ModifyChatResponse": {
+            "description": "ModifyChatResponse represents a chat response to the ML backend to modify a recipe",
+            "type": "object",
+            "required": [
+                "error",
+                "new_recipe",
+                "response_text"
+            ],
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "new_recipe": {
+                    "$ref": "#/definitions/models.RecipeBody"
+                },
+                "response_text": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ModifyRecipeViaChatRequest": {
             "description": "ModifyRecipeViaChatRequest represents a request to modify a recipe via chat",
             "type": "object",
@@ -990,7 +912,7 @@ const docTemplate = `{
             "required": [
                 "allergies",
                 "cuisines",
-                "diet",
+                "diets",
                 "equipment",
                 "name",
                 "setup_step",
@@ -1001,28 +923,28 @@ const docTemplate = `{
                     "description": "User's allergies",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Allergy"
+                        "type": "string"
                     }
                 },
                 "cuisines": {
                     "description": "User's cuisines",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Cuisine"
+                        "type": "string"
                     }
                 },
-                "diet": {
+                "diets": {
                     "description": "User's diet restrictions",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Diet"
+                        "type": "string"
                     }
                 },
                 "equipment": {
                     "description": "User's equipment",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Equipment"
+                        "type": "string"
                     }
                 },
                 "name": {
@@ -1055,28 +977,28 @@ const docTemplate = `{
                     "description": "User's allergies",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Allergy"
+                        "type": "string"
                     }
                 },
                 "cuisines": {
                     "description": "User's cuisines",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Cuisine"
+                        "type": "string"
                     }
                 },
-                "diet": {
+                "diets": {
                     "description": "User's diet restrictions",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Diet"
+                        "type": "string"
                     }
                 },
                 "equipment": {
                     "description": "User's equipment",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Equipment"
+                        "type": "string"
                     }
                 },
                 "name": {

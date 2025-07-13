@@ -4,21 +4,29 @@ import { FormLabel, FormDescription, FormItem, FormMessage } from "@/components/
 import { MultiSelectBadges } from "@/components/shared/multi-select-badge"
 import type { Control } from "react-hook-form"
 
-export const cuisineOptions = [
+const cuisineOptions = [
     { name: "American", value: "american" },
     { name: "British", value: "british" },
-    { name: "Chinese", value: "chinese" },
-    { name: "French", value: "french" },
-    { name: "German", value: "german" },
-    { name: "Indian", value: "indian" },
-    { name: "Italian", value: "italian" },
-    { name: "Japanese", value: "japanese" },
+    { name: "Cajun", value: "cajun" },
     { name: "Mexican", value: "mexican" },
+    { name: "Tex-Mex", value: "tex_mex" },
+    { name: "Caribbean", value: "caribbean" },
+    { name: "Latin American", value: "latin-american" },
+    { name: "Italian", value: "italian" },
+    { name: "French", value: "french" },
     { name: "Spanish", value: "spanish" },
-    { name: "Thai", value: "thai" },
-    { name: "Vietnamese", value: "vietnamese" },
+    { name: "Greek", value: "greek" },
+    { name: "Mediterranean", value: "mediterranean" },
+    { name: "Middle Eastern", value: "middle-eastern" },
+    { name: "Indian", value: "indian"},
+    { name: "Thai", value: "thai"},
+    { name: "Vietnamese", value: "vietnamese"},
+    { name: "Chinese", value: "chinese"},
+    { name: "Japanese", value: "japanese"},
+    { name: "Korean", value: "korean"},
+    { name: "Filipino", value: "filipino"},
+    { name: "African", value: "african"},
 ]
-
 
 export interface CuisinesFormProps {
     control: Control<CuisinesFormValues>

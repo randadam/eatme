@@ -85,6 +85,17 @@ function RecipeList({ recipes, isLoading, error, deleteRecipe, deleteRecipePendi
         return <ErrorPage title="Error loading recipes" description={error.message} />
     }
 
+    if (!recipes || recipes.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center space-y-4 pt-16">
+                <h2 className="text-2xl font-semibold">No recipes yet</h2>
+                <p className="text-muted-foreground pt-4">
+                    No worries, we're here to help! Press the + button below to get started.
+                </p>
+            </div>
+        )
+    }
+
     return (
         <ul className="space-y-2 pb-2">
             {(recipes ?? []).map(recipe => (

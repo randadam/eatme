@@ -2,7 +2,6 @@ import StepInstructions from "./step-instructions";
 import { Form } from "@/components/ui/form";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useSaveProfile, useUser } from "../hooks";
-import type { ModelsAllergy } from "@/api/client";
 import WizardButtons from "./wizard-buttons";
 import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider";
 import { toast } from "sonner";
@@ -27,7 +26,7 @@ export default function AllergiesStep() {
     function onSubmit(values: AllergiesFormValues) {
         const req = {
             setup_step: "equipment" as const,
-            allergies: values.allergies.map((allergy) => allergy) as ModelsAllergy[],
+            allergies: values.allergies,
         }
         saveProfile(req, {
             onSuccess: () => {
@@ -41,7 +40,7 @@ export default function AllergiesStep() {
 
     return (
         <>
-            <StepInstructions>Allergies</StepInstructions>
+            <StepInstructions>Do you have any allergies?</StepInstructions>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <AllergiesForm control={form.control}/>

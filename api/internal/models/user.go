@@ -29,61 +29,6 @@ const (
 	SkillChef         Skill = "chef"
 )
 
-type Cuisine string
-
-const (
-	CuisineAmerican   Cuisine = "american"
-	CuisineBritish    Cuisine = "british"
-	CuisineChinese    Cuisine = "chinese"
-	CuisineFrench     Cuisine = "french"
-	CuisineGerman     Cuisine = "german"
-	CuisineIndian     Cuisine = "indian"
-	CuisineItalian    Cuisine = "italian"
-	CuisineJapanese   Cuisine = "japanese"
-	CuisineMexican    Cuisine = "mexican"
-	CuisineSpanish    Cuisine = "spanish"
-	CuisineThai       Cuisine = "thai"
-	CuisineVietnamese Cuisine = "vietnamese"
-)
-
-type Diet string
-
-const (
-	DietVegetarian  Diet = "vegetarian"
-	DietVegan       Diet = "vegan"
-	DietKeto        Diet = "keto"
-	DietPaleo       Diet = "paleo"
-	DietLowCarb     Diet = "low_carb"
-	DietHighProtein Diet = "high_protein"
-)
-
-type Equipment string
-
-const (
-	EquipmentStove          Equipment = "stove"
-	EquipmentOven           Equipment = "oven"
-	EquipmentMicrowave      Equipment = "microwave"
-	EquipmentToaster        Equipment = "toaster"
-	EquipmentGrill          Equipment = "grill"
-	EquipmentSmoker         Equipment = "smoker"
-	EquipmentSlowCooker     Equipment = "slow_cooker"
-	EquipmentPressureCooker Equipment = "pressure_cooker"
-	EquipmentSousVide       Equipment = "sous_vide"
-)
-
-type Allergy string
-
-const (
-	AllergyDairy    Allergy = "dairy"
-	AllergyEggs     Allergy = "eggs"
-	AllergyFish     Allergy = "fish"
-	AllergyGluten   Allergy = "gluten"
-	AllergyPeanuts  Allergy = "peanuts"
-	AllergySoy      Allergy = "soy"
-	AllergyTreeNuts Allergy = "tree_nuts"
-	AllergyWheat    Allergy = "wheat"
-)
-
 // @Description SignupRequest represents the user signup request payload
 type SignupRequest struct {
 	// User's email address
@@ -121,13 +66,13 @@ type Profile struct {
 	// User's skill level
 	Skill Skill `json:"skill" binding:"required"`
 	// User's cuisines
-	Cuisines []Cuisine `json:"cuisines" binding:"required"`
+	Cuisines []string `json:"cuisines" binding:"required"`
 	// User's diet restrictions
-	Diet []Diet `json:"diet" binding:"required"`
+	Diets []string `json:"diets" binding:"required"`
 	// User's equipment
-	Equipment []Equipment `json:"equipment" binding:"required"`
+	Equipment []string `json:"equipment" binding:"required"`
 	// User's allergies
-	Allergies []Allergy `json:"allergies" binding:"required"`
+	Allergies []string `json:"allergies" binding:"required"`
 }
 
 // @Description ProfileUpdateRequest represents a user's profile update request payload
@@ -139,11 +84,11 @@ type ProfileUpdateRequest struct {
 	// User's skill level
 	Skill Skill `json:"skill,omitempty"`
 	// User's cuisines
-	Cuisines []Cuisine `json:"cuisines,omitempty"`
+	Cuisines []string `json:"cuisines,omitempty"`
 	// User's diet restrictions
-	Diet []Diet `json:"diet,omitempty"`
+	Diets []string `json:"diets,omitempty"`
 	// User's equipment
-	Equipment []Equipment `json:"equipment,omitempty"`
+	Equipment []string `json:"equipment,omitempty"`
 	// User's allergies
-	Allergies []Allergy `json:"allergies,omitempty"`
+	Allergies []string `json:"allergies,omitempty"`
 }

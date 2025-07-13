@@ -7,10 +7,20 @@ import type { DietFormValues } from "./types"
 export const dietOptions = [
     { name: "Vegetarian", value: "vegetarian" },
     { name: "Vegan", value: "vegan" },
+    { name: "Pescatarian", value: "pescatarian" },
     { name: "Keto", value: "keto" },
+    { name: "Low-Carb", value: "low_carb" },
+    { name: "High-Protein", value: "high_protein" },
     { name: "Paleo", value: "paleo" },
-    { name: "Low Carb", value: "low_carb" },
-    { name: "High Protein", value: "high_protein" },
+    { name: "Whole 30", value: "whole_30" },
+    { name: "Mediterranean Diet", value: "mediterranean_diet" },
+    { name: "DASH", value: "dash" },
+    { name: "Low-FODMAP", value: "low_fodmap" },
+    { name: "Gluten-Free", value: "gluten_free" },
+    { name: "Dairy-Free", value: "dairy_free" },
+    { name: "Low Sodium", value: "low_sodium" },
+    { name: "Heart-Healthy", value: "heart_healthy" },
+    { name: "Diabetic-Friendly", value: "diabetic_friendly" },
 ]
 
 export interface DietFormProps {
@@ -22,7 +32,7 @@ export default function DietForm({ control, showTitle = true }: DietFormProps) {
     return (
         <FormField
             control={control}
-            name="diet"
+            name="diets"
             render={() => (
                 <FormItem>
                     {showTitle && <FormLabel>Diet</FormLabel>}
@@ -31,7 +41,7 @@ export default function DietForm({ control, showTitle = true }: DietFormProps) {
                     </FormDescription>
                     <div className="pt-4">
                         <MultiSelectBadges
-                            name="diet"
+                            name="diets"
                             control={control}
                             options={dietOptions}
                         />
