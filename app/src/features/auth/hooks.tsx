@@ -19,6 +19,20 @@ export function useSignup() {
     return { signup, isPending, error }
 }
 
+export function useLogin() {
+    const { mutate: login, isPending, error } = useMutation({
+        mutationFn: async (data: api.ModelsLoginRequest) => {
+            const res = await api.login(data)
+            return res.data as api.ModelsLoginResponse
+        },
+        onSuccess: (data) => {
+            setToken(data.token)
+        }
+    })
+
+    return { login, isPending, error }
+}
+
 export function useUser() {
   const qc = useQueryClient()
   const token = getToken()

@@ -12,7 +12,7 @@ export default function RequireFinishedSignup({
   const { isAuthenticated } = useUser();
   const { pathname } = useLocation()
 
-  if (pathname.includes("/login")) return children;
+  if (pathname === "/" || pathname.includes("/login")) return children;
 
   if (!isAuthenticated && !pathname.startsWith("/signup")) return <Navigate to="/signup" replace />;
 

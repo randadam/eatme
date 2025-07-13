@@ -14,6 +14,22 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "//localhost:8080"
 };
+export type ModelsLoginRequest = {
+    /** User's email address */
+    email: string;
+    /** User's password */
+    password: string;
+};
+export type ModelsLoginResponse = {
+    /** Access token for user */
+    token: string;
+};
+export type ModelsApiError = {
+    code: string;
+    details?: string;
+    field?: string;
+    message: string;
+};
 export type ModelsAllergy = "dairy" | "eggs" | "fish" | "gluten" | "peanuts" | "soy" | "tree_nuts" | "wheat";
 export type ModelsCuisine = "american" | "british" | "chinese" | "french" | "german" | "indian" | "italian" | "japanese" | "mexican" | "spanish" | "thai" | "vietnamese";
 export type ModelsDiet = "vegetarian" | "vegan" | "keto" | "paleo" | "low_carb" | "high_protein";
@@ -35,12 +51,6 @@ export type ModelsProfile = {
     setup_step: ModelsSetupStep;
     /** User's skill level */
     skill: ModelsSkill;
-};
-export type ModelsApiError = {
-    code: string;
-    details?: string;
-    field?: string;
-    message: string;
 };
 export type ModelsProfileUpdateRequest = {
     /** User's allergies */
@@ -138,6 +148,28 @@ export type ModelsAnswerCookingQuestionResponse = {
 export type ModelsGetNewSuggestionsRequest = {
     prompt?: string;
 };
+/**
+ * Log in
+ */
+export function login(modelsLoginRequest: ModelsLoginRequest, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+        data: ModelsLoginResponse;
+    } | {
+        status: 400;
+        data: ModelsApiError;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 500;
+        data: ModelsApiError;
+    }>("/login", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: modelsLoginRequest
+    }));
+}
 /**
  * Get user profile
  */

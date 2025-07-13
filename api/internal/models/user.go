@@ -98,6 +98,20 @@ type SignupResponse struct {
 	Token string `json:"token" example:"<JWT_TOKEN>" binding:"required"`
 }
 
+// @Description LoginRequest represents the user login request payload
+type LoginRequest struct {
+	// User's email address
+	Email string `json:"email" example:"john.doe@example.com" binding:"required"`
+	// User's password
+	Password string `json:"password" example:"Password123!" binding:"required"`
+}
+
+// @Description LoginResponse represents the user login response
+type LoginResponse struct {
+	// Access token for user
+	Token string `json:"token" example:"<JWT_TOKEN>" binding:"required"`
+}
+
 // @Description Profile represents a user's profile information
 type Profile struct {
 	// Setup Step

@@ -84,6 +84,36 @@ func (s *SQLiteStore) GetUser(ctx context.Context, userID string) (models.User, 
 	return user, nil
 }
 
+func (s *SQLiteStore) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+	var user models.User
+	err := s.run.QueryRowContext(ctx, `
+		SELECT id, email
+		FROM users WHERE email = ?;
+	`, email).Scan(&user.ID, &user.Email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.User{}, ErrNotFound
+		}
+		return models.User{}, fmt.Errorf("failed to get user: %w", err)
+	}
+	return user, nil
+}
+
+func (s *SQLiteStore) CheckPassword(ctx context.Context, userID string, password string) error {
+	var hash []byte
+	err := s.run.QueryRowContext(ctx, `
+		SELECT password
+		FROM users WHERE id = ?;
+	`, userID).Scan(&hash)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+	return bcrypt.CompareHashAndPassword(hash, []byte(password))
+}
+
 func (s *SQLiteStore) SaveProfile(ctx context.Context, userID string, p models.Profile) error {
 	cuisines, err := json.Marshal(p.Cuisines)
 	if err != nil {

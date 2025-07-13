@@ -4,7 +4,9 @@ import { Helmet } from "react-helmet-async"
 import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
 import LoaderButton from "@/components/shared/loader-button"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import { useLogin, useUser } from "@/features/auth/hooks"
+import { FormErrorMessage, useFormErrorHandler } from "@/lib/error/error-provider"
 
 interface LoginValues {
     email: string
@@ -12,10 +14,27 @@ interface LoginValues {
 }
 
 export default function LoginPage() {
-    const form = useForm<LoginValues>()
+    const form = useForm<LoginValues>({
+        defaultValues: {
+            email: "",
+            password: "",
+        }
+    })
+    const handleFormError = useFormErrorHandler(form)
+    const { isAuthenticated } = useUser()
+    const { login, isPending }= useLogin()
+    const nav = useNavigate()
 
     const handleLogin = (values: LoginValues) => {
-        console.log(values)
+        login(values, {
+            onError: (err) => {
+                handleFormError(err)
+            }
+        })
+    }
+
+    if (isAuthenticated) {
+        nav("/")
     }
 
     return (
@@ -62,9 +81,10 @@ export default function LoginPage() {
                                     </FormItem>
                                 )}
                             />
-                            <LoaderButton type="submit" className="w-full" isLoading={false}>
+                            <LoaderButton type="submit" className="w-full" isLoading={isPending}>
                                 Login
                             </LoaderButton>
+                            <FormErrorMessage form={form} />
                         </form>
                     </Form>
                 </div>

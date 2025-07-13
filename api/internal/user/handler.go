@@ -62,6 +62,42 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	api.WriteJSON(w, http.StatusOK, models.SignupResponse{Token: user.ID})
 }
 
+// @Summary Log in
+// @Description Log in to an existing user account
+// @ID login
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body models.LoginRequest true "User login information"
+// @Success 200 {object} models.LoginResponse
+// @Failure 400 {object} models.APIError "Invalid input"
+// @Failure 401 {object} models.APIError "Unauthorized"
+// @Failure 500 {object} models.APIError "Internal server error"
+// @Router /login [post]
+func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var input models.LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		zap.L().Error("failed to decode login request", zap.Error(err))
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
+		return
+	}
+
+	user, err := h.service.GetUser(r.Context(), input.Email)
+	if err != nil {
+		zap.L().Error("failed to get user", zap.Error(err))
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
+		return
+	}
+
+	if err = h.service.CheckPassword(r.Context(), user.ID, input.Password); err != nil {
+		zap.L().Error("password check failed", zap.Error(err))
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
+		return
+	}
+
+	api.WriteJSON(w, http.StatusOK, models.LoginResponse{Token: user.ID})
+}
+
 // @Summary Save user profile
 // @Description Save a user's profile
 // @ID saveProfile

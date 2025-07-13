@@ -15,6 +15,59 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/login": {
+            "post": {
+                "description": "Log in to an existing user account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Log in",
+                "operationId": "login",
+                "parameters": [
+                    {
+                        "description": "User login information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/profile": {
             "get": {
                 "description": "Gets the profile for a user",
@@ -861,6 +914,40 @@ const docTemplate = `{
                         }
                     ],
                     "example": "cup"
+                }
+            }
+        },
+        "models.LoginRequest": {
+            "description": "LoginRequest represents the user login request payload",
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "description": "User's email address",
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "password": {
+                    "description": "User's password",
+                    "type": "string",
+                    "example": "Password123!"
+                }
+            }
+        },
+        "models.LoginResponse": {
+            "description": "LoginResponse represents the user login response",
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "description": "Access token for user",
+                    "type": "string",
+                    "example": "\u003cJWT_TOKEN\u003e"
                 }
             }
         },

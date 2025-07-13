@@ -56,6 +56,7 @@ func NewRouter(app *App) *chi.Mux {
 
 	// User
 	r.Post("/signup", userHandler.Signup)
+	r.Post("/login", userHandler.Login)
 	r.Route("/profile", func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware(app.store))
 		r.Put("/", userHandler.SaveProfile)

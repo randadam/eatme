@@ -57,6 +57,25 @@ func (s *UserService) CreateUser(ctx context.Context, email string, password str
 	return &user, nil
 }
 
+func (s *UserService) GetUser(ctx context.Context, email string) (*models.User, error) {
+	store := s.getStore(ctx)
+	user, err := store.GetUserByEmail(ctx, email)
+	if err != nil {
+		switch {
+		case errors.Is(err, db.ErrNotFound):
+			return nil, ErrUserNotFound
+		default:
+			return nil, fmt.Errorf("failed to get user: %w", err)
+		}
+	}
+	return &user, nil
+}
+
+func (s *UserService) CheckPassword(ctx context.Context, userID string, password string) error {
+	store := s.getStore(ctx)
+	return store.CheckPassword(ctx, userID, password)
+}
+
 func (s *UserService) SaveProfile(ctx context.Context, userID string, profile models.ProfileUpdateRequest) (*models.Profile, error) {
 	if userID == "" {
 		return nil, errors.New("user ID is required")
