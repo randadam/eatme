@@ -201,6 +201,84 @@ func (h *ThreadHandler) ModifyRecipeViaChat(w http.ResponseWriter, r *http.Reque
 	api.WriteJSON(w, http.StatusOK, recipe)
 }
 
+// @Summary Accept a recipe modification
+// @Description Accept a recipe modification
+// @ID acceptRecipeModification
+// @Tags thread
+// @Accept json
+// @Produce json
+// @Param recipeId path string true "Recipe ID"
+// @Success 204 "Recipe modified"
+// @Failure 401 {object} models.APIError "Unauthorized"
+// @Failure 404 {object} models.APIError "Thread not found"
+// @Failure 500 {object} models.APIError "Internal server error"
+// @Router /recipes/{recipeId}/modify/accept [post]
+func (h *ThreadHandler) AcceptRecipeModification(w http.ResponseWriter, r *http.Request) {
+	userID := api.GetUserID(r)
+	if userID == "" {
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrBadRequest)
+		return
+	}
+
+	recipeID := chi.URLParam(r, "recipeId")
+	if recipeID == "" {
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
+		return
+	}
+
+	err := h.threadService.AcceptRecipeModification(r.Context(), userID, recipeID)
+	if err != nil {
+		zap.L().Error("failed to accept recipe modification", zap.Error(err))
+		switch {
+		case errors.Is(err, ErrThreadNotFound):
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrThreadNotFound)
+		default:
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+		}
+		return
+	}
+	api.WriteJSON(w, http.StatusNoContent, nil)
+}
+
+// @Summary Reject a recipe modification
+// @Description Reject a recipe modification
+// @ID rejectRecipeModification
+// @Tags thread
+// @Accept json
+// @Produce json
+// @Param recipeId path string true "Recipe ID"
+// @Success 204 "Recipe modified"
+// @Failure 401 {object} models.APIError "Unauthorized"
+// @Failure 404 {object} models.APIError "Thread not found"
+// @Failure 500 {object} models.APIError "Internal server error"
+// @Router /recipes/{recipeId}/modify/reject [post]
+func (h *ThreadHandler) RejectRecipeModification(w http.ResponseWriter, r *http.Request) {
+	userID := api.GetUserID(r)
+	if userID == "" {
+		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrBadRequest)
+		return
+	}
+
+	recipeID := chi.URLParam(r, "recipeId")
+	if recipeID == "" {
+		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
+		return
+	}
+
+	err := h.threadService.RejectRecipeModification(r.Context(), userID, recipeID)
+	if err != nil {
+		zap.L().Error("failed to reject recipe modification", zap.Error(err))
+		switch {
+		case errors.Is(err, ErrThreadNotFound):
+			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrThreadNotFound)
+		default:
+			api.ErrorJSON(w, http.StatusInternalServerError, models.ApiErrInternal)
+		}
+		return
+	}
+	api.WriteJSON(w, http.StatusNoContent, nil)
+}
+
 // @Summary Answer a cooking question
 // @Description Answer a cooking question
 // @ID answerCookingQuestion

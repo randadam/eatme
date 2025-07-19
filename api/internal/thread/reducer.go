@@ -3,23 +3,36 @@ package thread
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/ajohnston1219/eatme/api/internal/models"
 	"go.uber.org/zap"
 )
 
-func ReduceThreadEvents(threadID string, events []models.ThreadEvent) (*models.ThreadState, error) {
+func ReduceThreadEvents(threadID string, events []models.ThreadEvent, originalState *models.ThreadState) (*models.ThreadState, error) {
 	thread := &models.ThreadState{
 		ID:          threadID,
 		Suggestions: []*models.RecipeSuggestion{},
 		RecipeID:    nil,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	if originalState != nil {
+		thread.OriginalPrompt = originalState.OriginalPrompt
+		thread.CurrentPrompt = originalState.CurrentPrompt
+		thread.Suggestions = originalState.Suggestions
+		thread.ChatHistory = originalState.ChatHistory
+		thread.CurrentRecipe = originalState.CurrentRecipe
+		thread.ModifiedRecipe = originalState.ModifiedRecipe
+		thread.CreatedAt = originalState.CreatedAt
+		thread.UpdatedAt = originalState.UpdatedAt
 	}
 	zap.L().Debug("reducing thread events", zap.Int("event_count", len(events)))
 	for _, event := range events {
-		zap.L().Debug("reducing thread event", zap.String("event_type", event.Type), zap.String("event_payload", string(event.Payload)))
+		zap.L().Debug("reducing thread event", zap.String("event_type", string(event.Type)), zap.String("event_payload", string(event.Payload)))
 		thread.UpdatedAt = event.Timestamp
 		switch event.Type {
-		case string(models.ThreadEventTypePromptSet):
+		case models.ThreadEventTypePromptSet:
 			var p models.PromptSetEvent
 			err := json.Unmarshal(event.Payload, &p)
 			if err != nil {
@@ -29,7 +42,7 @@ func ReduceThreadEvents(threadID string, events []models.ThreadEvent) (*models.T
 			thread.OriginalPrompt = p.Prompt
 			thread.CurrentPrompt = p.Prompt
 			thread.CreatedAt = event.Timestamp
-		case string(models.ThreadEventTypePromptEdited):
+		case models.ThreadEventTypePromptEdited:
 			var p models.PromptEditedEvent
 			err := json.Unmarshal(event.Payload, &p)
 			if err != nil {
@@ -37,7 +50,7 @@ func ReduceThreadEvents(threadID string, events []models.ThreadEvent) (*models.T
 				return nil, ErrInvalidThreadEventPayload
 			}
 			thread.CurrentPrompt = p.Prompt
-		case string(models.ThreadEventTypeSuggestionGenerated):
+		case models.ThreadEventTypeSuggestionGenerated:
 			suggestionEvent := models.SuggestionGeneratedEvent{}
 			err := json.Unmarshal(event.Payload, &suggestionEvent)
 			if err != nil {
@@ -52,7 +65,7 @@ func ReduceThreadEvents(threadID string, events []models.ThreadEvent) (*models.T
 				Accepted:     false,
 			}
 			thread.Suggestions = append(thread.Suggestions, suggestion)
-		case string(models.ThreadEventTypeSuggestionAccepted):
+		case models.ThreadEventTypeSuggestionAccepted:
 			suggestionEvent := models.SuggestionAcceptedEvent{}
 			err := json.Unmarshal(event.Payload, &suggestionEvent)
 			if err != nil {
@@ -72,7 +85,7 @@ func ReduceThreadEvents(threadID string, events []models.ThreadEvent) (*models.T
 			if !found {
 				return nil, ErrSuggestionNotFound
 			}
-		case string(models.ThreadEventTypeSuggestionRejected):
+		case models.ThreadEventTypeSuggestionRejected:
 			suggestionEvent := models.SuggestionRejectedEvent{}
 			err := json.Unmarshal(event.Payload, &suggestionEvent)
 			if err != nil {
@@ -91,15 +104,20 @@ func ReduceThreadEvents(threadID string, events []models.ThreadEvent) (*models.T
 			if !found {
 				return nil, ErrSuggestionNotFound
 			}
-		case string(models.ThreadEventTypeRecipeModified):
+		case models.ThreadEventTypeRecipeModified:
 			var recipeEvent models.RecipeModifiedEvent
 			err := json.Unmarshal(event.Payload, &recipeEvent)
 			if err != nil {
 				zap.L().Error("failed to unmarshal recipe modified event", zap.Error(err))
 				return nil, ErrInvalidThreadEventPayload
 			}
-			thread.CurrentRecipe = &recipeEvent.Recipe
-		case string(models.ThreadEventTypeQuestionAnswered):
+			thread.ModifiedRecipe = &recipeEvent.Recipe
+		case models.ThreadEventTypeRecipeModificationAccepted:
+			thread.CurrentRecipe = thread.ModifiedRecipe
+			thread.ModifiedRecipe = nil
+		case models.ThreadEventTypeRecipeModificationRejected:
+			thread.ModifiedRecipe = nil
+		case models.ThreadEventTypeQuestionAnswered:
 			questionEvent := models.QuestionAnsweredEvent{}
 			err := json.Unmarshal(event.Payload, &questionEvent)
 			if err != nil {

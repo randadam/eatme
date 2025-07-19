@@ -35,7 +35,9 @@ func (i *Ingredients) Scan(value interface{}) error {
 	return json.Unmarshal(b, i)
 }
 
-type Steps []string
+type Step string
+
+type Steps []Step
 
 func (s *Steps) Scan(value interface{}) error {
 	b, ok := value.([]byte)

@@ -60,7 +60,7 @@ func WithIngredients(ingredients []models.Ingredient) FakeRecipeOpt {
 	}
 }
 
-func WithSteps(steps []string) FakeRecipeOpt {
+func WithSteps(steps []models.Step) FakeRecipeOpt {
 	return func(r *models.RecipeBody) {
 		r.Steps = steps
 	}
@@ -73,7 +73,7 @@ func makeFakeRecipe(title string, opts ...FakeRecipeOpt) models.RecipeBody {
 		TotalTimeMinutes: 60,
 		Servings:         4,
 		Ingredients:      []models.Ingredient{{Name: "Ingredient 1"}, {Name: "Ingredient 2"}},
-		Steps:            []string{"Step 1", "Step 2"},
+		Steps:            []models.Step{"Step 1", "Step 2"},
 	}
 	for _, opt := range opts {
 		opt(&recipe)

@@ -69,6 +69,8 @@ func NewRouter(app *App) *chi.Mux {
 		r.Get("/", recipeHandler.GetAllRecipes)
 		r.Get("/{recipeId}", recipeHandler.GetRecipe)
 		r.Post("/{recipeId}/modify/chat", threadHandler.ModifyRecipeViaChat)
+		r.Post("/{recipeId}/modify/accept", threadHandler.AcceptRecipeModification)
+		r.Post("/{recipeId}/modify/reject", threadHandler.RejectRecipeModification)
 		r.Delete("/{recipeId}", recipeHandler.DeleteRecipe)
 	})
 

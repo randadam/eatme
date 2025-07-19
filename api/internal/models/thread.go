@@ -23,7 +23,7 @@ type Thread struct {
 
 // @Description ThreadEvent represents an event that occurred as part of a suggestion thread
 type ThreadEvent struct {
-	Type      string          `json:"type" binding:"required"`
+	Type      ThreadEventType `json:"type" binding:"required"`
 	Payload   json.RawMessage `json:"payload" binding:"required"`
 	Timestamp time.Time       `json:"timestamp" binding:"required"`
 }
@@ -31,13 +31,15 @@ type ThreadEvent struct {
 type ThreadEventType string
 
 const (
-	ThreadEventTypePromptSet           ThreadEventType = "PromptSet"
-	ThreadEventTypePromptEdited        ThreadEventType = "PromptEdited"
-	ThreadEventTypeSuggestionGenerated ThreadEventType = "SuggestionGenerated"
-	ThreadEventTypeSuggestionAccepted  ThreadEventType = "SuggestionAccepted"
-	ThreadEventTypeSuggestionRejected  ThreadEventType = "SuggestionRejected"
-	ThreadEventTypeRecipeModified      ThreadEventType = "RecipeModified"
-	ThreadEventTypeQuestionAnswered    ThreadEventType = "QuestionAnswered"
+	ThreadEventTypePromptSet                  ThreadEventType = "PromptSet"
+	ThreadEventTypePromptEdited               ThreadEventType = "PromptEdited"
+	ThreadEventTypeSuggestionGenerated        ThreadEventType = "SuggestionGenerated"
+	ThreadEventTypeSuggestionAccepted         ThreadEventType = "SuggestionAccepted"
+	ThreadEventTypeSuggestionRejected         ThreadEventType = "SuggestionRejected"
+	ThreadEventTypeRecipeModified             ThreadEventType = "RecipeModified"
+	ThreadEventTypeRecipeModificationAccepted ThreadEventType = "RecipeModificationAccepted"
+	ThreadEventTypeRecipeModificationRejected ThreadEventType = "RecipeModificationRejected"
+	ThreadEventTypeQuestionAnswered           ThreadEventType = "QuestionAnswered"
 )
 
 // @Description PromptSetEvent represents setting the inital prompt
@@ -85,6 +87,14 @@ type RecipeModifiedEvent struct {
 	Recipe RecipeBody `json:"recipe" binding:"required"`
 }
 
+// @Description RecipeModificationAcceptedEvent represents accepting a recipe modification
+type RecipeModificationAcceptedEvent struct {
+}
+
+// @Description RecipeModificationRejectedEvent represents rejecting a recipe modification
+type RecipeModificationRejectedEvent struct {
+}
+
 // @Description QuestionAnsweredEvent represents answering a question
 type QuestionAnsweredEvent struct {
 	Question string `json:"question" binding:"required"`
@@ -106,6 +116,7 @@ type ThreadState struct {
 	Suggestions    []*RecipeSuggestion `json:"suggestions" binding:"required"`
 	ChatHistory    []*ChatMessage      `json:"chat_history" binding:"required"`
 	CurrentRecipe  *RecipeBody         `json:"current_recipe"`
+	ModifiedRecipe *RecipeBody         `json:"modified_recipe"`
 	CreatedAt      time.Time           `json:"created_at" binding:"required"`
 	UpdatedAt      time.Time           `json:"updated_at" binding:"required"`
 }
