@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { ChatBody, type ChatItem } from "../chat/chat-body";
 import FocusedLayout from "@/layouts/focused-layout";
 import BottomSheet from "@/components/shared/bottom-sheet";
+import { useState } from "react";
 
 interface CookModeProps {
     id: string
@@ -20,6 +21,7 @@ interface CookModeProps {
 
 export default function CookMode({ id, recipe, chatHistory, askQuestion, askQuestionPending, askQuestionError }: CookModeProps) {
     const nav = useNavigate()
+    const [showChat, setShowChat] = useState(false)
     const { currentStep, stepIdx, goNext, goPrev, ingredients, ingredientsOpen, toggleIngredients } = useCookMode(recipe)
 
     return (
@@ -61,13 +63,23 @@ export default function CookMode({ id, recipe, chatHistory, askQuestion, askQues
                 </Sheet>
             </div>
             <BottomSheet
+                size={showChat ? "full" : "peek"}
+                onSizeChange={(size) => setShowChat(size === "full")}
                 peekHeight={12}
                 fullHeight={75}
                 header={
-                    <h3 className="text-lg font-semibold">Need Help?</h3>
+                    (size) => size === "peek" ? (
+                        <h3 className="text-lg font-semibold">Need Help?</h3>
+                    ) : (
+                        <h2 className="text-lg font-semibold">Here to Help</h2>
+                    )
                 }
                 subHeader={
-                    <p className="text-sm text-muted-foreground">Ask away</p>
+                    (size) => size === "peek" ? (
+                        <p className="text-sm text-muted-foreground">Swipe up and ask away</p>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">Swipe down to get back to cooking</p>
+                    )
                 }
             >
                 <ChatBody
@@ -75,6 +87,7 @@ export default function CookMode({ id, recipe, chatHistory, askQuestion, askQues
                     loading={askQuestionPending}
                     onSend={askQuestion}
                     error={askQuestionError}
+                    onCancel={() => setShowChat(false)}
                 />
             </BottomSheet>
         </FocusedLayout>
@@ -133,7 +146,13 @@ interface CookModeControlsProps {
 
 function CookModeControls({ stepIdx, total, onBack, onNext, toggleIngredients }: CookModeControlsProps) {
     return (
-        <div className="flex flex-col justify-between space-y-4 p-4 pb-12">
+        <div className="flex flex-col justify-between space-y-4 p-4 pb-24">
+            <div className="flex justify-center gap-2">
+                <Button size="lg" variant="outline" onClick={toggleIngredients} className="flex items-center gap-2 w-full">
+                    <List />
+                    Ingredients
+                </Button>
+            </div>
             <div className="flex justify-center gap-2">
                 <Button size="lg" disabled={stepIdx === 0} onClick={onBack} className="flex items-center gap-2 w-1/2">
                     <ChevronLeft />
@@ -142,12 +161,6 @@ function CookModeControls({ stepIdx, total, onBack, onNext, toggleIngredients }:
                 <Button size="lg" disabled={stepIdx === total - 1} onClick={onNext} className="flex items-center gap-2 w-1/2">
                     Next
                     <ChevronRight />
-                </Button>
-            </div>
-            <div className="flex justify-center gap-2">
-                <Button size="lg" variant="outline" onClick={toggleIngredients} className="flex items-center gap-2 w-full">
-                    <List />
-                    Ingredients
                 </Button>
             </div>
         </div>

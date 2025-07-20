@@ -8,8 +8,8 @@ export type SheetSize = "peek" | "full";
 
 interface BottomSheetProps {
     children: React.ReactNode;
-    header?: React.ReactNode;
-    subHeader?: React.ReactNode;
+    header?: React.ReactNode | ((size: SheetSize) => React.ReactNode);
+    subHeader?: React.ReactNode | ((size: SheetSize) => React.ReactNode);
     initialSize?: SheetSize;
     peekHeight?: number;      // in vh
     fullHeight?: number;      // in vh
@@ -120,22 +120,25 @@ export default function BottomSheet({
                 <div
                     onPointerDown={(e) => dragControls.start(e)}
                     onClick={() => setSize(size === "peek" ? "full" : "peek")}
-                    className="flex items-center justify-center pt-4 pb-1 cursor-pointer"
                 >
-                    <div className="h-1.5 w-10 rounded-full bg-muted-foreground/40" />
-                </div>
+                    <div
+                        className="flex items-center justify-center pt-4 pb-1 cursor-pointer"
+                    >
+                        <div className="h-1.5 w-10 rounded-full bg-muted-foreground/40" />
+                    </div>
 
-                <div className={`h-[calc(${peekHeight}vh-4rem)] py-2`}>
-                    {header && (
-                        <header className="flex items-center justify-center px-4 w-full">
-                            {header}
-                        </header>
-                    )}
-                    {subHeader && (
-                        <div className="flex items-center justify-center px-4 w-full">
-                            {subHeader}
-                        </div>
-                    )}
+                    <div className={`h-[calc(${peekHeight}vh-4rem)] py-2`}>
+                        {header && (
+                            <header className="flex items-center justify-center px-4 w-full">
+                                {typeof header === "function" ? header(size) : header}
+                            </header>
+                        )}
+                        {subHeader && (
+                            <div className="flex items-center justify-center px-4 w-full">
+                                {typeof subHeader === "function" ? subHeader(size) : subHeader}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {size === 'full' && (

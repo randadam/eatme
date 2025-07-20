@@ -140,7 +140,7 @@ export function useAnswerQuestion(threadId: string) {
 
     useEffect(() => {
         if (thread) {
-            setHistory(thread.chat_history as ChatItem[])
+            setHistory((thread.chat_history ?? []) as ChatItem[])
         }
     }, [thread])
 

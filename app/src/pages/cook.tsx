@@ -45,7 +45,7 @@ interface CookPageLayoutProps {
 
 function CookPageLayout({ children }: CookPageLayoutProps) {
     return (
-        <div className="flex flex-col h-screen bg-background">
+        <div className="flex flex-col h-screen bg-background pt-4">
             {children}
         </div>
     )
