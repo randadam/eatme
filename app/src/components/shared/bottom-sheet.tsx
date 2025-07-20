@@ -139,8 +139,16 @@ export default function BottomSheet({
                 </div>
 
                 {size === 'full' && (
-                    <div className="flex-1 overflow-y-auto">{children}</div>
+                    <div
+                        className="flex-1 overflow-y-auto"
+                        style={{
+                            paddingBottom: `calc(${bottomPadding}px + env(safe-area-inset-bottom))`
+                        }}
+                    >
+                        {children}
+                    </div>
                 )}
+                <div className={`h-[${bottomPadding}px]`} />
             </motion.div>
         </FocusTrap>,
         root,

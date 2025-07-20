@@ -1,12 +1,13 @@
 import type api from "@/api";
 import { useCookMode } from "./hooks";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronLeft, ChevronRight, CircleQuestionMark, List } from "lucide-react"
+import { ArrowLeft, ChevronLeft, ChevronRight, List } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { useNavigate } from "react-router-dom"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ChatBody, type ChatItem } from "../chat/chat-body";
-import { useState } from "react";
+import FocusedLayout from "@/layouts/focused-layout";
+import BottomSheet from "@/components/shared/bottom-sheet";
 
 interface CookModeProps {
     id: string
@@ -20,53 +21,63 @@ interface CookModeProps {
 export default function CookMode({ id, recipe, chatHistory, askQuestion, askQuestionPending, askQuestionError }: CookModeProps) {
     const nav = useNavigate()
     const { currentStep, stepIdx, goNext, goPrev, ingredients, ingredientsOpen, toggleIngredients } = useCookMode(recipe)
-    const [chatOpen, setChatOpen] = useState(false);
 
     return (
-        <div className="flex flex-col h-screen bg-background">
-            <CookModeHeader
-                stepIdx={stepIdx} 
-                total={recipe.steps.length} 
-                title={recipe.title} 
-                onBack={() => nav(`/recipes/${id}`)} 
-            />
-            <CookModeInstructions currentStep={currentStep} stepIdx={stepIdx}/>
-            <CookModeControls 
-                stepIdx={stepIdx} 
-                total={recipe.steps.length} 
-                onBack={goPrev} 
-                onNext={goNext} 
-                toggleIngredients={toggleIngredients}
-                openChat={() => setChatOpen(true)}
-            />
-            <Sheet open={ingredientsOpen} onOpenChange={toggleIngredients}>
-                <SheetContent>
-                    <SheetHeader>
-                        <SheetTitle>Ingredients</SheetTitle>
-                        <SheetDescription>
-                            <ul>
-                                {ingredients.map(i => (
-                                    <li key={i.name} className="flex space-x-2">
-                                        <p>{i.quantity}</p>
-                                        <p>{i.unit}</p>
-                                        <p>{i.name}</p>
-                                    </li>
-                                ))}
-                            </ul>
-                        </SheetDescription>
-                    </SheetHeader>
-                </SheetContent>
-            </Sheet>
-            <ChatBody
-                open={chatOpen}
-                onOpenChange={setChatOpen}
-                mode="question"
-                history={chatHistory}
-                onSend={m => askQuestion(m)}
-                loading={askQuestionPending}
-                error={askQuestionError}
-            />
-        </div>
+        <FocusedLayout>
+            <div className="flex flex-col h-full">
+                <CookModeHeader
+                    stepIdx={stepIdx}
+                    total={recipe.steps.length}
+                    title={recipe.title}
+                    onBack={() => nav(`/recipes/${id}`)}
+                />
+                <div className="h-full flex flex-col justify-between">
+                    <CookModeInstructions currentStep={currentStep} stepIdx={stepIdx} />
+                    <CookModeControls
+                        stepIdx={stepIdx}
+                        total={recipe.steps.length}
+                        onBack={goPrev}
+                        onNext={goNext}
+                        toggleIngredients={toggleIngredients}
+                    />
+                </div>
+                <Sheet open={ingredientsOpen} onOpenChange={toggleIngredients}>
+                    <SheetContent>
+                        <SheetHeader>
+                            <SheetTitle>Ingredients</SheetTitle>
+                            <SheetDescription>
+                                <ul>
+                                    {ingredients.map(i => (
+                                        <li key={i.name} className="flex space-x-2">
+                                            <p>{i.quantity}</p>
+                                            <p>{i.unit}</p>
+                                            <p>{i.name}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </SheetDescription>
+                        </SheetHeader>
+                    </SheetContent>
+                </Sheet>
+            </div>
+            <BottomSheet
+                peekHeight={12}
+                fullHeight={75}
+                header={
+                    <h3 className="text-lg font-semibold">Need Help?</h3>
+                }
+                subHeader={
+                    <p className="text-sm text-muted-foreground">Ask away</p>
+                }
+            >
+                <ChatBody
+                    history={chatHistory}
+                    loading={askQuestionPending}
+                    onSend={askQuestion}
+                    error={askQuestionError}
+                />
+            </BottomSheet>
+        </FocusedLayout>
     )
 }
 
@@ -94,7 +105,7 @@ function CookModeHeader({ stepIdx, total, title, onBack }: CookModeHeaderProps) 
             <Progress value={pct} className="h-1 rounded-none" />
         </header>
     )
-} 
+}
 
 interface CookModeInstructionsProps {
     stepIdx: number
@@ -103,7 +114,7 @@ interface CookModeInstructionsProps {
 
 function CookModeInstructions({ stepIdx, currentStep }: CookModeInstructionsProps) {
     return (
-        <div className="flex flex-col justify-between">
+        <div className="flex flex-col justify-between p-4">
             <h3 className="text-left text-lg font-semibold pb-2">
                 Step {stepIdx + 1}
             </h3>
@@ -118,30 +129,25 @@ interface CookModeControlsProps {
     onBack: () => void
     onNext: () => void
     toggleIngredients: () => void
-    openChat: () => void
 }
 
-function CookModeControls({ stepIdx, total, onBack, onNext, toggleIngredients, openChat }: CookModeControlsProps) {
+function CookModeControls({ stepIdx, total, onBack, onNext, toggleIngredients }: CookModeControlsProps) {
     return (
-        <div className="fixed bottom-2 inset-x-0 px-4 flex flex-col justify-between space-y-4 pb-4">
+        <div className="flex flex-col justify-between space-y-4 p-4 pb-12">
             <div className="flex justify-center gap-2">
                 <Button size="lg" disabled={stepIdx === 0} onClick={onBack} className="flex items-center gap-2 w-1/2">
-                    <ChevronLeft/>
+                    <ChevronLeft />
                     Prev
                 </Button>
                 <Button size="lg" disabled={stepIdx === total - 1} onClick={onNext} className="flex items-center gap-2 w-1/2">
                     Next
-                    <ChevronRight/>
+                    <ChevronRight />
                 </Button>
             </div>
             <div className="flex justify-center gap-2">
-                <Button size="lg" variant="outline" onClick={toggleIngredients} className="flex items-center gap-2 w-1/2">
-                    <List/>
+                <Button size="lg" variant="outline" onClick={toggleIngredients} className="flex items-center gap-2 w-full">
+                    <List />
                     Ingredients
-                </Button>
-                <Button size="lg" variant="outline" onClick={openChat} className="flex items-center gap-2 w-1/2">
-                    <CircleQuestionMark/>
-                    Help
                 </Button>
             </div>
         </div>

@@ -1,7 +1,7 @@
 import LoaderButton from "@/components/shared/loader-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface ChatItem {
   source: 'user' | 'assistant';
@@ -25,20 +25,24 @@ export function ChatBody({
   const [input, setInput] = useState("")
   const messageEndRef = useRef<HTMLDivElement | null>(null)
 
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [history])
+
   const handleSend = (message: string) => {
     onSend(message)
     setInput("")
   }
 
   return (
-    <div className="p-4">
+    <div className="flex flex-col h-full px-1 pb-1 gap-2">
       {history && (
         <div className="flex flex-col flex-1 space-y-4 overflow-y-scroll border border-gray-200 rounded-md p-4">
           {history?.map((item, idx) => (
             item.source === "user" ? (
               <div key={idx} className="flex flex-col gap-2 bg-primary text-primary-foreground p-2 rounded-md mb-2 ml-4">
                 <p className="text-right">{item.message}</p>
-                <p className="text-left text-xs">Me</p>
+                <p className="text-right text-xs">Me</p>
               </div>
             ) : (
               <div key={idx} className="flex flex-col gap-2 bg-gray-200 p-2 rounded-md mb-2 mr-4">
