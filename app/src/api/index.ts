@@ -28,6 +28,9 @@ api.defaults.fetch = async (url, opts = {}) => {
 
     if (!res.ok) {
         console.error(`HTTP ${res.status}`)
+        if (res.status === 401) {
+            localStorage.removeItem("token")
+        }
         let parsed: api.ModelsApiError = {
             code: "UNKNOWN_ERROR",
             message: `HTTP ${res.status}`

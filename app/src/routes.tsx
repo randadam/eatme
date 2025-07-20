@@ -1,6 +1,7 @@
 import { lazy } from "react"
 import { createBrowserRouter } from "react-router-dom"
 import RootLayout from "@/layouts/root-layout"
+import ProtectedRoute from "@/components/shared/protected-route"
 
 const Landing = lazy(() => import("@/pages/landing"))
 const Signup = lazy(() => import("@/pages/signup"))
@@ -27,27 +28,51 @@ const routes = [
             },
             {
                 path: "/profile",
-                element: <Profile/>,
+                element: (
+                    <ProtectedRoute>
+                        <Profile/>
+                    </ProtectedRoute>
+                ),
             },
             {
                 path: "/recipes",
-                element: <AllRecipes/>,
+                element: (
+                    <ProtectedRoute>
+                        <AllRecipes/>
+                    </ProtectedRoute>
+                ),
             },
             {
                 path: "/recipes/:id",
-                element: <Recipe/>,
+                element: (
+                    <ProtectedRoute>
+                        <Recipe/>
+                    </ProtectedRoute>
+                ),
             },
             {
                 path: "/suggest/:threadId",
-                element: <Suggest/>,
+                element: (
+                    <ProtectedRoute>
+                        <Suggest/>
+                    </ProtectedRoute>
+                ),
             },
             {
                 path: "/cook/:recipeId",
-                element: <Cook/>,
+                element: (
+                    <ProtectedRoute>
+                        <Cook/>
+                    </ProtectedRoute>
+                ),
             },
             {
                 path: "/modify-recipe/:recipeId",
-                element: <ModifyRecipe/>,
+                element: (
+                    <ProtectedRoute>
+                        <ModifyRecipe/>
+                    </ProtectedRoute>
+                ),
             },
             {
                 path: "/signup/*",

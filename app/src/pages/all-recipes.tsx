@@ -50,8 +50,11 @@ export default function AllRecipesPage() {
                 viewRecipe={(recipeId) => nav(`/recipes/${recipeId}`)}
             />
             <AddButton onClick={handleAddRecipe} />
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent>
+            <Dialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+            >
+                <DialogContent className="top-[10%] translate-y-0">
                     <DialogHeader>
                         <DialogTitle>Add Recipe</DialogTitle>
                         <DialogDescription>
