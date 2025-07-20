@@ -27,11 +27,11 @@ export function ChatBody({
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    setInput("")
   }, [history])
 
   const handleSend = (message: string) => {
     onSend(message)
-    setInput("")
   }
 
   return (
@@ -65,6 +65,7 @@ export function ChatBody({
           loading={loading}
           input={input}
           setInput={setInput}
+          disabled={loading}
         />
         {error && <p>{error}</p>}
       </div>
@@ -77,14 +78,25 @@ interface ChatInputProps {
   loading: boolean;
   input: string;
   setInput: (input: string) => void;
+  disabled?: boolean;
 }
 
-function ChatInput({ onSend, loading, input, setInput }: ChatInputProps) {
+function ChatInput({ onSend, loading, input, setInput, disabled }: ChatInputProps) {
 
   return (
     <div className="flex flex-col space-y-2">
-      <Textarea className="min-h-[15vh]" value={input} onChange={(e) => setInput(e.target.value)} />
-      <LoaderButton onClick={() => onSend(input)} isLoading={loading}>
+      <Textarea
+        className="min-h-[15vh]"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        disabled={disabled}
+        autoFocus={true}
+      />
+      <LoaderButton
+        onClick={() => onSend(input)}
+        isLoading={loading}
+        disabled={input.trim() === ""}
+      >
         Send
       </LoaderButton>
     </div>
