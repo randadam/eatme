@@ -29,10 +29,10 @@ test("full signup flow", async ({ page }) => {
     await profileSetupPage.fillName(name)
     await profileSetupPage.submit()
 
-    const skillsPage = new SignupSkillPage(page)
-    await skillsPage.expectToBeHere()
-    await skillsPage.selectSkill("chef")
-    await skillsPage.submit()
+    const skillPage = new SignupSkillPage(page)
+    await skillPage.expectToBeHere()
+    await skillPage.selectSkill("chef")
+    await skillPage.submit()
 
     const cuisines = ["italian", "mexican"]
     const cuisinesPage = new SignupCuisinesPage(page)

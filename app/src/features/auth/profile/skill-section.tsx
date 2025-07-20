@@ -9,13 +9,13 @@ import SkillForm from "../forms/skill-form";
 import type { SaveProfileFn } from "../forms/types";
 import LoaderButton from "@/components/shared/loader-button";
 
-export interface SkillsSectionProps {
+export interface SkillSectionProps {
     profile: SkillFormValues
     onSave: SaveProfileFn
     isPending: boolean
 }
 
-export default function SkillsSection({ profile, onSave, isPending }: SkillsSectionProps) {
+export default function SkillSection({ profile, onSave, isPending }: SkillSectionProps) {
     const form = useSkillForm({
         skill: profile?.skill ?? "beginner",
     })
@@ -24,15 +24,15 @@ export default function SkillsSection({ profile, onSave, isPending }: SkillsSect
     const onSubmit = (values: SkillFormValues) => {
         onSave({ ...values }, {
             onSuccess: () => {
-                toast.success('Skills saved')
+                toast.success('Skill level saved')
             },
             onError: (err) => handleFormError(err),
         })
     }
 
     return (
-        <AccordionItem value="skills">
-            <AccordionTrigger data-testid="skills-trigger">Skills</AccordionTrigger>
+        <AccordionItem value="skill">
+            <AccordionTrigger data-testid="skill-trigger">Skill Level</AccordionTrigger>
             <AccordionContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

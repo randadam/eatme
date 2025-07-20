@@ -1,6 +1,6 @@
 import BasicProfileSection from "@/features/auth/profile/basic-profile-section";
 import { Accordion } from "@/components/ui/accordion";
-import SkillsSection from "@/features/auth/profile/skills-section";
+import SkillSection from "@/features/auth/profile/skill-section";
 import { useUser } from "@/features/auth/hooks";
 import { useSaveProfile } from "@/features/auth/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,7 +28,7 @@ export default function ProfilePage() {
             {profile && (
                 <Accordion type="single" collapsible className="w-full">
                     <BasicProfileSection profile={profile} onSave={saveProfile} isPending={isPending} />
-                    <SkillsSection profile={profile} onSave={saveProfile} isPending={isPending} />
+                    <SkillSection profile={profile} onSave={saveProfile} isPending={isPending} />
                     <CuisinesSection profile={profile} onSave={saveProfile} isPending={isPending} />
                     <DietSection profile={profile} onSave={saveProfile} isPending={isPending} />
                     <AllergiesSection profile={profile} onSave={saveProfile} isPending={isPending} />
