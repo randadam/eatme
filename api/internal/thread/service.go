@@ -233,6 +233,22 @@ func (s *ThreadService) AcceptSuggestion(ctx context.Context, userID string, thr
 		if !found {
 			return ErrSuggestionNotFound
 		}
+		acceptedEvent := models.SuggestionAcceptedEvent{
+			SuggestionID: suggestionID,
+			RecipeID:     recipe.ID,
+		}
+		payload, err := json.Marshal(acceptedEvent)
+		if err != nil {
+			return ErrInvalidThreadEventPayload
+		}
+		event := models.ThreadEvent{
+			Type:      models.ThreadEventTypeSuggestionAccepted,
+			Payload:   payload,
+			Timestamp: time.Now(),
+		}
+		if err := s.AppendEventsToThread(ctx, threadID, []models.ThreadEvent{event}); err != nil {
+			return fmt.Errorf("failed to append events to thread: %w", err)
+		}
 		if err := tx.AssociateThreadWithRecipe(ctx, threadID, recipe.ID); err != nil {
 			return fmt.Errorf("failed to associate thread with recipe: %w", err)
 		}
@@ -320,9 +336,11 @@ func (s *ThreadService) AcceptRecipeModification(ctx context.Context, userID str
 			Payload:   payload,
 			Timestamp: time.Now(),
 		}
+		thread.Events = append(thread.Events, event)
 		if err := s.AppendEventsToThread(ctx, thread.ID, []models.ThreadEvent{event}); err != nil {
 			return fmt.Errorf("failed to append events to thread: %w", err)
 		}
+		zap.L().Debug("appended event to thread")
 		threadState, err := ReduceThreadEvents(thread.ID, thread.Events, nil)
 		if err != nil {
 			return fmt.Errorf("failed to reduce thread events: %w", err)
@@ -330,6 +348,7 @@ func (s *ThreadService) AcceptRecipeModification(ctx context.Context, userID str
 		if err = s.recipeService.UpdateRecipe(ctx, userID, recipeID, *threadState.CurrentRecipe); err != nil {
 			return fmt.Errorf("failed to update recipe: %w", err)
 		}
+		zap.L().Debug("updated recipe")
 
 		return nil
 	})

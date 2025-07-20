@@ -29,7 +29,9 @@ func ReduceThreadEvents(threadID string, events []models.ThreadEvent, originalSt
 	}
 	zap.L().Debug("reducing thread events", zap.Int("event_count", len(events)))
 	for _, event := range events {
-		zap.L().Debug("reducing thread event", zap.String("event_type", string(event.Type)), zap.String("event_payload", string(event.Payload)))
+		zap.L().Debug("reducing thread event", zap.String("event_type", string(event.Type)), zap.Any("event", event))
+		zap.L().Debug("current recipe", zap.Any("current_recipe", thread.CurrentRecipe))
+		zap.L().Debug("modified recipe", zap.Any("modified_recipe", thread.ModifiedRecipe))
 		thread.UpdatedAt = event.Timestamp
 		switch event.Type {
 		case models.ThreadEventTypePromptSet:

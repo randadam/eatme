@@ -259,12 +259,12 @@ func (s *SQLiteStore) CreateThread(ctx context.Context, userID string, thread mo
 	if err != nil {
 		return fmt.Errorf("failed to create thread: %w", err)
 	}
-	for _, event := range thread.Events {
+	for i, event := range thread.Events {
 		eventId := uuid.NewString()
 		_, err = s.run.ExecContext(ctx, `
-			INSERT INTO thread_events (id, thread_id, event_type, payload)
-			VALUES (?, ?, ?, ?)
-		`, eventId, thread.ID, event.Type, event.Payload)
+			INSERT INTO thread_events (id, thread_id, event_index, event_type, payload)
+			VALUES (?, ?, ?, ?, ?)
+		`, eventId, thread.ID, i, event.Type, event.Payload)
 		if err != nil {
 			return fmt.Errorf("failed to append to thread: %w", err)
 		}
@@ -276,9 +276,14 @@ func (s *SQLiteStore) AppendToThread(ctx context.Context, threadId string, event
 	for _, event := range events {
 		eventId := uuid.NewString()
 		_, err := s.run.ExecContext(ctx, `
-			INSERT INTO thread_events (id, thread_id, event_type, payload)
-			VALUES (?, ?, ?, ?)
-		`, eventId, threadId, event.Type, event.Payload)
+			WITH next_index AS (
+				SELECT MAX(event_index) + 1 AS next_index
+				FROM thread_events
+				WHERE thread_id = ?
+			)
+			INSERT INTO thread_events (thread_id, id, event_index, event_type, payload)
+			VALUES (?, ?, (SELECT next_index FROM next_index), ?, ?)
+		`, threadId, threadId, eventId, event.Type, event.Payload)
 		if err != nil {
 			return fmt.Errorf("failed to append to thread: %w", err)
 		}
@@ -320,7 +325,8 @@ func (s *SQLiteStore) GetThread(ctx context.Context, threadID string) (models.Th
 	rows, err := s.run.QueryContext(ctx, `
 		SELECT 
 			event_type, payload, created_at
-		FROM thread_events WHERE thread_id = ?;
+		FROM thread_events WHERE thread_id = ?
+		ORDER BY event_index ASC;
 	`, threadID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -658,6 +664,7 @@ func migrate(db *sql.DB) error {
 	CREATE TABLE IF NOT EXISTS thread_events (
 		id                 TEXT PRIMARY KEY,
 		thread_id          TEXT REFERENCES threads(id) ON DELETE CASCADE,
+		event_index        INTEGER NOT NULL,
 		event_type         TEXT NOT NULL,
 		payload            JSON NOT NULL,
 		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

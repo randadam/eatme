@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom"
 import { useGetThread } from "@/features/chat/hooks"
 import SuggestionThread from "@/features/chat/suggest/suggestion-thread"
+import FocusedLayout from "@/layouts/focused-layout"
 
 export default function Suggest() {
     const threadId = useParams().threadId
@@ -20,5 +21,11 @@ export default function Suggest() {
         return <div>Thread not found</div>
     }
 
-    return <SuggestionThread initialThread={initialThread} />
+    return (
+        <FocusedLayout>
+            <div className="p-2">
+                <SuggestionThread initialThread={initialThread} />
+            </div>
+        </FocusedLayout>
+    )
 }

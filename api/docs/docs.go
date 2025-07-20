@@ -315,6 +315,54 @@ const docTemplate = `{
                 }
             }
         },
+        "/recipes/{recipeId}/modify/accept": {
+            "post": {
+                "description": "Accept a recipe modification",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "thread"
+                ],
+                "summary": "Accept a recipe modification",
+                "operationId": "acceptRecipeModification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Recipe ID",
+                        "name": "recipeId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Recipe modified"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Thread not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/recipes/{recipeId}/modify/chat": {
             "post": {
                 "description": "Modify a recipe via chat",
@@ -353,6 +401,54 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/models.ModifyChatResponse"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Thread not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/recipes/{recipeId}/modify/reject": {
+            "post": {
+                "description": "Reject a recipe modification",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "thread"
+                ],
+                "summary": "Reject a recipe modification",
+                "operationId": "rejectRecipeModification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Recipe ID",
+                        "name": "recipeId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Recipe modified"
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -1217,6 +1313,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
+                },
+                "modified_recipe": {
+                    "$ref": "#/definitions/models.RecipeBody"
                 },
                 "original_prompt": {
                     "type": "string"

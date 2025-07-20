@@ -1,7 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
 import api from "@/api"
 import { useEffect, useState } from "react"
-import type { ChatItem } from "./chat-drawer"
+import type { ChatItem } from "./chat-body"
+import { useErrorHandler } from "@/lib/error/error-provider"
 
 export const suggestionThreadKeys = {
     byId: (id: string) => ["suggestion-thread", id] as const,
@@ -37,6 +38,7 @@ export function useSuggestionThread(initialThread: api.ModelsThreadState) {
         firstNotSeen = initialThread.suggestions.length - 1
     }
 
+    const showError = useErrorHandler()
     const [threadState, setThreadState] = useState({
         thread: initialThread,
         currentIndex: firstNotSeen,
@@ -59,6 +61,10 @@ export function useSuggestionThread(initialThread: api.ModelsThreadState) {
                 currentIndex: prev.currentIndex + 1,
             }))
         },
+        onError: (error) => {
+            console.error("Error getting next suggestion", error)
+            showError("Failed to get next suggestion")
+        },
     })
     const reject = () => {
         const nextIndex = threadState.currentIndex + 1;
@@ -68,7 +74,12 @@ export function useSuggestionThread(initialThread: api.ModelsThreadState) {
                 currentIndex: nextIndex,
             }))
         } else {
-            getNextSuggestion(threadState.thread.id)
+            getNextSuggestion(threadState.thread.id, {
+                onError: (error) => {
+                    console.error("Error getting next suggestion", error)
+                    showError("Failed to get next suggestion")
+                },
+            })
         }
     }
 
@@ -80,6 +91,10 @@ export function useSuggestionThread(initialThread: api.ModelsThreadState) {
                 cb(respData.id)
             }
             return respData
+        },
+        onError: (error) => {
+            console.error("Error accepting suggestion", error)
+            showError("Failed to accept suggestion")
         },
     })
     const accept = (cb?: (recipeId: string) => void) => acceptSuggestion(cb)

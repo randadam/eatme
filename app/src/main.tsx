@@ -5,7 +5,6 @@ import App from "./App.tsx"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ErrorProvider } from "./lib/error/error-provider.tsx"
 import { Toaster } from "@/components/ui/sonner"
-import { HelmetProvider } from "react-helmet-async"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,13 +17,11 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <HelmetProvider>
-      <ErrorProvider>
-        <QueryClientProvider client={queryClient}>
-          <App />
-          <Toaster />
-        </QueryClientProvider>
-      </ErrorProvider>
-    </HelmetProvider>
+    <ErrorProvider>
+      <QueryClientProvider client={queryClient}>
+        <App />
+        <Toaster />
+      </QueryClientProvider>
+    </ErrorProvider>
   </StrictMode>,
 )

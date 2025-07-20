@@ -7,18 +7,8 @@ const items = [
   { to: "/profile", icon: User, label: "Profile", testId: 'nav-profile' },
 ]
 
-const hiddenRoutes: RegExp[] = [
-    new RegExp("^/signup"),
-    new RegExp("^/cook/.*"),
-    new RegExp("^/$"),
-    new RegExp("^/login"),
-]
-
 export default function BottomNav() {
   const { pathname } = useLocation()
-  if (hiddenRoutes.some(route => route.test(pathname))) {
-    return null
-  }
 
   return (
     <nav className="fixed bottom-0 inset-x-0 bg-background border-t sm:hidden">

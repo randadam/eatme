@@ -352,6 +352,8 @@ definitions:
         $ref: '#/definitions/models.RecipeBody'
       id:
         type: string
+      modified_recipe:
+        $ref: '#/definitions/models.RecipeBody'
       original_prompt:
         type: string
       recipe_id:
@@ -632,6 +634,38 @@ paths:
       summary: Get recipe by ID
       tags:
       - Recipe
+  /recipes/{recipeId}/modify/accept:
+    post:
+      consumes:
+      - application/json
+      description: Accept a recipe modification
+      operationId: acceptRecipeModification
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipeId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Recipe modified
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Thread not found
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Accept a recipe modification
+      tags:
+      - thread
   /recipes/{recipeId}/modify/chat:
     post:
       consumes:
@@ -670,6 +704,38 @@ paths:
           schema:
             $ref: '#/definitions/models.APIError'
       summary: Modify a recipe via chat
+      tags:
+      - thread
+  /recipes/{recipeId}/modify/reject:
+    post:
+      consumes:
+      - application/json
+      description: Reject a recipe modification
+      operationId: rejectRecipeModification
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipeId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Recipe modified
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Thread not found
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Reject a recipe modification
       tags:
       - thread
   /signup:

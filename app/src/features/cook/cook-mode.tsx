@@ -5,7 +5,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, CircleQuestionMark, List } from "
 import { Progress } from "@/components/ui/progress"
 import { useNavigate } from "react-router-dom"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ChatDrawer, type ChatItem } from "../chat/chat-drawer";
+import { ChatBody, type ChatItem } from "../chat/chat-body";
 import { useState } from "react";
 
 interface CookModeProps {
@@ -57,7 +57,7 @@ export default function CookMode({ id, recipe, chatHistory, askQuestion, askQues
                     </SheetHeader>
                 </SheetContent>
             </Sheet>
-            <ChatDrawer
+            <ChatBody
                 open={chatOpen}
                 onOpenChange={setChatOpen}
                 mode="question"

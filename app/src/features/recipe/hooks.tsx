@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import api from "@/api"
-import { isHttpApiError } from "@/lib/error/error-provider"
+import { isHttpApiError, useErrorHandler } from "@/lib/error/error-provider"
+import { useState } from "react"
 
 export const recipeKeys = {
     all: ["recipes"] as const,
@@ -24,6 +25,9 @@ export function useRecipe(recipeId: string) {
 
 export function useModifyRecipe(recipeId: string) {
     const qc = useQueryClient()
+    const showError = useErrorHandler()
+
+    const [proposedRecipe, setProposedRecipe] = useState<api.ModelsRecipeBody | undefined>(undefined)
 
     const { mutate: modifyRecipe, isPending: modifyRecipePending, error: modifyRecipeError } = useMutation({
         mutationFn: async (request: api.ModelsModifyRecipeViaChatRequest) => {
@@ -34,12 +38,55 @@ export function useModifyRecipe(recipeId: string) {
             }
             return result
         },
-        onSuccess: () => {
-            qc.invalidateQueries({ queryKey: recipeKeys.byId(recipeId) })
+        onSuccess: (result: api.ModelsModifyChatResponse) => {
+            setProposedRecipe(result.new_recipe)
+        },
+        onError: (error) => {
+            console.error("Failed to modify recipe", error)
+            showError("Failed to modify recipe")
         },
     })
 
-    return { modifyRecipe, modifyRecipePending, modifyRecipeError }
+    const { mutate: reject, isPending: rejectPending, error: rejectError } = useMutation({
+        mutationFn: async () => {
+            await api.rejectRecipeModification(recipeId)
+        },
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: recipeKeys.byId(recipeId) })
+            setProposedRecipe(undefined)
+        },
+        onError: (error) => {
+            console.error("Failed to reject recipe modification", error)
+            showError("Failed to reject recipe modification")
+        },
+    })
+
+    const { mutate: accept, isPending: acceptPending, error: acceptError } = useMutation({
+        mutationFn: async () => {
+            await api.acceptRecipeModification(recipeId)
+        },
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: recipeKeys.byId(recipeId) })
+            setProposedRecipe(undefined)
+        },
+        onError: (error) => {
+            console.error("Failed to accept recipe modification", error)
+            showError("Failed to accept recipe modification")
+        }
+    })
+
+    return {
+        modifyRecipe,
+        modifyRecipePending,
+        modifyRecipeError,
+        reject,
+        rejectPending,
+        rejectError,
+        accept,
+        acceptPending,
+        acceptError,
+        proposedRecipe,
+    }
 }
 
 export function useAllRecipes() {

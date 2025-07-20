@@ -8,6 +8,7 @@ import CuisinesSection from "@/features/auth/profile/cuisines-section";
 import DietSection from "@/features/auth/profile/diet-section";
 import AllergiesSection from "@/features/auth/profile/allergies-section";
 import EquipmentSection from "@/features/auth/profile/equipment-section";
+import DefaultLayout from "@/layouts/default-layout";
 
 export default function ProfilePage() {
     const { profile, isLoading } = useUser()
@@ -15,15 +16,15 @@ export default function ProfilePage() {
 
     if (isLoading) {
         return (
-            <div>
+            <DefaultLayout>
                 <Skeleton className="h-16 w-full" />
                 <Skeleton className="h-16 w-full" />
-            </div>
+            </DefaultLayout>
         )
     }
 
     return (
-        <div>
+        <DefaultLayout>
             {profile && (
                 <Accordion type="single" collapsible className="w-full">
                     <BasicProfileSection profile={profile} onSave={saveProfile} isPending={isPending} />
@@ -34,6 +35,6 @@ export default function ProfilePage() {
                     <EquipmentSection profile={profile} onSave={saveProfile} isPending={isPending} />
                 </Accordion>
             )}
-        </div>
+        </DefaultLayout>
     )
 }

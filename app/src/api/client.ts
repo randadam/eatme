@@ -135,6 +135,7 @@ export type ModelsThreadState = {
     current_prompt: string;
     current_recipe?: ModelsRecipeBody;
     id: string;
+    modified_recipe?: ModelsRecipeBody;
     original_prompt: string;
     recipe_id?: string;
     suggestions: ModelsRecipeSuggestion[];
@@ -281,6 +282,26 @@ export function deleteRecipe(recipeId: string, opts?: Oazapfts.RequestOpts) {
     });
 }
 /**
+ * Accept a recipe modification
+ */
+export function acceptRecipeModification(recipeId: string, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 204;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
+    } | {
+        status: 500;
+        data: ModelsApiError;
+    }>(`/recipes/${encodeURIComponent(recipeId)}/modify/accept`, {
+        ...opts,
+        method: "POST"
+    });
+}
+/**
  * Modify a recipe via chat
  */
 export function modifyRecipe(recipeId: string, modelsModifyRecipeViaChatRequest: ModelsModifyRecipeViaChatRequest, opts?: Oazapfts.RequestOpts) {
@@ -301,6 +322,26 @@ export function modifyRecipe(recipeId: string, modelsModifyRecipeViaChatRequest:
         method: "POST",
         body: modelsModifyRecipeViaChatRequest
     }));
+}
+/**
+ * Reject a recipe modification
+ */
+export function rejectRecipeModification(recipeId: string, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 204;
+    } | {
+        status: 401;
+        data: ModelsApiError;
+    } | {
+        status: 404;
+        data: ModelsApiError;
+    } | {
+        status: 500;
+        data: ModelsApiError;
+    }>(`/recipes/${encodeURIComponent(recipeId)}/modify/reject`, {
+        ...opts,
+        method: "POST"
+    });
 }
 /**
  * Create a new user account

@@ -1,6 +1,5 @@
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
 import { APP_NAME } from "@/constants"
-import { Helmet } from "react-helmet-async"
 import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
 import LoaderButton from "@/components/shared/loader-button"
@@ -39,10 +38,8 @@ export default function LoginPage() {
 
     return (
         <>
-            <Helmet>
-                <title>{APP_NAME} - Login</title>
-                <meta name="description" content="Login to your account" />
-            </Helmet>
+            <title>{APP_NAME} - Login</title>
+            <meta name="description" content="Login to your account" />
 
             <div className="flex flex-col pt-16">
                 <div className="space-y-6 p-6 border rounded">

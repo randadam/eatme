@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button"
 import { APP_NAME } from "@/constants"
-import { Helmet } from "react-helmet-async"
 import { Link, Navigate } from "react-router-dom"
 import { useUser } from "@/features/auth/hooks"
 
@@ -13,11 +12,9 @@ export default function LandingPage() {
     
     return (
         <>
-            <Helmet>
-                <title>{APP_NAME}</title>
-                <meta name="description" content="AI Recipes Made Just for You" />
-                <meta name="keywords" content="AI recipes, meal ideas, cooking, kitchen, cooking assistant" />
-            </Helmet>
+            <title>{APP_NAME}</title>
+            <meta name="description" content="AI Recipes Made Just for You" />
+            <meta name="keywords" content="AI recipes, meal ideas, cooking, kitchen, cooking assistant" />
 
             <div className="min-h-screen flex flex-col items-center justify-center text-center px-4 bg-gradient-to-br from-muted/50 to-background">
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -39,7 +36,6 @@ export default function LandingPage() {
                         </Link>
                     </p>
                 </div>
-
 
                 <div className="mt-12 w-full max-w-sm aspect-video bg-muted rounded-xl shadow-inner" />
 

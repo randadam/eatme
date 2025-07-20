@@ -10,8 +10,10 @@ const Suggest = lazy(() => import("@/pages/suggest"))
 const Cook = lazy(() => import("@/pages/cook"))
 const Profile = lazy(() => import("@/pages/profile"))
 const Login = lazy(() => import("@/pages/login"))
+const ModifyRecipe = lazy(() => import("@/pages/modify-recipe"))
+const ChatSandbox = lazy(() => import("@/sandbox/chat-sandbox"))
 
-export const router = createBrowserRouter([
+const routes = [
     {
         element: <RootLayout/>,
         children: [
@@ -44,9 +46,22 @@ export const router = createBrowserRouter([
                 element: <Cook/>,
             },
             {
+                path: "/modify-recipe/:recipeId",
+                element: <ModifyRecipe/>,
+            },
+            {
                 path: "/signup/*",
                 element: <Signup/>,
             }
         ]
     }
-])
+]
+
+if (import.meta.env.DEV) {
+    routes[0].children?.push({
+        path: "/sandbox/chat",
+        element: <ChatSandbox/>,
+    })
+}
+
+export const router = createBrowserRouter(routes)
