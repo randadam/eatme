@@ -41,6 +41,20 @@ export default function BottomSheet({
     const dragControls = useDragControls();
     const sheetRef = useRef<HTMLDivElement>(null);
 
+    const [forcePeek, setForcePeek] = useState(false);
+
+    useEffect(() => {
+        console.log("size", size)
+    }, [size])
+
+    useEffect(() => {
+        if (forcePeek) {
+            console.log("handling force peek")
+            setSize("peek")
+            setForcePeek(false)
+        }
+    }, [forcePeek, setForcePeek, setSize])
+
     // collapse on Esc when full
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
@@ -95,11 +109,14 @@ export default function BottomSheet({
                     peek: {
                         y: peekOffsetPx,
                     },
+                    forcePeek: {
+                        y: peekOffsetPx + 10,
+                    },
                     full: {
                         y: bottomPadding,
                     },
                 }}
-                animate={size}
+                animate={forcePeek ? "forcePeek" : size}
                 // layout animation between heights
                 layout="size"
                 transition={{ type: "spring", stiffness: 320, damping: 24 }}
@@ -108,11 +125,17 @@ export default function BottomSheet({
                 dragListener={false}               // manual start
                 dragControls={dragControls}
                 dragConstraints={{ top: 0, bottom: 0 }}
-                onDragEnd={(_, info) => {
-                    if (info.velocity.y > 300 || info.offset.y > 120) {
+                onDragEnd={(e, info) => {
+                    console.log('info', info)
+                    if (info.velocity.y > 200 || info.offset.y > 60) {
+                        console.log("setting peek")
                         setSize("peek");
-                    } else if (info.velocity.y < -300 || info.offset.y < -120) {
+                    } else if (info.velocity.y < -200 || info.offset.y < -60) {
+                        console.log("setting full")
                         setSize("full");
+                    } else if (info.offset.y < 0 && size === "peek") {
+                        console.log("setting force peek")
+                        setForcePeek(true)
                     }
                 }}
             >
