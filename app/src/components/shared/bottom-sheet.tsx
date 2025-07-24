@@ -1,6 +1,6 @@
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
-import { motion, useDragControls } from "framer-motion";
+import { motion, useAnimate, useDragControls } from "framer-motion";
 import { FocusTrap } from "focus-trap-react";
 import { cn } from "@/lib/utils"; // shadcn helper for classnames
 
@@ -39,21 +39,7 @@ export default function BottomSheet({
     };
 
     const dragControls = useDragControls();
-    const sheetRef = useRef<HTMLDivElement>(null);
-
-    const [forcePeek, setForcePeek] = useState(false);
-
-    useEffect(() => {
-        console.log("size", size)
-    }, [size])
-
-    useEffect(() => {
-        if (forcePeek) {
-            console.log("handling force peek")
-            setSize("peek")
-            setForcePeek(false)
-        }
-    }, [forcePeek, setForcePeek, setSize])
+    const [scope, animate] = useAnimate();
 
     // collapse on Esc when full
     useEffect(() => {
@@ -86,8 +72,8 @@ export default function BottomSheet({
                 // don't trap when in peek mode
                 escapeDeactivates: false,
                 clickOutsideDeactivates: false,
-                initialFocus: () => sheetRef.current as HTMLElement,
-                fallbackFocus: () => sheetRef.current as HTMLElement,
+                initialFocus: () => scope.current as HTMLElement,
+                fallbackFocus: () => scope.current as HTMLElement,
                 allowOutsideClick: true,
                 setReturnFocus: false,
                 tabbableOptions: { displayCheck: "none" },
@@ -97,7 +83,7 @@ export default function BottomSheet({
             <motion.div
                 role="dialog"
                 aria-modal="false"
-                ref={sheetRef}
+                ref={scope}
                 className={cn(
                     "fixed inset-x-0 bottom-0 z-50 bg-background border-t shadow-lg flex flex-col",
                     "select-none touch-none", // prevents unwanted highlighting
@@ -106,43 +92,37 @@ export default function BottomSheet({
                     height: fullHeightWithPadding,
                 }}
                 variants={{
-                    peek: {
-                        y: peekOffsetPx,
-                    },
-                    forcePeek: {
-                        y: peekOffsetPx + 10,
-                    },
-                    full: {
-                        y: bottomPadding,
-                    },
+                    peek: { y: peekOffsetPx },
+                    full: { y: bottomPadding },
                 }}
-                animate={forcePeek ? "forcePeek" : size}
-                // layout animation between heights
-                layout="size"
+                animate={size}
                 transition={{ type: "spring", stiffness: 320, damping: 24 }}
                 // drag to expand/collapse
                 drag="y"
                 dragListener={false}               // manual start
                 dragControls={dragControls}
-                dragConstraints={{ top: 0, bottom: 0 }}
-                onDragEnd={(e, info) => {
+                dragConstraints={{ top: 2 * bottomPadding, bottom: 0 }}
+                dragSnapToOrigin
+                onDragEnd={(_, info) => {
                     console.log('info', info)
-                    if (info.velocity.y > 200 || info.offset.y > 60) {
+                    if (info.offset.y > 100 || info.velocity.y > 0) {
                         console.log("setting peek")
                         setSize("peek");
-                    } else if (info.velocity.y < -200 || info.offset.y < -60) {
+                        animate(scope.current, { y: peekOffsetPx }, { type: "spring", stiffness: 320, damping: 24 })
+                    } else if (info.offset.y < -100 || info.velocity.y < 0) {
                         console.log("setting full")
                         setSize("full");
-                    } else if (info.offset.y < 0 && size === "peek") {
-                        console.log("setting force peek")
-                        setForcePeek(true)
+                        animate(scope.current, { y: bottomPadding }, { type: "spring", stiffness: 320, damping: 24 })
                     }
                 }}
             >
                 {/* grab handle */}
                 <div
                     onPointerDown={(e) => dragControls.start(e)}
-                    onClick={() => setSize(size === "peek" ? "full" : "peek")}
+                    onClick={() => {
+                        setSize(size === "peek" ? "full" : "peek")
+                        animate(scope.current, { y: size === "peek" ? bottomPadding : peekOffsetPx }, { type: "spring", stiffness: 320, damping: 24 })
+                    }}
                 >
                     <div
                         className="flex items-center justify-center pt-4 pb-1 cursor-pointer"

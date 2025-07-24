@@ -97,10 +97,10 @@ function ChatInput({ onSend, loading, input, setInput, disabled, onCancel }: Cha
         disabled={disabled}
         autoFocus={true}
       />
-      <div className="flex justify-between gap-2">
+      <div className="flex justify-between gap-2 p-1">
         {onCancel && (
           <Button
-            className="w-1/2"
+            className="flex-1"
             variant="outline"
             onClick={onCancel}
             disabled={loading}
@@ -109,7 +109,7 @@ function ChatInput({ onSend, loading, input, setInput, disabled, onCancel }: Cha
           </Button>
         )}
         <LoaderButton
-          className={`${onCancel ? "w-1/2" : "w-full"}`}
+          className="flex-1"
           onClick={() => onSend(input)}
           isLoading={loading}
           disabled={input.trim() === ""}
