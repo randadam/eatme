@@ -7,7 +7,7 @@ export interface RecipeOverviewProps {
 export function RecipeOverview({ recipe }: RecipeOverviewProps) {
     return (
         <div className="flex flex-col space-y-2">
-            <h2>{recipe.title}</h2>
+            <h2 className="font-semibold">{recipe.title}</h2>
             <p className="text-muted-foreground">{recipe.description}</p>
             <div className="flex space-x-2">
                 <div className="flex space-x-2">

@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom"
 import { NotFoundPage } from "./not-found"
 import { ErrorPage } from "./error"
 import RecipeSkeleton from "@/features/recipe/recipe-skeleton"
-import { RecipeAccordion } from "@/features/recipe/recipe-accordion"
 import { ChatBody } from "@/features/chat/chat-body"
 import FocusedLayout from "@/layouts/focused-layout"
 import BottomSheet from "@/components/shared/bottom-sheet"
@@ -13,6 +12,7 @@ import { useNavigate } from "react-router-dom"
 import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
 import { Separator } from "@/components/ui/separator"
+import { FullRecipe } from "@/features/recipe/recipe-full"
 
 export default function ModifyRecipe() {
     const recipeId = useParams().recipeId
@@ -79,7 +79,7 @@ export default function ModifyRecipe() {
                 </div>
             </header>
             <div className="p-4">
-                <RecipeAccordion id={recipe.id} recipe={proposedRecipe ?? recipe} defaultOpen={true} />
+                <FullRecipe recipe={proposedRecipe ?? recipe} />
             </div>
             <BottomSheet
                 size={chatOpen ? "full" : "peek"}
@@ -129,7 +129,7 @@ export default function ModifyRecipe() {
                 {proposedRecipe && (
                     <>
                         <Separator className="my-2" />
-                        <div className="flex flex-col justify-between text-center pt-4">
+                        <div className="flex flex-col justify-between text-center py-4">
                             <h3 className="text-md pb-2">
                                 Not what you're looking for?
                             </h3>

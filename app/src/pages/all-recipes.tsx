@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom"
 import { ChatBody } from "@/features/chat/chat-body"
 import { useState } from "react"
 import { useStartSuggestionThread } from "@/features/chat/hooks"
-import { RecipeOverview } from "@/features/recipe/recipe-overview"
 import { PlusIcon } from "lucide-react"
 import RecipeSkeleton from "@/features/recipe/recipe-skeleton"
 import { ErrorPage } from "./error"
@@ -13,6 +12,7 @@ import { useErrorHandler } from "@/lib/error/error-provider"
 import LoaderButton from "@/components/shared/loader-button"
 import DefaultLayout from "@/layouts/default-layout"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { RecipeOverview } from "@/features/recipe/recipe-overview"
 
 export default function AllRecipesPage() {
     const [dialogOpen, setDialogOpen] = useState(false)

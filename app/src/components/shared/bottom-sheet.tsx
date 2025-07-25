@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, useAnimate, useDragControls } from "framer-motion";
 import { FocusTrap } from "focus-trap-react";
 import { cn } from "@/lib/utils"; // shadcn helper for classnames
@@ -85,11 +85,12 @@ export default function BottomSheet({
                 aria-modal="false"
                 ref={scope}
                 className={cn(
-                    "fixed inset-x-0 bottom-0 z-50 bg-background border-t shadow-lg flex flex-col",
+                    "fixed inset-x-0 bottom-0 z-50 bg-background border-t flex flex-col",
                     "select-none touch-none", // prevents unwanted highlighting
                 )}
                 style={{
                     height: fullHeightWithPadding,
+                    boxShadow: "0px -4px 24px rgba(0, 0, 0, 0.1)",
                 }}
                 variants={{
                     peek: { y: peekOffsetPx },

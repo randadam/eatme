@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useParams } from "react-router-dom";
 import { useRecipe } from "../features/recipe/hooks";
-import { RecipeAccordion } from "@/features/recipe/recipe-accordion";
 import { NotFoundPage } from "./not-found";
 import { ErrorPage } from "./error";
 import RecipeSkeleton from "@/features/recipe/recipe-skeleton";
 import DefaultLayout from "@/layouts/default-layout";
+import { FullRecipe } from "@/features/recipe/recipe-full";
+import { Separator } from "@/components/ui/separator";
 
 export default function RecipePage() {
     const recipeId = useParams().id
@@ -39,8 +40,11 @@ export function Recipe({ recipeId }: Props) {
     return (
         <>
             <div className="border rounded p-2">
-                <RecipeAccordion id={recipe.id} recipe={recipe} defaultOpen={true} />
-                <div className="flex justify-between">
+                <div className="p-2">
+                    <FullRecipe recipe={recipe} />
+                </div>
+                <Separator/>
+                <div className="flex justify-between items-center p-2 pt-4">
                     <Button variant="outline" onClick={() => nav(`/modify-recipe/${recipe.id}`)}>Modify</Button>
                     <Button onClick={() => nav(`/cook/${recipe.id}`)}>Start Cooking</Button>
                 </div>
