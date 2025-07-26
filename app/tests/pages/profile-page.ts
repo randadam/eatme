@@ -25,7 +25,7 @@ export class ProfilePage {
     }
 
     async openSkillSection() {
-        await this.page.getByTestId("skills-trigger").click();
+        await this.page.getByTestId("skill-trigger").click();
     }
 
     async expectSkill(skill: string) {
