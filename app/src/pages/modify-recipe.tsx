@@ -24,7 +24,7 @@ export default function ModifyRecipe() {
         modifyRecipe,
         modifyRecipePending,
         modifyRecipeError,
-        proposedRecipe,
+        recipeDiff,
         reject,
         rejectPending,
         accept,
@@ -79,7 +79,7 @@ export default function ModifyRecipe() {
                 </div>
             </header>
             <div className="p-4">
-                <FullRecipe recipe={proposedRecipe ?? recipe} />
+                <FullRecipe recipe={recipe} diff={recipeDiff} />
             </div>
             <BottomSheet
                 size={chatOpen ? "full" : "peek"}
@@ -91,14 +91,14 @@ export default function ModifyRecipe() {
                     }
                 }}
                 header={
-                    proposedRecipe ? (
+                    recipeDiff ? (
                         <h2>Accept Changes?</h2>
                     ) : (
                         <h2>Modify Recipe</h2>
                     )
                 }
                 subHeader={
-                    proposedRecipe ? (
+                    recipeDiff ? (
                         <div className="flex justify-between pt-4 gap-2 w-full">
                             <LoaderButton
                                 className="w-1/2"
@@ -123,10 +123,10 @@ export default function ModifyRecipe() {
                         </p>
                     )
                 }
-                peekHeight={proposedRecipe ? 18 : 12}
-                fullHeight={proposedRecipe ? 56 : 48}
+                peekHeight={recipeDiff ? 18 : 14}
+                fullHeight={recipeDiff ? 56 : 48}
             >
-                {proposedRecipe && (
+                {recipeDiff && (
                     <>
                         <Separator className="my-2" />
                         <div className="flex flex-col justify-between text-center py-4">

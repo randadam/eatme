@@ -399,7 +399,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ModifyChatResponse"
+                            "$ref": "#/definitions/models.ModifyRecipeResponse"
                         }
                     },
                     "401": {
@@ -879,6 +879,22 @@ const docTemplate = `{
                 }
             }
         },
+        "models.DiffStep": {
+            "description": "DiffStep represents a step in a recipe with information about the type of change",
+            "type": "object",
+            "required": [
+                "is_new",
+                "step"
+            ],
+            "properties": {
+                "is_new": {
+                    "type": "boolean"
+                },
+                "step": {
+                    "type": "string"
+                }
+            }
+        },
         "models.GetNewSuggestionsRequest": {
             "description": "GetNewSuggestionsRequest represents a request to get new suggestions",
             "type": "object",
@@ -958,7 +974,8 @@ const docTemplate = `{
                 "tbsp",
                 "cup",
                 "oz",
-                "lb"
+                "lb",
+                "count"
             ],
             "x-enum-varnames": [
                 "MeasurementUnitGram",
@@ -967,23 +984,55 @@ const docTemplate = `{
                 "MeasurementUnitTablespoon",
                 "MeasurementUnitCup",
                 "MeasurementUnitOunce",
-                "MeasurementUnitPound"
+                "MeasurementUnitPound",
+                "MeasurementUnitCount"
             ]
         },
-        "models.ModifyChatResponse": {
-            "description": "ModifyChatResponse represents a chat response to the ML backend to modify a recipe",
+        "models.ModifiedIngredient": {
+            "description": "ModifiedIngredient represents a modification to an ingredient",
             "type": "object",
             "required": [
-                "error",
-                "new_recipe",
+                "index",
+                "name",
+                "quantity",
+                "unit"
+            ],
+            "properties": {
+                "index": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Flour"
+                },
+                "quantity": {
+                    "type": "number",
+                    "example": 1
+                },
+                "unit": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.MeasurementUnit"
+                        }
+                    ],
+                    "example": "cup"
+                }
+            }
+        },
+        "models.ModifyRecipeResponse": {
+            "description": "ModifyRecipeResponse represents the response to a recipe modification",
+            "type": "object",
+            "required": [
+                "current_recipe",
+                "diff",
                 "response_text"
             ],
             "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "new_recipe": {
+                "current_recipe": {
                     "$ref": "#/definitions/models.RecipeBody"
+                },
+                "diff": {
+                    "$ref": "#/definitions/models.RecipeDiff"
                 },
                 "response_text": {
                     "type": "string"
@@ -1161,6 +1210,54 @@ const docTemplate = `{
                 }
             }
         },
+        "models.RecipeDiff": {
+            "description": "RecipeDiff represents the difference between two recipe versions",
+            "type": "object",
+            "required": [
+                "added_ingredients",
+                "modified_ingredients",
+                "new_steps",
+                "removed_ingredients"
+            ],
+            "properties": {
+                "added_ingredients": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Ingredient"
+                    }
+                },
+                "modified_ingredients": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ModifiedIngredient"
+                    }
+                },
+                "new_description": {
+                    "type": "string"
+                },
+                "new_servings": {
+                    "type": "integer"
+                },
+                "new_steps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DiffStep"
+                    }
+                },
+                "new_title": {
+                    "type": "string"
+                },
+                "new_total_time_minutes": {
+                    "type": "integer"
+                },
+                "removed_ingredients": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.RemovedIngredient"
+                    }
+                }
+            }
+        },
         "models.RecipeSuggestion": {
             "description": "RecipeSuggestion represents a suggestion for a recipe",
             "type": "object",
@@ -1198,6 +1295,18 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "models.RemovedIngredient": {
+            "description": "RemovedIngredient represents an ingredient that was removed from a recipe",
+            "type": "object",
+            "required": [
+                "index"
+            ],
+            "properties": {
+                "index": {
+                    "type": "integer"
                 }
             }
         },

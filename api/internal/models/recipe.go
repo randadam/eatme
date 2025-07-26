@@ -16,6 +16,7 @@ const (
 	MeasurementUnitCup        MeasurementUnit = "cup"
 	MeasurementUnitOunce      MeasurementUnit = "oz"
 	MeasurementUnitPound      MeasurementUnit = "lb"
+	MeasurementUnitCount      MeasurementUnit = "count"
 )
 
 // @Description Ingredient represents an ingredient in a recipe
@@ -94,6 +95,44 @@ type RecipeVersion struct {
 	CreatedAt    time.Time `json:"created_at" binding:"required"`
 	Notes        *string   `json:"notes,omitempty"`
 	RecipeBody
+}
+
+// @Description ModifiedIngredient represents a modification to an ingredient
+type ModifiedIngredient struct {
+	Index    int             `json:"index" binding:"required"`
+	Name     string          `json:"name" example:"Flour" binding:"required"`
+	Quantity float64         `json:"quantity" example:"1" binding:"required"`
+	Unit     MeasurementUnit `json:"unit" example:"cup" binding:"required"`
+}
+
+// @Description RemovedIngredient represents an ingredient that was removed from a recipe
+type RemovedIngredient struct {
+	Index int `json:"index" binding:"required"`
+}
+
+// @Description DiffStep represents a step in a recipe with information about the type of change
+type DiffStep struct {
+	Step  Step `json:"step" binding:"required"`
+	IsNew bool `json:"is_new" binding:"required"`
+}
+
+// @Description RecipeDiff represents the difference between two recipe versions
+type RecipeDiff struct {
+	NewTitle            *string              `json:"new_title,omitempty"`
+	NewDescription      *string              `json:"new_description,omitempty"`
+	NewServings         *int                 `json:"new_servings,omitempty"`
+	NewTotalTimeMinutes *int                 `json:"new_total_time_minutes,omitempty"`
+	AddedIngredients    []Ingredient         `json:"added_ingredients" binding:"required"`
+	ModifiedIngredients []ModifiedIngredient `json:"modified_ingredients" binding:"required"`
+	RemovedIngredients  []RemovedIngredient  `json:"removed_ingredients" binding:"required"`
+	NewSteps            []DiffStep           `json:"new_steps" binding:"required"`
+}
+
+// @Description ModifyRecipeResponse represents the response to a recipe modification
+type ModifyRecipeResponse struct {
+	CurrentRecipe RecipeBody `json:"current_recipe" binding:"required"`
+	Diff          RecipeDiff `json:"diff" binding:"required"`
+	ResponseText  string     `json:"response_text" binding:"required"`
 }
 
 // @Description MealPlanRecipe is a recipe in a meal plan

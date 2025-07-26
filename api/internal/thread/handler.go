@@ -7,6 +7,7 @@ import (
 
 	"github.com/ajohnston1219/eatme/api/internal/api"
 	"github.com/ajohnston1219/eatme/api/internal/models"
+	recipeService "github.com/ajohnston1219/eatme/api/internal/recipe"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
@@ -162,7 +163,7 @@ func (h *ThreadHandler) AcceptSuggestion(w http.ResponseWriter, r *http.Request)
 // @Produce json
 // @Param recipeId path string true "Recipe ID"
 // @Param request body models.ModifyRecipeViaChatRequest true "Modify recipe via chat request"
-// @Success 200 {object} models.ModifyChatResponse
+// @Success 200 {object} models.ModifyRecipeResponse
 // @Failure 401 {object} models.APIError "Unauthorized"
 // @Failure 404 {object} models.APIError "Thread not found"
 // @Failure 500 {object} models.APIError "Internal server error"
@@ -187,7 +188,7 @@ func (h *ThreadHandler) ModifyRecipeViaChat(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	recipe, err := h.threadService.ModifyRecipeViaChat(r.Context(), userID, recipeID, input.Prompt)
+	chatResponse, err := h.threadService.ModifyRecipeViaChat(r.Context(), userID, recipeID, input.Prompt)
 	if err != nil {
 		zap.L().Error("failed to modify recipe via chat", zap.Error(err))
 		switch {
@@ -198,7 +199,14 @@ func (h *ThreadHandler) ModifyRecipeViaChat(w http.ResponseWriter, r *http.Reque
 		}
 		return
 	}
-	api.WriteJSON(w, http.StatusOK, recipe)
+
+	recipeDiff := recipeService.GetRecipeDiff(&chatResponse.OriginalRecipe, &chatResponse.NewRecipe)
+	response := models.ModifyRecipeResponse{
+		CurrentRecipe: chatResponse.OriginalRecipe,
+		Diff:          *recipeDiff,
+		ResponseText:  chatResponse.ResponseText,
+	}
+	api.WriteJSON(w, http.StatusOK, response)
 }
 
 // @Summary Accept a recipe modification

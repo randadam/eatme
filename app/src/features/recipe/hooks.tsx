@@ -27,19 +27,16 @@ export function useModifyRecipe(recipeId: string) {
     const qc = useQueryClient()
     const showError = useErrorHandler()
 
-    const [proposedRecipe, setProposedRecipe] = useState<api.ModelsRecipeBody | undefined>(undefined)
+    const [recipeDiff, setRecipeDiff] = useState<api.ModelsRecipeDiff | undefined>(undefined)
 
     const { mutate: modifyRecipe, isPending: modifyRecipePending, error: modifyRecipeError } = useMutation({
         mutationFn: async (request: api.ModelsModifyRecipeViaChatRequest) => {
             const resp = await api.modifyRecipe(recipeId, request)
-            const result = resp.data as unknown as api.ModelsModifyChatResponse
-            if (result.error) {
-                throw new Error(result.error)
-            }
+            const result = resp.data as unknown as api.ModelsModifyRecipeResponse
             return result
         },
-        onSuccess: (result: api.ModelsModifyChatResponse) => {
-            setProposedRecipe(result.new_recipe)
+        onSuccess: (result: api.ModelsModifyRecipeResponse) => {
+            setRecipeDiff(result.diff)
         },
         onError: (error) => {
             console.error("Failed to modify recipe", error)
@@ -53,7 +50,7 @@ export function useModifyRecipe(recipeId: string) {
         },
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: recipeKeys.byId(recipeId) })
-            setProposedRecipe(undefined)
+            setRecipeDiff(undefined)
         },
         onError: (error) => {
             console.error("Failed to reject recipe modification", error)
@@ -67,7 +64,7 @@ export function useModifyRecipe(recipeId: string) {
         },
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: recipeKeys.byId(recipeId) })
-            setProposedRecipe(undefined)
+            setRecipeDiff(undefined)
         },
         onError: (error) => {
             console.error("Failed to accept recipe modification", error)
@@ -85,7 +82,7 @@ export function useModifyRecipe(recipeId: string) {
         accept,
         acceptPending,
         acceptError,
-        proposedRecipe,
+        recipeDiff,
     }
 }
 

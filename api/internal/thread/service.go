@@ -261,8 +261,8 @@ func (s *ThreadService) AcceptSuggestion(ctx context.Context, userID string, thr
 	return recipe, nil
 }
 
-func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, recipeID string, prompt string) (*models.ModifyChatResponse, error) {
-	var modifyResponse *models.ModifyChatResponse
+func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, recipeID string, prompt string) (*models.ModifyRecipeViaChatResponse, error) {
+	var modifyResponse *models.ModifyRecipeViaChatResponse
 	err := s.store.WithTx(func(tx db.Store) error {
 		ctx = db.ContextWithTx(ctx, tx)
 		profile, err := s.userService.GetProfile(ctx, userID)
@@ -282,9 +282,14 @@ func (s *ThreadService) ModifyRecipeViaChat(ctx context.Context, userID string, 
 			Recipe:  recipe.RecipeBody,
 			Profile: *profile,
 		}
-		modifyResponse, err = s.chatService.ModifyRecipeViaChat(ctx, modifyRequest)
+		chatResponse, err := s.chatService.ModifyRecipeViaChat(ctx, modifyRequest)
 		if err != nil {
 			return fmt.Errorf("failed to modify recipe: %w", err)
+		}
+		modifyResponse = &models.ModifyRecipeViaChatResponse{
+			OriginalRecipe: recipe.RecipeBody,
+			NewRecipe:      chatResponse.NewRecipe,
+			ResponseText:   chatResponse.ResponseText,
 		}
 		zap.L().Debug("modified recipe")
 		modifyEvent := models.RecipeModifiedEvent{

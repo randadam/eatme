@@ -136,6 +136,13 @@ type ModifyRecipeViaChatRequest struct {
 	Prompt string `json:"prompt" binding:"required"`
 }
 
+// @Description ModifyRecipeViaChatResponse represents a response to a modify recipe via chat request
+type ModifyRecipeViaChatResponse struct {
+	OriginalRecipe RecipeBody `json:"original_recipe" binding:"required"`
+	NewRecipe      RecipeBody `json:"new_recipe" binding:"required"`
+	ResponseText   string     `json:"response_text" binding:"required"`
+}
+
 // @Description AnswerCookingQuestionRequest represents a request to answer a cooking question
 type AnswerCookingQuestionRequest struct {
 	Question string `json:"question" binding:"required"`

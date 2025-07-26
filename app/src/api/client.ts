@@ -97,9 +97,32 @@ export type ModelsRecipeBody = {
     title: string;
     total_time_minutes: number;
 };
-export type ModelsModifyChatResponse = {
-    error: string;
-    new_recipe: ModelsRecipeBody;
+export type ModelsModifiedIngredient = {
+    index: number;
+    name: string;
+    quantity: number;
+    unit: ModelsMeasurementUnit;
+};
+export type ModelsDiffStep = {
+    is_new: boolean;
+    step: string;
+};
+export type ModelsRemovedIngredient = {
+    index: number;
+};
+export type ModelsRecipeDiff = {
+    added_ingredients: ModelsIngredient[];
+    modified_ingredients: ModelsModifiedIngredient[];
+    new_description?: string;
+    new_servings?: number;
+    new_steps: ModelsDiffStep[];
+    new_title?: string;
+    new_total_time_minutes?: number;
+    removed_ingredients: ModelsRemovedIngredient[];
+};
+export type ModelsModifyRecipeResponse = {
+    current_recipe: ModelsRecipeBody;
+    diff: ModelsRecipeDiff;
     response_text: string;
 };
 export type ModelsSignupRequest = {
@@ -307,7 +330,7 @@ export function acceptRecipeModification(recipeId: string, opts?: Oazapfts.Reque
 export function modifyRecipe(recipeId: string, modelsModifyRecipeViaChatRequest: ModelsModifyRecipeViaChatRequest, opts?: Oazapfts.RequestOpts) {
     return oazapfts.fetchJson<{
         status: 200;
-        data: ModelsModifyChatResponse;
+        data: ModelsModifyRecipeResponse;
     } | {
         status: 401;
         data: ModelsApiError;
