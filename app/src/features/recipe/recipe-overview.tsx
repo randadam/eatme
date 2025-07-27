@@ -9,13 +9,14 @@ export interface RecipeOverviewProps {
 }
 
 export function RecipeOverview({ recipe, diff, thumbnail }: RecipeOverviewProps) {
+    const imageUrl = diff?.new_image_url || recipe.image_url
     return (
         <div className="flex flex-col space-y-2">
             <div className="flex space-x-2 items-center">
                 {thumbnail && (
                     <div className="h-16 w-16">
-                        {recipe.image_url ? (
-                            <img className="h-full w-full" src={recipe.image_url} alt={recipe.title} />
+                        {imageUrl ? (
+                            <img className="h-full w-full" src={imageUrl} alt={recipe.title} />
                         ) : (
                             <Skeleton className="h-full w-full" />
                         )}

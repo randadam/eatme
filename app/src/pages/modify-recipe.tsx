@@ -17,7 +17,7 @@ import { FullRecipe } from "@/features/recipe/recipe-full"
 export default function ModifyRecipe() {
     const recipeId = useParams().recipeId
     const nav = useNavigate()
-    const [chatOpen, setChatOpen] = useState(false)
+    const [chatOpen, setChatOpen] = useState(true)
 
     const { recipe, isLoading, error, notFound } = useRecipe(recipeId!)
     const {
@@ -92,24 +92,36 @@ export default function ModifyRecipe() {
                 }}
                 header={
                     recipeDiff ? (
-                        <h2>Accept Changes?</h2>
+                        chatOpen ? (
+                            <h2 className="font-semibold">Modify Recipe</h2>
+                        ) : (
+                            <h2 className="font-semibold">Accept Changes?</h2>
+                        )
                     ) : (
-                        <h2>Modify Recipe</h2>
+                        <h2 className="font-semibold">Modify Recipe</h2>
                     )
                 }
                 subHeader={
-                    !chatOpen && (recipeDiff ? (
-                        <p className="text-center text-muted-foreground">
-                            Swipe up to try again.
-                        </p>
+                    chatOpen ? (
+                        !recipeDiff && (
+                            <p className="text-center text-muted-foreground">
+                                Let me know what you'd like to change.
+                            </p>
+                        )
                     ) : (
-                        <p className="text-center text-muted-foreground">
-                            Swipe up to let me know what you'd like to change.
-                        </p>
-                    ))
+                        recipeDiff ? (
+                            <p className="text-center text-muted-foreground">
+                                Swipe up to try again.
+                            </p>
+                        ) : (
+                            <p className="text-center text-muted-foreground">
+                                Swipe up to let me know what you'd like to change.
+                            </p>
+                        )
+                    )
                 }
                 actions={
-                    recipeDiff && (
+                    recipeDiff && !chatOpen && (
                         <div className="flex justify-between py-4 gap-2 w-full">
                             <LoaderButton
                                 className="w-1/2"

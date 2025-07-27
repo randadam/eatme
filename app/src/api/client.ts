@@ -116,6 +116,7 @@ export type ModelsRecipeDiff = {
     added_ingredients: ModelsIngredient[];
     modified_ingredients: ModelsModifiedIngredient[];
     new_description?: string;
+    new_image_url?: string;
     new_servings?: number;
     new_steps: ModelsDiffStep[];
     new_title?: string;

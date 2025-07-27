@@ -50,6 +50,7 @@ class ModifyChatResponse(BaseModel):
     response_text: str
     new_recipe: Recipe | None = None
     error: str | None = None
+    generate_new_image: bool = False
 
 class GeneralChatRequest(BaseModel):
     message: str

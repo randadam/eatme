@@ -16,6 +16,7 @@ func GetRecipeDiff(currentRecipe *models.RecipeBody, proposedRecipe *models.Reci
 		RemovedIngredients:  []models.RemovedIngredient{},
 		ModifiedIngredients: []models.ModifiedIngredient{},
 		NewSteps:            []models.DiffStep{},
+		NewImageURL:         nil,
 	}
 
 	if currentRecipe.Title != proposedRecipe.Title {
@@ -32,6 +33,10 @@ func GetRecipeDiff(currentRecipe *models.RecipeBody, proposedRecipe *models.Reci
 
 	if currentRecipe.TotalTimeMinutes != proposedRecipe.TotalTimeMinutes {
 		diff.NewTotalTimeMinutes = &proposedRecipe.TotalTimeMinutes
+	}
+
+	if currentRecipe.ImageURL != proposedRecipe.ImageURL {
+		diff.NewImageURL = &proposedRecipe.ImageURL
 	}
 
 	currIdx := 0

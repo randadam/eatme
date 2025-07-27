@@ -28,6 +28,7 @@ var testCases = []struct {
 			},
 			Servings:         4,
 			TotalTimeMinutes: 120,
+			ImageURL:         "https://example.com/image.jpg",
 		},
 		proposedRecipe: &models.RecipeBody{
 			Title:       "Beef Bolognese",
@@ -47,6 +48,7 @@ var testCases = []struct {
 			},
 			Servings:         6,
 			TotalTimeMinutes: 150,
+			ImageURL:         "https://example.com/image2.jpg",
 		},
 		expectedDiff: &models.RecipeDiff{
 			NewTitle:            stringPointer("Beef Bolognese"),
@@ -86,6 +88,7 @@ var testCases = []struct {
 					IsNew: true,
 				},
 			},
+			NewImageURL: stringPointer("https://example.com/image2.jpg"),
 		},
 	},
 }
@@ -119,6 +122,7 @@ func TestGetRecipeDiff(t *testing.T) {
 				t.Errorf("expected step diff %v, got %v", tc.expectedDiff.NewSteps[i], step)
 			}
 		}
+		expectEqualButCheckNilString("NewImageURL", t, tc.expectedDiff.NewImageURL, diff.NewImageURL)
 	}
 }
 

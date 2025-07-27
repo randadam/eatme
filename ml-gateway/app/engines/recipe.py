@@ -21,12 +21,20 @@ def modify_template(recipe: Recipe, profile: Profile, message: str) -> str:
     `response_text`, and an optional `error` field.  If the recipe modification violates a rule from
     the user's profile (e.g. allergies), return the original recipe with a description of the violation
     in the `error` field.
+
+    If the modification requires a new image, return the modified recipe with a `generate_new_image` field set to `true`.
+    For example, changing the protein would justify generating a new image, but changing the seasoning or altering the
+    quantity of ingredients would not justify generating a new image.
     """
 
 def image_template(recipe: Recipe) -> str:
     return f"""
-    Recipe: {recipe}
-    Generate a high quality photo of the recipe.
+    Generate a high quality photo of the following dish:
+    {recipe.title}
+    {recipe.description}
+    Do **not** include any text in the image.
+    Focus only on the dish itself, minimizing any background.
+    Generate something that could be used in a menu.
     """
 
 async def suggest(profile: Profile, history: list[str], message: str, num_suggestions: int = 3) -> list[Recipe]:
@@ -48,13 +56,16 @@ async def modify(recipe: Recipe, profile: Profile, message: str) -> ModifyChatRe
     return await as_json(messages, schema=ModifyChatResponse)
 
 async def generate_image(recipe: Recipe) -> str:
-    outputs = await replicate.async_run(
-        "black-forest-labs/flux-dev",
+    prompt = image_template(recipe)
+    print(f"Generate image prompt: {prompt}")
+    output = await replicate.async_run(
+        "recraft-ai/recraft-v3",
         input={
-            "prompt": image_template(recipe),
+            "prompt": prompt,
+            "aspect_ratio": "1:1",
+            "style": "realistic_image",
         }
     )
-    output = outputs[0]
     id = uuid4()
     with open(f"/images/{id}.png", "wb") as f:
         f.write(output.read())

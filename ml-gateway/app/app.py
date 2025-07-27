@@ -27,6 +27,13 @@ async def chat(req: ModifyChatRequest):
     try:
         resp = await modify(req.recipe, req.profile, req.message)
         print("Got updated recipe:", resp)
+        if resp.generate_new_image:
+            print("Generating new image for recipe")
+            image_id = await generate_image(resp.new_recipe)
+            print(f"Generated image for recipe: {resp.new_recipe.title} with ID {image_id}")
+            resp.new_recipe.image_url = f"http://localhost:8080/images/{image_id}.png"
+        else:
+            resp.new_recipe.image_url = req.recipe.image_url
         return resp
     except Exception as e:
         print("Error in modify:", e)

@@ -127,6 +127,7 @@ type RecipeDiff struct {
 	ModifiedIngredients []ModifiedIngredient `json:"modified_ingredients" binding:"required"`
 	RemovedIngredients  []RemovedIngredient  `json:"removed_ingredients" binding:"required"`
 	NewSteps            []DiffStep           `json:"new_steps" binding:"required"`
+	NewImageURL         *string              `json:"new_image_url,omitempty"`
 }
 
 // @Description ModifyRecipeResponse represents the response to a recipe modification

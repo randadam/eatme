@@ -64,7 +64,8 @@ export function FullRecipe({ recipe, diff }: FullRecipeProps) {
                                 <p
                                     className={cn(
                                         "flex",
-                                        i.action === "remove" && "line-through decoration-red-500"
+                                        i.action === "remove" && "line-through decoration-red-500",
+                                        i.action === "update" || i.action === "add" && "font-semibold"
                                     )}
                                 >
                                     {i.quantity} {i.unit} {i.name}
@@ -87,7 +88,9 @@ export function FullRecipe({ recipe, diff }: FullRecipeProps) {
                                     </div>
                                 )}
                                 <p>{i + 1}</p>
-                                <p>{s.step}</p>
+                                <p className={s.is_new ? "font-semibold" : ""}>
+                                    {s.step}
+                                </p>
                             </li>
                         )
                     })}

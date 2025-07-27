@@ -1238,6 +1238,9 @@ const docTemplate = `{
                 "new_description": {
                     "type": "string"
                 },
+                "new_image_url": {
+                    "type": "string"
+                },
                 "new_servings": {
                     "type": "integer"
                 },
