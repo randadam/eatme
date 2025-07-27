@@ -253,6 +253,8 @@ definitions:
       description:
         example: A classic Italian dish
         type: string
+      image_url:
+        type: string
       ingredients:
         items:
           $ref: '#/definitions/models.Ingredient'
@@ -460,6 +462,8 @@ definitions:
       global_recipe_id:
         type: string
       id:
+        type: string
+      image_url:
         type: string
       ingredients:
         items:

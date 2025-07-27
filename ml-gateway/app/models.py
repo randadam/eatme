@@ -12,6 +12,7 @@ class Recipe(BaseModel):
     servings: int
     ingredients: list[Ingredient]
     steps: list[str]
+    image_url: str | None = None
 
 class Profile(BaseModel):
     name: str

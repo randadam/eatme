@@ -64,7 +64,7 @@ export type ModelsProfileUpdateRequest = {
     /** User's skill level */
     skill?: ModelsSkill;
 };
-export type ModelsMeasurementUnit = "g" | "ml" | "tsp" | "tbsp" | "cup" | "oz" | "lb";
+export type ModelsMeasurementUnit = "g" | "ml" | "tsp" | "tbsp" | "cup" | "oz" | "lb" | "count";
 export type ModelsIngredient = {
     name: string;
     quantity: number;
@@ -75,6 +75,7 @@ export type ModelsUserRecipe = {
     description: string;
     global_recipe_id?: string;
     id: string;
+    image_url?: string;
     ingredients: ModelsIngredient[];
     is_favorite: boolean;
     latest_version_id: string;
@@ -91,6 +92,7 @@ export type ModelsModifyRecipeViaChatRequest = {
 };
 export type ModelsRecipeBody = {
     description: string;
+    image_url?: string;
     ingredients: ModelsIngredient[];
     servings: number;
     steps: string[];

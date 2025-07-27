@@ -118,7 +118,7 @@ function RecipeList({ recipes, isLoading, error, deleteRecipe, deleteRecipePendi
                 {(recipes ?? []).map(recipe => (
                     <li key={recipe.id}>
                         <div className="p-2 border rounded-md">
-                            <RecipeOverview recipe={recipe} />
+                            <RecipeOverview recipe={recipe} thumbnail />
                             <div className="flex justify-between pt-4">
                                 <LoaderButton
                                     variant="destructive"

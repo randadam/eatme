@@ -2,6 +2,7 @@ import type api from "@/api";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecipeAccordion } from "@/features/recipe/recipe-accordion";
 import LoaderButton from "@/components/shared/loader-button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface SuggestionCardProps {
     suggestion: api.ModelsRecipeSuggestion
@@ -21,6 +22,13 @@ export default function SuggestionCard({ suggestion, reject, accept, rejectLoadi
                 <CardTitle className="text-center">{recipe.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
+                <div className="flex justify-center">
+                    {recipe.image_url ? (
+                        <img className="h-64 w-full" src={recipe.image_url} alt={recipe.title} />
+                    ) : (
+                        <Skeleton className="h-64 w-full" />
+                    )}
+                </div>
                 <RecipeAccordion id={suggestion.id} recipe={recipe}/>
             </CardContent>
             <CardFooter>

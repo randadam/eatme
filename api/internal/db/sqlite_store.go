@@ -194,7 +194,7 @@ func (s *SQLiteStore) GetGlobalRecipe(ctx context.Context, id string) (models.Gl
 	var recipe models.GlobalRecipe
 
 	err := s.run.QueryRowContext(ctx, `
-		SELECT id, title, description, total_time_minutes, servings,
+		SELECT id, title, description, total_time_minutes, servings, image_url,
 			COALESCE(ingredients, '[]'),
 			COALESCE(steps, '[]'),
 			source_type,
@@ -203,9 +203,10 @@ func (s *SQLiteStore) GetGlobalRecipe(ctx context.Context, id string) (models.Gl
 		FROM global_recipes WHERE id = ?;
 	`, id).Scan(
 		&recipe.ID, &recipe.RecipeBody.Title, &recipe.RecipeBody.Description,
-		&recipe.RecipeBody.TotalTimeMinutes, &recipe.RecipeBody.Servings,
-		&recipe.RecipeBody.Ingredients, &recipe.RecipeBody.Steps,
-		&recipe.SourceType, &recipe.CreatedAt, &recipe.UpdatedAt,
+		&recipe.RecipeBody.ImageURL, &recipe.RecipeBody.TotalTimeMinutes,
+		&recipe.RecipeBody.Servings, &recipe.RecipeBody.Ingredients,
+		&recipe.RecipeBody.Steps, &recipe.SourceType,
+		&recipe.CreatedAt, &recipe.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -228,8 +229,8 @@ func (s *SQLiteStore) SaveGlobalRecipe(ctx context.Context, recipe models.Global
 	}
 
 	_, err = s.run.ExecContext(ctx, `
-		INSERT INTO global_recipes (id, title, description, total_time_minutes, servings, ingredients, steps, source_type)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO global_recipes (id, title, description, total_time_minutes, servings, image_url, ingredients, steps, source_type)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			title              = excluded.title,
 			description        = excluded.description,
@@ -240,7 +241,8 @@ func (s *SQLiteStore) SaveGlobalRecipe(ctx context.Context, recipe models.Global
 			source_type        = excluded.source_type,
 			updated_at         = CURRENT_TIMESTAMP;
 	`, recipe.ID, recipe.RecipeBody.Title, recipe.RecipeBody.Description,
-		recipe.RecipeBody.TotalTimeMinutes, recipe.RecipeBody.Servings, ingredients, steps, recipe.SourceType)
+		recipe.RecipeBody.TotalTimeMinutes, recipe.RecipeBody.Servings, recipe.RecipeBody.ImageURL,
+		ingredients, steps, recipe.SourceType)
 	if err != nil {
 		return fmt.Errorf("failed to save global recipe: %w", err)
 	}
@@ -356,7 +358,7 @@ func (s *SQLiteStore) GetUserRecipe(ctx context.Context, userID string, recipeID
 	err := s.run.QueryRowContext(ctx, `
 		SELECT 
 			ur.id, ur.user_id, ur.thread_id, ur.global_recipe_id,
-			ur.title, ur.description, ur.is_favorite,
+			ur.title, ur.description, ur.is_favorite, ur.image_url,
 			ur.latest_version_id, ur.created_at, ur.updated_at,
 			rv.total_time_minutes, rv.servings,
 			COALESCE(rv.ingredients, '[]'),
@@ -366,7 +368,7 @@ func (s *SQLiteStore) GetUserRecipe(ctx context.Context, userID string, recipeID
 		WHERE ur.id = ? AND ur.user_id = ?;
 	`, recipeID, userID).Scan(
 		&recipe.ID, &recipe.UserID, &recipe.ThreadID, &recipe.GlobalRecipeID, &recipe.Title, &recipe.Description, &recipe.IsFavorite,
-		&recipe.LatestVersionID, &recipe.CreatedAt, &recipe.UpdatedAt,
+		&recipe.ImageURL, &recipe.LatestVersionID, &recipe.CreatedAt, &recipe.UpdatedAt,
 		&recipe.RecipeBody.TotalTimeMinutes, &recipe.RecipeBody.Servings, &recipe.RecipeBody.Ingredients, &recipe.RecipeBody.Steps,
 	)
 	if err != nil {
@@ -384,7 +386,7 @@ func (s *SQLiteStore) GetAllUserRecipes(ctx context.Context, userID string) ([]m
 	rows, err := s.run.QueryContext(ctx, `
 		SELECT 
 			ur.id, ur.user_id, ur.thread_id, ur.global_recipe_id,
-			ur.title, ur.description, ur.is_favorite,
+			ur.title, ur.description, ur.is_favorite, ur.image_url,
 			ur.latest_version_id, ur.created_at, ur.updated_at,
 			rv.total_time_minutes, rv.servings,
 			COALESCE(rv.ingredients, '[]'),
@@ -405,7 +407,7 @@ func (s *SQLiteStore) GetAllUserRecipes(ctx context.Context, userID string) ([]m
 		var recipe models.UserRecipe
 		err := rows.Scan(
 			&recipe.ID, &recipe.UserID, &recipe.ThreadID, &recipe.GlobalRecipeID, &recipe.Title, &recipe.Description, &recipe.IsFavorite,
-			&recipe.LatestVersionID, &recipe.CreatedAt, &recipe.UpdatedAt,
+			&recipe.ImageURL, &recipe.LatestVersionID, &recipe.CreatedAt, &recipe.UpdatedAt,
 			&recipe.RecipeBody.TotalTimeMinutes, &recipe.RecipeBody.Servings, &recipe.RecipeBody.Ingredients, &recipe.RecipeBody.Steps,
 		)
 		if err != nil {
@@ -418,8 +420,8 @@ func (s *SQLiteStore) GetAllUserRecipes(ctx context.Context, userID string) ([]m
 
 func (s *SQLiteStore) SaveUserRecipe(ctx context.Context, recipe models.UserRecipe) error {
 	_, err := s.run.ExecContext(ctx, `
-		INSERT INTO user_recipes (id, user_id, global_recipe_id, thread_id, title, description, total_time_minutes, servings, is_favorite, latest_version_id)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO user_recipes (id, user_id, global_recipe_id, thread_id, title, description, total_time_minutes, servings, is_favorite, image_url, latest_version_id)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			user_id            = excluded.user_id,
 			global_recipe_id   = excluded.global_recipe_id,
@@ -429,11 +431,12 @@ func (s *SQLiteStore) SaveUserRecipe(ctx context.Context, recipe models.UserReci
 			total_time_minutes = excluded.total_time_minutes,
 			servings           = excluded.servings,
 			is_favorite        = excluded.is_favorite,
+			image_url          = excluded.image_url,
 			latest_version_id  = excluded.latest_version_id,
 			updated_at         = CURRENT_TIMESTAMP;
 	`, recipe.ID, recipe.UserID, recipe.GlobalRecipeID, recipe.ThreadID, recipe.Title, recipe.Description,
 		recipe.RecipeBody.TotalTimeMinutes, recipe.RecipeBody.Servings, recipe.IsFavorite,
-		recipe.LatestVersionID)
+		recipe.ImageURL, recipe.LatestVersionID)
 	if err != nil {
 		return fmt.Errorf("failed to save user recipe: %w", err)
 	}
@@ -457,9 +460,10 @@ func (s *SQLiteStore) UpdateUserRecipeVersion(ctx context.Context, userID string
 		    description        = ?,
 			total_time_minutes = ?,
 			servings           = ?,
+			image_url          = ?,
 			latest_version_id  = ?
 		WHERE id = ? AND user_id = ?;
-	`, version.Title, version.Description, version.TotalTimeMinutes, version.Servings, version.ID, recipeID, userID)
+	`, version.Title, version.Description, version.TotalTimeMinutes, version.Servings, version.ImageURL, version.ID, recipeID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to update user recipe version: %w", err)
 	}
@@ -473,13 +477,15 @@ func (s *SQLiteStore) GetRecipeVersion(ctx context.Context, recipeVersionID stri
 		SELECT 
 			id, user_recipe_id, parent_id,
 			total_time_minutes, servings,
+			image_url,
 			COALESCE(ingredients, '[]'),
 			COALESCE(steps, '[]'),
 			notes, created_at
 		FROM recipe_versions WHERE id = ?;
 	`, recipeVersionID).Scan(
 		&recipeVersion.ID, &recipeVersion.UserRecipeID, &recipeVersion.ParentID,
-		&recipeVersion.TotalTimeMinutes, &recipeVersion.Servings, &recipeVersion.Ingredients, &recipeVersion.Steps,
+		&recipeVersion.TotalTimeMinutes, &recipeVersion.Servings, &recipeVersion.ImageURL,
+		&recipeVersion.Ingredients, &recipeVersion.Steps,
 		&recipeVersion.Notes, &recipeVersion.CreatedAt,
 	)
 	if err != nil {
@@ -503,18 +509,19 @@ func (s *SQLiteStore) AddRecipeVersion(ctx context.Context, recipeVersion models
 	}
 
 	_, err = s.run.ExecContext(ctx, `
-		INSERT INTO recipe_versions (id, user_recipe_id, parent_id, total_time_minutes, servings, ingredients, steps, notes, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO recipe_versions (id, user_recipe_id, parent_id, total_time_minutes, servings, image_url, ingredients, steps, notes, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			user_recipe_id     = excluded.user_recipe_id,
 			parent_id          = excluded.parent_id,
 			total_time_minutes = excluded.total_time_minutes,
 			servings           = excluded.servings,
+			image_url          = excluded.image_url,
 			ingredients        = excluded.ingredients,
 			steps              = excluded.steps,
 			notes              = excluded.notes;
 	`, recipeVersion.ID, recipeVersion.UserRecipeID, recipeVersion.ParentID,
-		recipeVersion.TotalTimeMinutes, recipeVersion.Servings, ingredients, steps, recipeVersion.Notes, recipeVersion.CreatedAt)
+		recipeVersion.TotalTimeMinutes, recipeVersion.Servings, recipeVersion.ImageURL, ingredients, steps, recipeVersion.Notes, recipeVersion.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to save recipe version: %w", err)
 	}
@@ -528,12 +535,13 @@ func (s *SQLiteStore) UpdateRecipeVersion(ctx context.Context, newVersion models
 		    parent_id          = ?,
 		    total_time_minutes = ?,
 		    servings           = ?,
+		    image_url          = ?,
 		    ingredients        = ?,
 		    steps              = ?,
 		    notes              = ?
 		WHERE id = ? AND user_recipe_id = ?;
 	`, newVersion.UserRecipeID, newVersion.ParentID,
-		newVersion.TotalTimeMinutes, newVersion.Servings, newVersion.Ingredients, newVersion.Steps,
+		newVersion.TotalTimeMinutes, newVersion.Servings, newVersion.ImageURL, newVersion.Ingredients, newVersion.Steps,
 		newVersion.Notes, newVersion.ID, newVersion.UserRecipeID)
 	if err != nil {
 		return fmt.Errorf("failed to update recipe version: %w", err)
@@ -643,6 +651,7 @@ func migrate(db *sql.DB) error {
 		description        TEXT NOT NULL,
 		total_time_minutes INTEGER NOT NULL,
 		servings           INTEGER NOT NULL,
+		image_url          TEXT NULL,
 		ingredients        JSON NOT NULL DEFAULT '[]',
 		steps              JSON NOT NULL DEFAULT '[]',
 		source_type        TEXT NOT NULL DEFAULT 'generated',
@@ -680,6 +689,7 @@ func migrate(db *sql.DB) error {
 		description        TEXT NOT NULL,
 		total_time_minutes INTEGER NOT NULL,
 		servings           INTEGER NOT NULL,
+		image_url          TEXT NULL,
 		is_favorite        BOOLEAN DEFAULT FALSE,
 		latest_version_id  TEXT NULL,
 		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -694,6 +704,7 @@ func migrate(db *sql.DB) error {
 		created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		total_time_minutes INTEGER NOT NULL,
 		servings           INTEGER NOT NULL,
+		image_url          TEXT NULL,
 		ingredients        JSON NOT NULL DEFAULT '[]',
 		steps              JSON NOT NULL DEFAULT '[]',
 		notes              TEXT NULL

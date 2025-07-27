@@ -12,6 +12,7 @@ services:
     volumes:
       - ./api:/app
       - ./api/.data:/data
+      - ./images:/images
     networks:
       - appnet
 
@@ -21,8 +22,10 @@ services:
       - "8000:8000"
     environment:
       - ANTHROPIC_API_KEY
+      - REPLICATE_API_TOKEN
     volumes:
       - ./ml-gateway/app:/app
+      - ./images:/images
     networks:
       - appnet
 

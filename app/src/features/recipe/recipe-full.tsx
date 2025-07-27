@@ -40,8 +40,8 @@ export function FullRecipe({ recipe, diff }: FullRecipeProps) {
 
     return (
         <div>
-            <div className="p-2">
-                <RecipeOverview recipe={recipe} diff={diff} />
+            <div className="flex p-2">
+                <RecipeOverview recipe={recipe} diff={diff} thumbnail />
             </div>
             <Separator />
             <div className="p-2">

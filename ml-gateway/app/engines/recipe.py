@@ -1,4 +1,6 @@
+from uuid import uuid4
 from .llm import as_json, sys, usr
+import replicate
 from models import ModifyChatResponse, Recipe, Profile, SuggestionRecipes
 
 def suggest_template(profile: Profile, history: list[str], message: str, num_suggestions: int) -> str:
@@ -21,6 +23,12 @@ def modify_template(recipe: Recipe, profile: Profile, message: str) -> str:
     in the `error` field.
     """
 
+def image_template(recipe: Recipe) -> str:
+    return f"""
+    Recipe: {recipe}
+    Generate a high quality photo of the recipe.
+    """
+
 async def suggest(profile: Profile, history: list[str], message: str, num_suggestions: int = 3) -> list[Recipe]:
     messages = [
         sys("You are a recipe suggestion assistant."),
@@ -38,3 +46,16 @@ async def modify(recipe: Recipe, profile: Profile, message: str) -> ModifyChatRe
     ]
     print(f"Modify messages: {messages}")
     return await as_json(messages, schema=ModifyChatResponse)
+
+async def generate_image(recipe: Recipe) -> str:
+    outputs = await replicate.async_run(
+        "black-forest-labs/flux-dev",
+        input={
+            "prompt": image_template(recipe),
+        }
+    )
+    output = outputs[0]
+    id = uuid4()
+    with open(f"/images/{id}.png", "wb") as f:
+        f.write(output.read())
+    return id

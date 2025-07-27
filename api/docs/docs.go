@@ -1184,6 +1184,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "A classic Italian dish"
                 },
+                "image_url": {
+                    "type": "string"
+                },
                 "ingredients": {
                     "type": "array",
                     "items": {
@@ -1473,6 +1476,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "image_url": {
                     "type": "string"
                 },
                 "ingredients": {

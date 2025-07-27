@@ -39,6 +39,10 @@ func NewRouter(app *App) *chi.Mux {
 		w.Write([]byte("OK"))
 	})
 
+	// Images
+	fs := http.FileServer(http.Dir("/images"))
+	r.Get("/images/*", http.StripPrefix("/images/", fs).ServeHTTP)
+
 	// Services
 	userService := user.NewUserService(app.store)
 	recipeService := recipe.NewRecipeService(app.store)

@@ -6,6 +6,7 @@ import type { Control } from "react-hook-form"
 
 export const cuisineOptions = [
     { name: "American", value: "american" },
+    { name: "BBQ", value: "bbq" },
     { name: "British", value: "british" },
     { name: "Cajun", value: "cajun" },
     { name: "Mexican", value: "mexican" },

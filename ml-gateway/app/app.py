@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from models import RecipeSuggestion, SuggestChatRequest, SuggestChatResponse, ModifyChatRequest, ModifyChatResponse, GeneralChatRequest, GeneralChatResponse
-from engines import suggest, modify, answer
+from engines import suggest, modify, answer, generate_image
 
 app = FastAPI()
 
@@ -10,6 +10,10 @@ async def chat(req: SuggestChatRequest):
     try:
         recipes = await suggest(req.profile, req.history, req.message)
         print("Got recipes:", recipes)
+        for recipe in recipes:
+            image_id = await generate_image(recipe)
+            print(f"Generated image for recipe: {recipe.title} with ID {image_id}")
+            recipe.image_url = f"http://localhost:8080/images/{image_id}.png"
         text  = "Here is an idea ↓"
         return SuggestChatResponse(response_text=text,
                                    suggestions=[RecipeSuggestion(recipe=r, response_text=text) for r in recipes])

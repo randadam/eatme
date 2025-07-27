@@ -56,6 +56,7 @@ type RecipeBody struct {
 	Steps            Steps       `json:"steps" binding:"required"`
 	Servings         int         `json:"servings" example:"4" binding:"required"`
 	TotalTimeMinutes int         `json:"total_time_minutes" example:"120" binding:"required"`
+	ImageURL         string      `json:"image_url,omitempty"`
 }
 
 type RecipeSource string
