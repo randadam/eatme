@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"context"
 	"net/http"
 	"os"
 
@@ -9,6 +9,9 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/clients"
 	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/router"
+	"github.com/ajohnston1219/eatme/api/internal/utils/logger"
+	"github.com/ajohnston1219/eatme/api/internal/utils/telemetry"
+	"go.uber.org/zap"
 )
 
 // @title EatMe API
@@ -17,6 +20,16 @@ import (
 // @host localhost:8080
 // @BasePath /
 func main() {
+	baseLogger, err := zap.NewDevelopment(zap.AddStacktrace(zap.ErrorLevel))
+	if err != nil {
+		panic(err)
+	}
+	zap.ReplaceGlobals(baseLogger)
+
+	ctx := context.Background()
+	shutdown := telemetry.InitTracer(ctx, "backend-api")
+	defer shutdown(ctx)
+
 	dsn, ok := os.LookupEnv("DB_DSN")
 	if !ok {
 		dsn = "file:./.data/dev.db"
@@ -39,7 +52,7 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("🚀 Server running on port %s", port)
-	log.Printf("📚 API documentation available at http://localhost:%s/swagger/index.html", port)
+	logger.Logger(ctx).Info("🚀 Server running on port %s", zap.String("port", port))
+	logger.Logger(ctx).Info("📚 API documentation available at http://localhost:%s/swagger/index.html", zap.String("port", port))
 	http.ListenAndServe(":"+port, router)
 }

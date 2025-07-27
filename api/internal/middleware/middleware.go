@@ -9,6 +9,7 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/api"
 	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/models"
+	"github.com/ajohnston1219/eatme/api/internal/utils/logger"
 	"go.uber.org/zap"
 )
 
@@ -28,6 +29,7 @@ func AuthMiddleware(store db.Store) func(next http.Handler) http.Handler {
 				return
 			}
 			ctx := context.WithValue(r.Context(), api.UserIDKey{}, userID)
+			ctx = logger.SetLogger(ctx, zap.L().With(zap.String("user_id", userID)))
 			*r = *r.WithContext(ctx)
 			next.ServeHTTP(w, r)
 		})
@@ -37,22 +39,17 @@ func AuthMiddleware(store db.Store) func(next http.Handler) http.Handler {
 func RequestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+		logger := logger.Logger(r.Context())
 
 		srw := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(srw, r)
 
-		userID, ok := r.Context().Value(api.UserIDKey{}).(string)
-		if !ok {
-			userID = ""
-		}
-
-		zap.L().Info("http_request",
+		logger.Info("http_request",
 			zap.String("method", r.Method),
 			zap.String("path", r.URL.Path),
 			zap.Int("status", srw.status),
 			zap.Duration("duration_ms", time.Since(start)),
 			zap.String("remote_ip", r.RemoteAddr),
-			zap.String("user_id", userID),
 		)
 	})
 }

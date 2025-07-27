@@ -8,6 +8,7 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/api"
 	"github.com/ajohnston1219/eatme/api/internal/models"
 	recipeService "github.com/ajohnston1219/eatme/api/internal/recipe"
+	"github.com/ajohnston1219/eatme/api/internal/utils/logger"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
@@ -43,14 +44,14 @@ func (h *ThreadHandler) StartSuggestionThread(w http.ResponseWriter, r *http.Req
 
 	var input models.StartSuggestionThreadRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		zap.L().Error("failed to decode start suggestion thread request", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to decode start suggestion thread request", zap.Error(err))
 		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	threadState, err := h.threadService.StartSuggestionThread(r.Context(), userID, input.Prompt)
 	if err != nil {
-		zap.L().Error("failed to start suggestion thread", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to start suggestion thread", zap.Error(err))
 		switch {
 		case errors.Is(err, ErrThreadNotFound):
 			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrThreadNotFound)
@@ -90,14 +91,14 @@ func (h *ThreadHandler) GetNewSuggestions(w http.ResponseWriter, r *http.Request
 
 	var input models.GetNewSuggestionsRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		zap.L().Error("failed to decode get new suggestions request", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to decode get new suggestions request", zap.Error(err))
 		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	suggestions, err := h.threadService.GetNewSuggestions(r.Context(), userID, threadID, input)
 	if err != nil {
-		zap.L().Error("failed to get new suggestions", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to get new suggestions", zap.Error(err))
 		switch {
 		case errors.Is(err, ErrThreadNotFound):
 			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrThreadNotFound)
@@ -143,7 +144,7 @@ func (h *ThreadHandler) AcceptSuggestion(w http.ResponseWriter, r *http.Request)
 
 	recipe, err := h.threadService.AcceptSuggestion(r.Context(), userID, threadID, suggestionID)
 	if err != nil {
-		zap.L().Error("failed to accept suggestion", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to accept suggestion", zap.Error(err))
 		switch {
 		case errors.Is(err, ErrThreadNotFound):
 			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrThreadNotFound)
@@ -183,14 +184,14 @@ func (h *ThreadHandler) ModifyRecipeViaChat(w http.ResponseWriter, r *http.Reque
 
 	var input models.ModifyRecipeViaChatRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		zap.L().Error("failed to decode modify recipe via chat request", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to decode modify recipe via chat request", zap.Error(err))
 		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	chatResponse, err := h.threadService.ModifyRecipeViaChat(r.Context(), userID, recipeID, input.Prompt)
 	if err != nil {
-		zap.L().Error("failed to modify recipe via chat", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to modify recipe via chat", zap.Error(err))
 		switch {
 		case errors.Is(err, ErrThreadNotFound):
 			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrThreadNotFound)
@@ -222,21 +223,24 @@ func (h *ThreadHandler) ModifyRecipeViaChat(w http.ResponseWriter, r *http.Reque
 // @Failure 500 {object} models.APIError "Internal server error"
 // @Router /recipes/{recipeId}/modify/accept [post]
 func (h *ThreadHandler) AcceptRecipeModification(w http.ResponseWriter, r *http.Request) {
+	logger.Logger(r.Context()).Info("accepting recipe modification")
 	userID := api.GetUserID(r)
 	if userID == "" {
 		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrBadRequest)
 		return
 	}
+	logger.Logger(r.Context()).Info("accepting recipe modification", zap.String("user_id", userID))
 
 	recipeID := chi.URLParam(r, "recipeId")
 	if recipeID == "" {
 		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
+	logger.Logger(r.Context()).Info("accepting recipe modification", zap.String("recipe_id", recipeID))
 
 	err := h.threadService.AcceptRecipeModification(r.Context(), userID, recipeID)
 	if err != nil {
-		zap.L().Error("failed to accept recipe modification", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to accept recipe modification", zap.Error(err))
 		switch {
 		case errors.Is(err, ErrThreadNotFound):
 			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrThreadNotFound)
@@ -245,6 +249,7 @@ func (h *ThreadHandler) AcceptRecipeModification(w http.ResponseWriter, r *http.
 		}
 		return
 	}
+	logger.Logger(r.Context()).Info("recipe modified", zap.String("recipe_id", recipeID))
 	api.WriteJSON(w, http.StatusNoContent, nil)
 }
 
@@ -275,7 +280,7 @@ func (h *ThreadHandler) RejectRecipeModification(w http.ResponseWriter, r *http.
 
 	err := h.threadService.RejectRecipeModification(r.Context(), userID, recipeID)
 	if err != nil {
-		zap.L().Error("failed to reject recipe modification", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to reject recipe modification", zap.Error(err))
 		switch {
 		case errors.Is(err, ErrThreadNotFound):
 			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrThreadNotFound)
@@ -315,14 +320,14 @@ func (h *ThreadHandler) AnswerCookingQuestion(w http.ResponseWriter, r *http.Req
 
 	var input models.AnswerCookingQuestionRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		zap.L().Error("failed to decode answer cooking question request", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to decode answer cooking question request", zap.Error(err))
 		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	response, err := h.threadService.AnswerCookingQuestion(r.Context(), userID, threadID, input.Question)
 	if err != nil {
-		zap.L().Error("failed to answer cooking question", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to answer cooking question", zap.Error(err))
 		switch {
 		case errors.Is(err, ErrThreadNotFound):
 			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrThreadNotFound)
@@ -362,7 +367,7 @@ func (h *ThreadHandler) GetThread(w http.ResponseWriter, r *http.Request) {
 
 	threadState, err := h.threadService.GetThreadState(r.Context(), threadID)
 	if err != nil {
-		zap.L().Error("failed to get thread state", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to get thread state", zap.Error(err))
 		switch {
 		case errors.Is(err, ErrThreadNotFound):
 			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrThreadNotFound)

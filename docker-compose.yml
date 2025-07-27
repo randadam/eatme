@@ -35,13 +35,14 @@ services:
     networks:
       - appnet
 
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
-    command: ["--config=/etc/otel-collector-config.yaml"]
-    volumes:
-      - ./otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+  jaeger:
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.8.0
     ports:
-      - "4317:4317"
+      - "16686:16686"  # Jaeger UI
+      - "4317:4317"    # OTLP gRPC receiver
+      - "4318:4318"    # OTLP HTTP receiver
+      - "5778:5778"    # Sampling port
+      - "9411:9411"    # Zipkin port
     networks:
       - appnet
 

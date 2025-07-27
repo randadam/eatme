@@ -7,7 +7,7 @@ import (
 
 	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/models"
-	"go.uber.org/zap"
+	"github.com/ajohnston1219/eatme/api/internal/utils/logger"
 )
 
 type UserService struct {
@@ -38,7 +38,7 @@ func (s *UserService) CreateUser(ctx context.Context, email string, password str
 			return nil, fmt.Errorf("failed to create user: %w", err)
 		}
 	}
-	zap.L().Debug("created user")
+	logger.Logger(ctx).Debug("created user")
 	defaultProfile := models.Profile{
 		SetupStep: models.SetupStepProfile,
 		Name:      "",
@@ -53,7 +53,7 @@ func (s *UserService) CreateUser(ctx context.Context, email string, password str
 	if err != nil {
 		return nil, fmt.Errorf("failed to save profile in create user: %w", err)
 	}
-	zap.L().Debug("saved default profile")
+	logger.Logger(ctx).Debug("saved default profile")
 	return &user, nil
 }
 
@@ -91,7 +91,7 @@ func (s *UserService) SaveProfile(ctx context.Context, userID string, profile mo
 			return nil, fmt.Errorf("failed to get profile: %w", err)
 		}
 	}
-	zap.L().Debug("found profile")
+	logger.Logger(ctx).Debug("found profile")
 
 	if profile.SetupStep != "" {
 		currentProfile.SetupStep = profile.SetupStep
@@ -119,7 +119,7 @@ func (s *UserService) SaveProfile(ctx context.Context, userID string, profile mo
 	if err != nil {
 		return nil, fmt.Errorf("failed to save profile: %w", err)
 	}
-	zap.L().Debug("saved profile")
+	logger.Logger(ctx).Debug("saved profile")
 	return &currentProfile, nil
 }
 

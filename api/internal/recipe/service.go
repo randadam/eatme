@@ -7,8 +7,8 @@ import (
 
 	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/models"
+	"github.com/ajohnston1219/eatme/api/internal/utils/logger"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 type RecipeService struct {
@@ -43,7 +43,7 @@ func (s *RecipeService) NewRecipe(ctx context.Context, userID string, threadID s
 	if err := store.SaveUserRecipe(ctx, recipe); err != nil {
 		return nil, fmt.Errorf("failed to save user recipe: %w", err)
 	}
-	zap.L().Debug("saved user recipe")
+	logger.Logger(ctx).Debug("saved user recipe")
 	rv := models.RecipeVersion{
 		ID:           versionID,
 		UserRecipeID: recipeID,
@@ -52,7 +52,7 @@ func (s *RecipeService) NewRecipe(ctx context.Context, userID string, threadID s
 	if err := store.AddRecipeVersion(ctx, rv); err != nil {
 		return nil, fmt.Errorf("failed to add recipe version: %w", err)
 	}
-	zap.L().Debug("added recipe version")
+	logger.Logger(ctx).Debug("added recipe version")
 	return &recipe, nil
 }
 
@@ -67,7 +67,7 @@ func (s *RecipeService) UpdateRecipe(ctx context.Context, userID string, recipeI
 			return fmt.Errorf("failed to get user recipe: %w", err)
 		}
 	}
-	zap.L().Debug("got user recipe")
+	logger.Logger(ctx).Debug("got user recipe")
 
 	recipeVersion := models.RecipeVersion{
 		ID:           uuid.New().String(),
@@ -80,12 +80,12 @@ func (s *RecipeService) UpdateRecipe(ctx context.Context, userID string, recipeI
 	if err != nil {
 		return fmt.Errorf("failed to add recipe version: %w", err)
 	}
-	zap.L().Debug("added recipe version")
+	logger.Logger(ctx).Debug("added recipe version")
 	err = store.UpdateUserRecipeVersion(ctx, userID, recipeID, recipeVersion)
 	if err != nil {
 		return fmt.Errorf("failed to update user recipe version: %w", err)
 	}
-	zap.L().Debug("updated user recipe version")
+	logger.Logger(ctx).Debug("updated user recipe version")
 	return nil
 }
 

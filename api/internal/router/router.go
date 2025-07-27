@@ -10,9 +10,10 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/recipe"
 	"github.com/ajohnston1219/eatme/api/internal/thread"
 	"github.com/ajohnston1219/eatme/api/internal/user"
-	"github.com/ajohnston1219/eatme/api/internal/utils"
+	"github.com/ajohnston1219/eatme/api/internal/utils/logger"
 	"github.com/go-chi/chi/v5"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type App struct {
@@ -28,10 +29,10 @@ func NewApp(store db.Store, mlClient clients.MLClient) *App {
 }
 
 func NewRouter(app *App) *chi.Mux {
-	utils.InitLogger()
-
 	r := chi.NewRouter()
 
+	r.Use(otelhttp.NewMiddleware("backend-api"))
+	r.Use(logger.WithRequestLogger)
 	r.Use(middleware.RequestLogger)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {

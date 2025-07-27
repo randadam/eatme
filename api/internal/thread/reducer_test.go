@@ -1,14 +1,24 @@
 package thread
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
 
 	"github.com/ajohnston1219/eatme/api/internal/models"
+	"github.com/ajohnston1219/eatme/api/internal/utils/logger"
+	"go.uber.org/zap"
 )
 
 func TestReduceThreadEvents(t *testing.T) {
+	ctx := context.Background()
+	log, err := zap.NewDevelopment()
+	if err != nil {
+		t.Fatal(err)
+	}
+	log = log.With(zap.String("test", "reducer_test"))
+	ctx = logger.SetLogger(ctx, log)
 	threadID := "test_thread_id"
 	events := createThreadEvents(t,
 		withEvent(models.ThreadEventTypePromptSet, models.PromptSetEvent{Prompt: "test_prompt"}),
@@ -43,7 +53,7 @@ func TestReduceThreadEvents(t *testing.T) {
 		}),
 		withEvent(models.ThreadEventTypeQuestionAnswered, models.QuestionAnsweredEvent{Question: "test_question", Answer: "test_answer"}),
 	)
-	thread, err := ReduceThreadEvents(threadID, events, nil)
+	thread, err := ReduceThreadEvents(ctx, threadID, events, nil)
 	if err != nil {
 		t.Fatalf("failed to reduce thread events: %v", err)
 	}
@@ -114,7 +124,7 @@ func TestReduceThreadEvents(t *testing.T) {
 	events = createThreadEvents(t,
 		withEvent(models.ThreadEventTypeRecipeModificationAccepted, models.RecipeModificationAcceptedEvent{}),
 	)
-	thread, err = ReduceThreadEvents(threadID, events, thread)
+	thread, err = ReduceThreadEvents(ctx, threadID, events, thread)
 	if err != nil {
 		t.Fatalf("failed to reduce thread events: %v", err)
 	}
@@ -129,7 +139,7 @@ func TestReduceThreadEvents(t *testing.T) {
 		withEvent(models.ThreadEventTypeRecipeModified, models.RecipeModifiedEvent{Recipe: models.RecipeBody{Title: "test_recipe_4", Description: "test_recipe_4_description", Ingredients: []models.Ingredient{{Name: "test_ingredient_4"}}, Steps: []models.Step{"test_step_4"}}}),
 		withEvent(models.ThreadEventTypeRecipeModificationRejected, models.RecipeModificationRejectedEvent{}),
 	)
-	thread, err = ReduceThreadEvents(threadID, events, thread)
+	thread, err = ReduceThreadEvents(ctx, threadID, events, thread)
 	if err != nil {
 		t.Fatalf("failed to reduce thread events: %v", err)
 	}

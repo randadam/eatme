@@ -8,6 +8,7 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/api"
 	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/models"
+	"github.com/ajohnston1219/eatme/api/internal/utils/logger"
 	"go.uber.org/zap"
 )
 
@@ -34,7 +35,7 @@ func NewUserHandler(service *UserService) *UserHandler {
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	var input models.SignupRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		zap.L().Error("failed to decode signup request", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to decode signup request", zap.Error(err))
 		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
@@ -45,7 +46,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		ctx := db.ContextWithTx(r.Context(), tx)
 		user, err = h.service.CreateUser(ctx, input.Email, input.Password)
 		if err != nil {
-			zap.L().Error("failed to create user", zap.Error(err))
+			logger.Logger(r.Context()).Error("failed to create user", zap.Error(err))
 			return err
 		}
 		return nil
@@ -77,20 +78,20 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var input models.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		zap.L().Error("failed to decode login request", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to decode login request", zap.Error(err))
 		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
 
 	user, err := h.service.GetUser(r.Context(), input.Email)
 	if err != nil {
-		zap.L().Error("failed to get user", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to get user", zap.Error(err))
 		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
 
 	if err = h.service.CheckPassword(r.Context(), user.ID, input.Password); err != nil {
-		zap.L().Error("password check failed", zap.Error(err))
+		logger.Logger(r.Context()).Error("password check failed", zap.Error(err))
 		api.ErrorJSON(w, http.StatusUnauthorized, models.ApiErrUnauthorized)
 		return
 	}
@@ -119,7 +120,7 @@ func (h *UserHandler) SaveProfile(w http.ResponseWriter, r *http.Request) {
 
 	var profile models.ProfileUpdateRequest
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
-		zap.L().Error("failed to decode profile update request", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to decode profile update request", zap.Error(err))
 		api.ErrorJSON(w, http.StatusBadRequest, models.ApiErrBadRequest)
 		return
 	}
@@ -130,7 +131,7 @@ func (h *UserHandler) SaveProfile(w http.ResponseWriter, r *http.Request) {
 		ctx := db.ContextWithTx(r.Context(), tx)
 		result, err = h.service.SaveProfile(ctx, userID, profile)
 		if err != nil {
-			zap.L().Error("failed to save profile", zap.Error(err))
+			logger.Logger(r.Context()).Error("failed to save profile", zap.Error(err))
 			return err
 		}
 		return nil
@@ -162,7 +163,7 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 	profile, err := h.service.GetProfile(r.Context(), userID)
 	if err != nil {
-		zap.L().Error("failed to get profile", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to get profile", zap.Error(err))
 		switch {
 		case errors.Is(err, ErrProfileNotFound):
 			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrProfileNotFound)

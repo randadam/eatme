@@ -7,6 +7,7 @@ import (
 	"github.com/ajohnston1219/eatme/api/internal/api"
 	"github.com/ajohnston1219/eatme/api/internal/db"
 	"github.com/ajohnston1219/eatme/api/internal/models"
+	"github.com/ajohnston1219/eatme/api/internal/utils/logger"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
@@ -53,7 +54,7 @@ func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
 		ctx := db.ContextWithTx(r.Context(), tx)
 		recipe, err = h.recipeService.GetUserRecipe(ctx, userID, recipeId)
 		if err != nil {
-			zap.L().Error("failed to get user recipe", zap.Error(err))
+			logger.Logger(r.Context()).Error("failed to get user recipe", zap.Error(err))
 			return err
 		}
 		return nil
@@ -94,7 +95,7 @@ func (h *RecipeHandler) GetAllRecipes(w http.ResponseWriter, r *http.Request) {
 		ctx := db.ContextWithTx(r.Context(), tx)
 		recipes, err = h.recipeService.GetAllUserRecipes(ctx, userID)
 		if err != nil {
-			zap.L().Error("failed to get all user recipes", zap.Error(err))
+			logger.Logger(r.Context()).Error("failed to get all user recipes", zap.Error(err))
 			return err
 		}
 		return nil
@@ -142,7 +143,7 @@ func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
 		return h.recipeService.DeleteUserRecipe(ctx, userID, recipeId)
 	})
 	if err != nil {
-		zap.L().Error("failed to delete user recipe", zap.Error(err))
+		logger.Logger(r.Context()).Error("failed to delete user recipe", zap.Error(err))
 		switch {
 		case errors.Is(err, ErrRecipeNotFound):
 			api.ErrorJSON(w, http.StatusNotFound, models.ApiErrRecipeNotFound)

@@ -98,8 +98,19 @@ export default function ModifyRecipe() {
                     )
                 }
                 subHeader={
-                    recipeDiff ? (
-                        <div className="flex justify-between pt-4 gap-2 w-full">
+                    !chatOpen && (recipeDiff ? (
+                        <p className="text-center text-muted-foreground">
+                            Swipe up to try again.
+                        </p>
+                    ) : (
+                        <p className="text-center text-muted-foreground">
+                            Swipe up to let me know what you'd like to change.
+                        </p>
+                    ))
+                }
+                actions={
+                    recipeDiff && (
+                        <div className="flex justify-between py-4 gap-2 w-full">
                             <LoaderButton
                                 className="w-1/2"
                                 isLoading={rejectPending}
@@ -117,13 +128,9 @@ export default function ModifyRecipe() {
                                 Accept
                             </LoaderButton>
                         </div>
-                    ) : (
-                        <p className="text-muted-foreground">
-                            Let me know what you'd like to change
-                        </p>
                     )
                 }
-                peekHeight={recipeDiff ? 18 : 14}
+                peekHeight={recipeDiff ? 24 : 14}
                 fullHeight={recipeDiff ? 56 : 48}
             >
                 {recipeDiff && (

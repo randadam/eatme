@@ -10,6 +10,7 @@ interface BottomSheetProps {
     children: React.ReactNode;
     header?: React.ReactNode | ((size: SheetSize) => React.ReactNode);
     subHeader?: React.ReactNode | ((size: SheetSize) => React.ReactNode);
+    actions?: React.ReactNode | ((size: SheetSize) => React.ReactNode);
     initialSize?: SheetSize;
     peekHeight?: number;      // in vh
     fullHeight?: number;      // in vh
@@ -21,6 +22,7 @@ export default function BottomSheet({
     children,
     header,
     subHeader,
+    actions,
     initialSize = "peek",
     peekHeight = 26,
     fullHeight = 90,
@@ -118,20 +120,22 @@ export default function BottomSheet({
                 }}
             >
                 {/* grab handle */}
-                <div
-                    onPointerDown={(e) => dragControls.start(e)}
-                    onClick={() => {
-                        setSize(size === "peek" ? "full" : "peek")
-                        animate(scope.current, { y: size === "peek" ? bottomPadding : peekOffsetPx }, { type: "spring", stiffness: 320, damping: 24 })
-                    }}
-                >
+                <div>
                     <div
+                        onPointerDown={(e) => dragControls.start(e)}
+                        onClick={() => {
+                            setSize(size === "peek" ? "full" : "peek")
+                            animate(scope.current, { y: size === "peek" ? bottomPadding : peekOffsetPx }, { type: "spring", stiffness: 320, damping: 24 })
+                        }}
                         className="flex items-center justify-center pt-4 pb-1 cursor-pointer"
                     >
                         <div className="h-1.5 w-10 rounded-full bg-muted-foreground/40" />
                     </div>
 
-                    <div className={`h-[calc(${peekHeight}vh-4rem)] py-2`}>
+                    <div
+                        onPointerDown={(e) => dragControls.start(e)}
+                        className={`h-[calc(${peekHeight}vh-4rem)] py-2`}
+                    >
                         {header && (
                             <header className="flex items-center justify-center px-4 w-full">
                                 {typeof header === "function" ? header(size) : header}
@@ -143,6 +147,11 @@ export default function BottomSheet({
                             </div>
                         )}
                     </div>
+                    {actions && (
+                        <div className="flex items-center justify-center px-4 w-full">
+                            {typeof actions === "function" ? actions(size) : actions}
+                        </div>
+                    )}
                 </div>
 
                 {size === 'full' && (
