@@ -222,13 +222,14 @@ func (s *ThreadService) AcceptSuggestion(ctx context.Context, userID string, thr
 				if err := json.Unmarshal(payload, &suggestionEvent); err != nil {
 					return fmt.Errorf("failed to unmarshal suggestion generated event: %w", err)
 				}
-				newRecipe, err := s.recipeService.NewRecipe(ctx, userID, threadID, suggestionEvent.Recipe)
-				if err != nil {
-					return fmt.Errorf("failed to create new recipe: %w", err)
+				if suggestionEvent.SuggestionID == suggestionID {
+					recipe, err = s.recipeService.NewRecipe(ctx, userID, threadID, suggestionEvent.Recipe)
+					if err != nil {
+						return fmt.Errorf("failed to create new recipe: %w", err)
+					}
+					found = true
+					break
 				}
-				recipe = newRecipe
-				found = true
-				break
 			}
 		}
 		if !found {
