@@ -11,7 +11,6 @@ Before you begin, ensure you have the following installed on your system:
 - **Python 3.8+:** Required for the ML Gateway service.
 - **Node.js 20+:** Required for the frontend and API documentation.
   - The setup script will automatically install `pnpm` if it's not present.
-- **Ollama:** Must be installed and running locally. The application expects Ollama to be available at `http://localhost:11434`.
 
 ## One-Time Setup
 
@@ -64,3 +63,7 @@ When the development environment is running, the following services will be avai
 | **Chroma DB**     | `http://localhost:8002`        | Vector database for embeddings        |
 | **OTEL Collector**| `http://localhost:4317` (gRPC) | Collects observability data           |
 | **Frontend**      | `http://localhost:5173`        | React application                     |
+
+## Required Environment Variables
+
+- `ANTHROPIC_API_KEY`: Your Anthropic API key for the ML gateway
